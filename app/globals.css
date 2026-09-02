@@ -71,6 +71,44 @@ body {
   background: rgb(34 211 238 / 0.25);
 }
 
+.circuit-flow .react-flow__controls {
+  overflow: hidden;
+  border: 1px solid rgb(51 65 85 / 0.9);
+  border-radius: 0.75rem;
+  background: rgb(2 6 23 / 0.86);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.28);
+}
+
+.circuit-flow .react-flow__controls-button {
+  border-bottom-color: rgb(51 65 85 / 0.8);
+  background: transparent;
+  color: #cbd5e1;
+}
+
+.circuit-flow .react-flow__controls-button:hover {
+  background: rgb(30 41 59 / 0.95);
+}
+
+.circuit-flow .react-flow__controls-button svg {
+  fill: currentColor;
+}
+
+.circuit-flow .react-flow__minimap {
+  overflow: hidden;
+  border: 1px solid rgb(51 65 85 / 0.9);
+  border-radius: 0.875rem;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.28);
+}
+
+.circuit-flow .react-flow__edge-path {
+  filter: drop-shadow(0 0 3px rgb(100 116 139 / 0.2));
+}
+
+.circuit-flow .react-flow__node:focus-visible {
+  outline: 2px solid #67e8f9;
+  outline-offset: 4px;
+}
+
 @theme inline {
   --font-heading: var(--font-geist-sans);
   --font-sans: var(--font-geist-sans);
