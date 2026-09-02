@@ -8,6 +8,9 @@
 # production
 /build
 
+# local scratch files
+/tmp/
+
 # local environment files
 .env*
 !.env.example

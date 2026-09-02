@@ -29,3 +29,20 @@ Abrí [http://localhost:3000](http://localhost:3000) en el navegador.
 npm run build
 npm start
 ```
+
+## Motor de cálculo
+
+El motor implementa el método de corrientes de rama con ecuaciones KCL y KVL.
+Usa `mathjs` únicamente para resolver el sistema lineal resultante.
+
+Para ejecutar sus pruebas automáticas:
+
+```bash
+npm test
+```
+
+Para mostrar la comparación numérica de P8(a), P9 y P11:
+
+```bash
+npm run verify:engine
+```
