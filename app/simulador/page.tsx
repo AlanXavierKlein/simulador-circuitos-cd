@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 
-import { problem9Positions } from "@/components/circuit/example-layouts";
+import {
+  problem9CurrentLabelPlacements,
+  problem9Positions,
+} from "@/components/circuit/example-layouts";
 import { SimulatorWorkspace } from "@/components/simulator/SimulatorWorkspace";
 import { problem9 } from "@/lib/problems/phase1-validation";
 
@@ -32,6 +35,7 @@ export default function SimulatorPage() {
       <SimulatorWorkspace
         initialCircuit={problem9}
         nodePositions={problem9Positions}
+        currentLabelPlacements={problem9CurrentLabelPlacements}
       />
     </section>
   );

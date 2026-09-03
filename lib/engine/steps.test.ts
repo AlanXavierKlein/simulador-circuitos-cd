@@ -10,10 +10,13 @@ describe("paso a paso de Kirchhoff", () => {
     const steps = buildSolutionSteps(problem9, result);
 
     expect(steps).toHaveLength(6);
+    expect(steps[0].content).toContain("I0: 0 → l → a → A");
     expect(steps[1].content).toContain("KCL(");
+    expect(steps[1].content).toContain("I0");
     expect(steps[2].content).toContain("M1:");
-    expect(steps[3].content).toContain("25·I(R1)");
-    expect(steps[4].content).toContain("I(R3) = 0,431 A");
+    expect(steps[2].content).toContain("R1·I0");
+    expect(steps[3].content).toContain("40·I0");
+    expect(steps[4].content).toContain("I1 = 0,431 A");
     expect(steps[5].content).toContain("sentido real opuesto");
   });
 });

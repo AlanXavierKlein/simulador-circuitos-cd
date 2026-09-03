@@ -7,6 +7,7 @@ import type { Circuit, Component } from "@/lib/engine/model";
 type ComponentControlsProps = {
   circuit: Circuit;
   onValueChange: (label: string, value: number) => void;
+  compact?: boolean;
 };
 
 type ControlRange = {
@@ -66,9 +67,16 @@ function formatValue(value: number): string {
 export function ComponentControls({
   circuit,
   onValueChange,
+  compact = false,
 }: ComponentControlsProps) {
   return (
-    <aside className="rounded-3xl border border-slate-800 bg-slate-950/70 p-5 shadow-xl shadow-black/20 xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto">
+    <aside
+      className={`rounded-3xl border border-slate-800 bg-slate-950/70 p-5 shadow-xl shadow-black/20 ${
+        compact
+          ? ""
+          : "xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto"
+      }`}
+    >
       <div className="mb-5 flex items-start gap-3">
         <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-cyan-400/20 bg-cyan-400/10 text-cyan-300">
           <SlidersHorizontal className="size-5" />
@@ -81,7 +89,11 @@ export function ComponentControls({
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div
+        className={
+          compact ? "grid gap-3 md:grid-cols-2 2xl:grid-cols-3" : "space-y-3"
+        }
+      >
         {circuit.components.map((component) => {
           const range = controlRange(component);
           const inputId = `component-${component.label}`;
@@ -117,6 +129,7 @@ export function ComponentControls({
               </div>
 
               <input
+                suppressHydrationWarning
                 aria-label={`Control deslizante de ${component.label}`}
                 type="range"
                 min={range.min}
@@ -131,6 +144,7 @@ export function ComponentControls({
 
               <div className="mt-3 flex items-center gap-2">
                 <input
+                  suppressHydrationWarning
                   id={inputId}
                   aria-label={`Valor de ${component.label}`}
                   type="number"

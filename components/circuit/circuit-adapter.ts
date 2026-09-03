@@ -1,6 +1,7 @@
 import type { XYPosition } from "@xyflow/react";
 
 import type { Circuit, Component, NodeId } from "../../lib/engine/model";
+import { buildReferenceCurrentLayout } from "../../lib/engine/reference-currents";
 
 import type {
   CircuitFlowEdge,
@@ -9,6 +10,17 @@ import type {
 } from "./flow-types";
 
 export type NodePositionMap = Record<NodeId, XYPosition>;
+export type ComponentPositionMap = Record<string, XYPosition>;
+
+export type CurrentLabelPlacementMap = Record<
+  string,
+  {
+    componentLabel: string;
+    edge?: "from" | "to";
+    tangentOffset?: number;
+    normalOffset?: number;
+  }
+>;
 
 export type CircuitFlowElements = {
   nodes: CircuitFlowNode[];
@@ -17,7 +29,9 @@ export type CircuitFlowElements = {
 
 type CircuitAdapterOptions = {
   nodePositions?: NodePositionMap;
+  componentPositions?: ComponentPositionMap;
   branchCurrents?: Record<string, number>;
+  currentLabelPlacements?: CurrentLabelPlacementMap;
 };
 
 const JUNCTION_SIZE = 22;
@@ -69,6 +83,7 @@ function componentCenter(from: XYPosition, to: XYPosition): XYPosition {
 function componentNode(
   component: Component,
   positions: NodePositionMap,
+  componentPositions?: ComponentPositionMap,
 ): CircuitFlowNode {
   const from = positions[component.nFrom];
   const to = positions[component.nTo];
@@ -79,7 +94,8 @@ function componentNode(
   }
 
   const orientation = componentOrientation(from, to);
-  const center = componentCenter(from, to);
+  const center =
+    componentPositions?.[component.label] ?? componentCenter(from, to);
   const size = COMPONENT_SIZE[orientation];
   const position = {
     x: center.x - size.width / 2,
@@ -154,6 +170,10 @@ export function circuitToFlow(
       Math.abs(current),
     ),
   );
+  const referenceCurrents = buildReferenceCurrentLayout(
+    circuit,
+    options.branchCurrents ?? {},
+  );
   const nodes: CircuitFlowNode[] = circuit.nodes.map((node) => {
     const center = positions[node.id];
     if (!center) {
@@ -178,7 +198,11 @@ export function circuitToFlow(
 
   const edges: CircuitFlowEdge[] = [];
   for (const component of circuit.components) {
-    const visualComponent = componentNode(component, positions);
+    const visualComponent = componentNode(
+      component,
+      positions,
+      options.componentPositions,
+    );
     nodes.push(visualComponent);
 
     const from = positions[component.nFrom];
@@ -192,6 +216,23 @@ export function circuitToFlow(
       current,
       normalizedMagnitude,
     };
+    const reference = referenceCurrents.byComponent[component.label];
+    const labelPlacement = reference
+      ? options.currentLabelPlacements?.[reference.label]
+      : undefined;
+    const isLabelComponent = labelPlacement
+      ? labelPlacement.componentLabel === component.label
+      : reference?.isLabelHost;
+    const labelEdge = labelPlacement?.edge ?? "from";
+    const referenceData = (edge: "from" | "to") => ({
+      referenceLabel:
+        isLabelComponent && edge === labelEdge ? reference?.label : undefined,
+      referenceDirection: reference?.direction,
+      referenceCurrent: reference?.current,
+      referenceIsOpposite: reference?.isOppositeToReference,
+      referenceLabelTangentOffset: labelPlacement?.tangentOffset,
+      referenceLabelNormalOffset: labelPlacement?.normalOffset,
+    });
 
     edges.push(
       {
@@ -203,7 +244,10 @@ export function circuitToFlow(
         type: "animatedWire",
         animated: false,
         ariaLabel: `Cable de ${component.label}: ${formatNumber(current)} A`,
-        data: wireData,
+        data: {
+          ...wireData,
+          ...referenceData("from"),
+        },
       },
       {
         id: `wire:${component.label}:to`,
@@ -214,7 +258,10 @@ export function circuitToFlow(
         type: "animatedWire",
         animated: false,
         ariaLabel: `Cable de ${component.label}: ${formatNumber(current)} A`,
-        data: wireData,
+        data: {
+          ...wireData,
+          ...referenceData("to"),
+        },
       },
     );
   }

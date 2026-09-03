@@ -2,9 +2,20 @@ import { BookOpenCheck, ChevronDown } from "lucide-react";
 
 import type { SolutionStep } from "@/lib/engine/steps";
 
-export function SolutionSteps({ steps }: { steps: SolutionStep[] }) {
+export function SolutionSteps({
+  steps,
+  explanations,
+  defaultOpen = false,
+}: {
+  steps: SolutionStep[];
+  explanations?: Record<string, string>;
+  defaultOpen?: boolean;
+}) {
   return (
-    <details className="group mt-6 overflow-hidden rounded-3xl border border-slate-800 bg-slate-950/70 shadow-xl shadow-black/20">
+    <details
+      open={defaultOpen}
+      className="group mt-6 overflow-hidden rounded-3xl border border-slate-800 bg-slate-950/70 shadow-xl shadow-black/20"
+    >
       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 marker:hidden sm:p-6">
         <span className="flex items-center gap-3">
           <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-lime-400/20 bg-lime-400/10 text-lime-300">
@@ -37,6 +48,11 @@ export function SolutionSteps({ steps }: { steps: SolutionStep[] }) {
               className="rounded-2xl border border-slate-800 bg-slate-900/55 p-4"
             >
               <h3 className="font-medium text-cyan-100">{step.title}</h3>
+              {explanations?.[step.id] ? (
+                <p className="mt-2 text-sm leading-6 text-slate-400">
+                  {explanations[step.id]}
+                </p>
+              ) : null}
               <div className="mt-3 space-y-2">
                 {step.content.split("\n").map((line, index) => (
                   <code

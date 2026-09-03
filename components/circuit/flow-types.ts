@@ -32,6 +32,12 @@ export type AnimatedWireData = Record<string, unknown> & {
   branchLabel: string;
   current: number;
   normalizedMagnitude: number;
+  referenceLabel?: string;
+  referenceDirection?: 1 | -1;
+  referenceCurrent?: number;
+  referenceIsOpposite?: boolean;
+  referenceLabelTangentOffset?: number;
+  referenceLabelNormalOffset?: number;
 };
 
 export type CircuitFlowEdge = Edge<AnimatedWireData, "animatedWire">;

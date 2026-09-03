@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 
+import { solveCircuit } from "../../lib/engine/kirchhoff";
 import type { Circuit } from "../../lib/engine/model";
 import { problem9 } from "../../lib/problems/phase1-validation";
 
 import { circuitToFlow } from "./circuit-adapter";
-import { problem9Positions } from "./example-layouts";
+import {
+  problem9CurrentLabelPlacements,
+  problem9Positions,
+} from "./example-layouts";
 
 describe("adaptador Circuit -> React Flow", () => {
   it("crea un nodo visual por nodo físico y por componente", () => {
@@ -21,12 +25,11 @@ describe("adaptador Circuit -> React Flow", () => {
   });
 
   it("expone valores y lleva la corriente resuelta a los cables animados", () => {
+    const result = solveCircuit(problem9);
     const flow = circuitToFlow(problem9, {
       nodePositions: problem9Positions,
-      branchCurrents: {
-        R1: -0.0172,
-        R3: 0.431,
-      },
+      branchCurrents: result.branchCurrents,
+      currentLabelPlacements: problem9CurrentLabelPlacements,
     });
     const resistor = flow.nodes.find((node) => node.id === "component:R1");
     const source = flow.nodes.find((node) => node.id === "component:E2");
@@ -45,19 +48,45 @@ describe("adaptador Circuit -> React Flow", () => {
     ).toMatchObject({ orientation: "horizontal", reversed: true });
     expect(flow.edges.every((edge) => edge.type === "animatedWire")).toBe(true);
     expect(flow.edges.every((edge) => edge.animated === false)).toBe(true);
-    expect(
-      flow.edges.find((edge) => edge.id === "wire:R1:from")?.data,
-    ).toMatchObject({
+    const r1Wire = flow.edges.find((edge) => edge.id === "wire:R1:from");
+    expect(r1Wire?.data).toMatchObject({
       branchLabel: "R1",
-      current: -0.0172,
-      normalizedMagnitude: 0.0172 / 0.431,
+      current: result.branchCurrents.R1,
+    });
+    expect(r1Wire?.data?.normalizedMagnitude).toBeCloseTo(
+      Math.abs(result.branchCurrents.R1) /
+        Math.max(...Object.values(result.branchCurrents).map(Math.abs)),
+    );
+    const r3Wire = flow.edges.find((edge) => edge.id === "wire:R3:to");
+    expect(r3Wire?.data).toMatchObject({
+      branchLabel: "R3",
+      current: result.branchCurrents.R3,
+      normalizedMagnitude: 1,
     });
     expect(
-      flow.edges.find((edge) => edge.id === "wire:R3:to")?.data,
+      flow.edges.find((edge) => edge.id === "wire:R4:to")?.data,
     ).toMatchObject({
-      branchLabel: "R3",
-      current: 0.431,
-      normalizedMagnitude: 1,
+      referenceLabel: "I0",
+      referenceDirection: 1,
+      referenceIsOpposite: true,
+      referenceLabelNormalOffset: 70,
+    });
+    expect(
+      flow.edges.find((edge) => edge.id === "wire:E2:from")?.data,
+    ).toMatchObject({
+      referenceLabel: "I1",
+      referenceDirection: -1,
+      referenceIsOpposite: false,
+      referenceLabelNormalOffset: 115,
+    });
+    expect(
+      flow.edges.find((edge) => edge.id === "wire:R2:from")?.data,
+    ).toMatchObject({
+      referenceLabel: "I2",
+      referenceDirection: 1,
+      referenceIsOpposite: false,
+      referenceLabelTangentOffset: 75,
+      referenceLabelNormalOffset: 95,
     });
   });
 

@@ -17,7 +17,11 @@ import type { Circuit } from "@/lib/engine/model";
 
 import { AnimatedWire } from "./AnimatedWire";
 import { circuitToFlow } from "./circuit-adapter";
-import type { NodePositionMap } from "./circuit-adapter";
+import type {
+  ComponentPositionMap,
+  CurrentLabelPlacementMap,
+  NodePositionMap,
+} from "./circuit-adapter";
 import { JunctionNode } from "./JunctionNode";
 import { ResistorNode } from "./ResistorNode";
 import { SourceNode } from "./SourceNode";
@@ -35,19 +39,35 @@ const edgeTypes = {
 type CircuitCanvasProps = {
   circuit: Circuit;
   nodePositions?: NodePositionMap;
+  componentPositions?: ComponentPositionMap;
   branchCurrents?: Record<string, number>;
+  currentLabelPlacements?: CurrentLabelPlacementMap;
   title?: string;
 };
 
 export function CircuitCanvas({
   circuit,
   nodePositions,
+  componentPositions,
   branchCurrents,
+  currentLabelPlacements,
   title = "Circuito",
 }: CircuitCanvasProps) {
   const flow = useMemo(
-    () => circuitToFlow(circuit, { nodePositions, branchCurrents }),
-    [branchCurrents, circuit, nodePositions],
+    () =>
+      circuitToFlow(circuit, {
+        nodePositions,
+        componentPositions,
+        branchCurrents,
+        currentLabelPlacements,
+      }),
+    [
+      branchCurrents,
+      circuit,
+      componentPositions,
+      currentLabelPlacements,
+      nodePositions,
+    ],
   );
 
   return (

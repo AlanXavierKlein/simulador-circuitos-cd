@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import type { SolveResult } from "@/lib/engine/kirchhoff";
 import type { Circuit, NodeId } from "@/lib/engine/model";
+import { buildReferenceCurrentLayout } from "@/lib/engine/reference-currents";
 
 import { AnimatedNumber } from "./AnimatedNumber";
 
@@ -79,6 +80,10 @@ function defaultNode(
 
 export function ResultsPanel({ circuit, result }: ResultsPanelProps) {
   const nodeIds = circuit.nodes.map((node) => node.id);
+  const referenceCurrents = buildReferenceCurrentLayout(
+    circuit,
+    result.branchCurrents,
+  );
   const [nodeA, setNodeA] = useState(() => defaultNode(nodeIds, "a", 0));
   const [nodeB, setNodeB] = useState(() => defaultNode(nodeIds, "b", 1));
 
@@ -103,6 +108,7 @@ export function ResultsPanel({ circuit, result }: ResultsPanelProps) {
           </p>
           <div className="mt-2 flex items-center gap-2">
             <select
+              suppressHydrationWarning
               aria-label="Nodo A para diferencia de potencial"
               value={nodeA}
               onChange={(event) => setNodeA(event.currentTarget.value)}
@@ -116,6 +122,7 @@ export function ResultsPanel({ circuit, result }: ResultsPanelProps) {
             </select>
             <span className="font-mono text-sm text-slate-500">− V</span>
             <select
+              suppressHydrationWarning
               aria-label="Nodo B para diferencia de potencial"
               value={nodeB}
               onChange={(event) => setNodeB(event.currentTarget.value)}
@@ -146,18 +153,18 @@ export function ResultsPanel({ circuit, result }: ResultsPanelProps) {
             description="El signo usa el sentido de referencia de cada componente."
           />
           <div className="grid gap-3 sm:grid-cols-2">
-            {circuit.components.map((component) => {
-              const current = result.branchCurrents[component.label] ?? 0;
+            {referenceCurrents.groups.map((group) => {
+              const current = group.current;
               return (
                 <ResultCard
-                  key={component.label}
-                  label={`I(${component.label})`}
+                  key={group.label}
+                  label={group.label}
                   value={current}
                   unit="A"
                   detail={
                     current < -1e-9
                       ? "Sentido opuesto al asumido"
-                      : `${component.nFrom} → ${component.nTo}`
+                      : group.path.join(" → ")
                   }
                 />
               );

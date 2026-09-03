@@ -1,6 +1,11 @@
 import { findFundamentalLoops } from "./graph";
 import type { CircuitEquation, SolveResult } from "./kirchhoff";
 import type { Circuit, Component } from "./model";
+import { buildReferenceCurrentLayout } from "./reference-currents";
+import type {
+  ComponentCurrentReference,
+  ReferenceCurrentLayout,
+} from "./reference-currents";
 
 export type SolutionStep = {
   id: string;
@@ -44,19 +49,48 @@ function formatEquation(equation: CircuitEquation): string {
   return `${equation.id}: ${joinTerms(terms)} = ${formatNumber(equation.rhs)}`;
 }
 
+function collapseEquation(
+  equation: CircuitEquation,
+  references: ReferenceCurrentLayout,
+): CircuitEquation {
+  const coefficients: Record<string, number> = {};
+
+  for (const [variable, coefficient] of Object.entries(equation.coefficients)) {
+    const currentMatch = /^I\((.+)\)$/.exec(variable);
+    const reference = currentMatch
+      ? references.byComponent[currentMatch[1]]
+      : undefined;
+    const displayVariable = reference?.label ?? variable;
+    const displayCoefficient = coefficient * (reference?.direction ?? 1);
+    coefficients[displayVariable] =
+      (coefficients[displayVariable] ?? 0) + displayCoefficient;
+  }
+
+  return { ...equation, coefficients };
+}
+
+function isMeaningfulEquation(equation: CircuitEquation): boolean {
+  return (
+    Math.abs(equation.rhs) >= EPSILON ||
+    Object.values(equation.coefficients).some(
+      (coefficient) => Math.abs(coefficient) >= EPSILON,
+    )
+  );
+}
+
 function symbolicKvlTerm(
   component: Component,
   orientation: 1 | -1,
+  reference?: ComponentCurrentReference,
 ): { coefficient: number; expression: string } {
-  const coefficient = -orientation;
   if (component.type === "resistor") {
     return {
-      coefficient,
-      expression: `${component.label}·I(${component.label})`,
+      coefficient: -orientation * (reference?.direction ?? 1),
+      expression: `${component.label}·${reference?.label ?? `I(${component.label})`}`,
     };
   }
   return {
-    coefficient,
+    coefficient: -orientation,
     expression:
       component.type === "voltageSource"
         ? component.label
@@ -76,35 +110,43 @@ export function buildSolutionSteps(
   circuit: Circuit,
   result: SolveResult,
 ): SolutionStep[] {
-  const assignedCurrents = circuit.components.map(
-    (component) =>
-      `I(${component.label}): ${component.nFrom} → ${component.nTo}.`,
+  const references = buildReferenceCurrentLayout(
+    circuit,
+    result.branchCurrents,
   );
-  const kclEquations = result.equations.kcl.map(formatEquation);
+  const assignedCurrents = references.groups.map(
+    (group) => `${group.label}: ${group.path.join(" → ")}.`,
+  );
+  const kclEquations = result.equations.kcl
+    .map((equation) => collapseEquation(equation, references))
+    .filter(isMeaningfulEquation)
+    .map(formatEquation);
   const loops = findFundamentalLoops(circuit);
   const kvlEquations = loops.map((loop) => {
-    const terms = loop.branches.map((branch) =>
-      symbolicKvlTerm(
-        circuit.components[branch.branchIndex],
+    const terms = loop.branches.map((branch) => {
+      const component = circuit.components[branch.branchIndex];
+      return symbolicKvlTerm(
+        component,
         branch.orientation,
-      ),
-    );
+        references.byComponent[component.label],
+      );
+    });
     return `${loop.id}: ${joinTerms(terms)} = 0`;
   });
-  const numericSystem = [...result.equations.kcl, ...result.equations.kvl].map(
-    formatEquation,
+  const numericSystem = [...result.equations.kcl, ...result.equations.kvl]
+    .map((equation) => collapseEquation(equation, references))
+    .filter(isMeaningfulEquation)
+    .map(formatEquation);
+  const solution = references.groups.map(
+    (group) => `${group.label} = ${formatNumber(group.current)} A`,
   );
-  const solution = circuit.components.map(
-    (component) =>
-      `I(${component.label}) = ${formatNumber(result.branchCurrents[component.label])} A`,
-  );
-  const opposite = circuit.components.filter(
-    (component) => result.branchCurrents[component.label] < -EPSILON,
+  const opposite = references.groups.filter(
+    (group) => group.isOppositeToReference,
   );
   const interpretation = opposite.length
     ? opposite.map(
-        (component) =>
-          `${component.label}: ${formatNumber(Math.abs(result.branchCurrents[component.label]))} A de ${component.nTo} → ${component.nFrom}; sentido real opuesto al asignado.`,
+        (group) =>
+          `${group.label}: ${formatNumber(Math.abs(group.current))} A de ${[...group.path].reverse().join(" → ")}; sentido real opuesto al asignado.`,
       )
     : ["Todas las corrientes circulan en el sentido de referencia asignado."];
 
