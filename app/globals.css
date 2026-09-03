@@ -104,6 +104,26 @@ body {
   filter: drop-shadow(0 0 3px rgb(100 116 139 / 0.2));
 }
 
+@keyframes circuit-current-flow {
+  to {
+    stroke-dashoffset: -48;
+  }
+}
+
+.circuit-flow .animated-wire__flow {
+  pointer-events: none;
+  animation-name: circuit-current-flow;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: stroke-dashoffset;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .circuit-flow .animated-wire__flow {
+    animation: none;
+  }
+}
+
 .circuit-flow .react-flow__node:focus-visible {
   outline: 2px solid #67e8f9;
   outline-offset: 4px;

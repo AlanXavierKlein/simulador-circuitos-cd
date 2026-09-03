@@ -1,18 +1,23 @@
-import type { Edge, XYPosition } from "@xyflow/react";
+import type { XYPosition } from "@xyflow/react";
 
 import type { Circuit, Component, NodeId } from "../../lib/engine/model";
 
-import type { CircuitFlowNode, ComponentOrientation } from "./flow-types";
+import type {
+  CircuitFlowEdge,
+  CircuitFlowNode,
+  ComponentOrientation,
+} from "./flow-types";
 
 export type NodePositionMap = Record<NodeId, XYPosition>;
 
 export type CircuitFlowElements = {
   nodes: CircuitFlowNode[];
-  edges: Edge[];
+  edges: CircuitFlowEdge[];
 };
 
 type CircuitAdapterOptions = {
   nodePositions?: NodePositionMap;
+  branchCurrents?: Record<string, number>;
 };
 
 const JUNCTION_SIZE = 22;
@@ -143,6 +148,12 @@ export function circuitToFlow(
   options: CircuitAdapterOptions = {},
 ): CircuitFlowElements {
   const positions = options.nodePositions ?? defaultPositions(circuit);
+  const maximumCurrent = Math.max(
+    0,
+    ...Object.values(options.branchCurrents ?? {}).map((current) =>
+      Math.abs(current),
+    ),
+  );
   const nodes: CircuitFlowNode[] = circuit.nodes.map((node) => {
     const center = positions[node.id];
     if (!center) {
@@ -165,7 +176,7 @@ export function circuitToFlow(
     };
   });
 
-  const edges: Edge[] = [];
+  const edges: CircuitFlowEdge[] = [];
   for (const component of circuit.components) {
     const visualComponent = componentNode(component, positions);
     nodes.push(visualComponent);
@@ -173,6 +184,14 @@ export function circuitToFlow(
     const from = positions[component.nFrom];
     const to = positions[component.nTo];
     const componentAnchor = componentCenter(from, to);
+    const current = options.branchCurrents?.[component.label] ?? 0;
+    const normalizedMagnitude =
+      maximumCurrent > 0 ? Math.abs(current) / maximumCurrent : 0;
+    const wireData = {
+      branchLabel: component.label,
+      current,
+      normalizedMagnitude,
+    };
 
     edges.push(
       {
@@ -181,10 +200,10 @@ export function circuitToFlow(
         sourceHandle: junctionHandle(from, componentAnchor),
         target: visualComponent.id,
         targetHandle: "from",
-        type: "smoothstep",
+        type: "animatedWire",
         animated: false,
-        ariaLabel: `Cable desde ${component.nFrom} hasta ${component.label}`,
-        style: { stroke: "#64748b", strokeWidth: 4 },
+        ariaLabel: `Cable de ${component.label}: ${formatNumber(current)} A`,
+        data: wireData,
       },
       {
         id: `wire:${component.label}:to`,
@@ -192,10 +211,10 @@ export function circuitToFlow(
         sourceHandle: "to",
         target: `junction:${component.nTo}`,
         targetHandle: junctionHandle(to, componentAnchor),
-        type: "smoothstep",
+        type: "animatedWire",
         animated: false,
-        ariaLabel: `Cable desde ${component.label} hasta ${component.nTo}`,
-        style: { stroke: "#64748b", strokeWidth: 4 },
+        ariaLabel: `Cable de ${component.label}: ${formatNumber(current)} A`,
+        data: wireData,
       },
     );
   }

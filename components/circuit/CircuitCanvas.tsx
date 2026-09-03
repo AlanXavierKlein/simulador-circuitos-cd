@@ -9,12 +9,13 @@ import {
   Panel,
   ReactFlow,
 } from "@xyflow/react";
-import type { NodeTypes } from "@xyflow/react";
+import type { EdgeTypes, NodeTypes } from "@xyflow/react";
 import { Maximize2, MousePointer2, Move3d } from "lucide-react";
 import { useMemo } from "react";
 
 import type { Circuit } from "@/lib/engine/model";
 
+import { AnimatedWire } from "./AnimatedWire";
 import { circuitToFlow } from "./circuit-adapter";
 import type { NodePositionMap } from "./circuit-adapter";
 import { JunctionNode } from "./JunctionNode";
@@ -27,20 +28,26 @@ const nodeTypes = {
   junction: JunctionNode,
 } satisfies NodeTypes;
 
+const edgeTypes = {
+  animatedWire: AnimatedWire,
+} satisfies EdgeTypes;
+
 type CircuitCanvasProps = {
   circuit: Circuit;
   nodePositions?: NodePositionMap;
+  branchCurrents?: Record<string, number>;
   title?: string;
 };
 
 export function CircuitCanvas({
   circuit,
   nodePositions,
+  branchCurrents,
   title = "Circuito",
 }: CircuitCanvasProps) {
   const flow = useMemo(
-    () => circuitToFlow(circuit, { nodePositions }),
-    [circuit, nodePositions],
+    () => circuitToFlow(circuit, { nodePositions, branchCurrents }),
+    [branchCurrents, circuit, nodePositions],
   );
 
   return (
@@ -49,6 +56,7 @@ export function CircuitCanvas({
         nodes={flow.nodes}
         edges={flow.edges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         connectionMode={ConnectionMode.Loose}
         nodesDraggable={false}
         nodesConnectable

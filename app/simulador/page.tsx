@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
-import { CircuitCanvas } from "@/components/circuit/CircuitCanvas";
 import { problem9Positions } from "@/components/circuit/example-layouts";
+import { SimulatorWorkspace } from "@/components/simulator/SimulatorWorkspace";
 import { problem9 } from "@/lib/problems/phase1-validation";
 
 export const metadata: Metadata = { title: "Simulador" };
@@ -29,10 +29,9 @@ export default function SimulatorPage() {
         </p>
       </div>
 
-      <CircuitCanvas
-        circuit={problem9}
+      <SimulatorWorkspace
+        initialCircuit={problem9}
         nodePositions={problem9Positions}
-        title="Red de tres mallas"
       />
     </section>
   );

@@ -20,8 +20,14 @@ describe("adaptador Circuit -> React Flow", () => {
     expect(flow.nodes.filter((node) => node.type === "source")).toHaveLength(3);
   });
 
-  it("expone etiquetas y valores y mantiene los cables sin animación", () => {
-    const flow = circuitToFlow(problem9, { nodePositions: problem9Positions });
+  it("expone valores y lleva la corriente resuelta a los cables animados", () => {
+    const flow = circuitToFlow(problem9, {
+      nodePositions: problem9Positions,
+      branchCurrents: {
+        R1: -0.0172,
+        R3: 0.431,
+      },
+    });
     const resistor = flow.nodes.find((node) => node.id === "component:R1");
     const source = flow.nodes.find((node) => node.id === "component:E2");
 
@@ -37,7 +43,22 @@ describe("adaptador Circuit -> React Flow", () => {
     expect(
       flow.nodes.find((node) => node.id === "component:R4")?.data,
     ).toMatchObject({ orientation: "horizontal", reversed: true });
+    expect(flow.edges.every((edge) => edge.type === "animatedWire")).toBe(true);
     expect(flow.edges.every((edge) => edge.animated === false)).toBe(true);
+    expect(
+      flow.edges.find((edge) => edge.id === "wire:R1:from")?.data,
+    ).toMatchObject({
+      branchLabel: "R1",
+      current: -0.0172,
+      normalizedMagnitude: 0.0172 / 0.431,
+    });
+    expect(
+      flow.edges.find((edge) => edge.id === "wire:R3:to")?.data,
+    ).toMatchObject({
+      branchLabel: "R3",
+      current: 0.431,
+      normalizedMagnitude: 1,
+    });
   });
 
   it("adapta fuentes de corriente y conserva el sentido de su flecha", () => {
