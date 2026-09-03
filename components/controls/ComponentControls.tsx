@@ -18,11 +18,14 @@ type ControlRange = {
   kind: string;
 };
 
+const MAX_RESISTANCE_OHMS = 1000;
+const MAX_VOLTAGE_VOLTS = 1000;
+
 function controlRange(component: Component): ControlRange {
   if (component.type === "resistor") {
     return {
       min: 0.1,
-      max: Math.max(100, Math.ceil(component.ohms * 2)),
+      max: MAX_RESISTANCE_OHMS,
       step: 0.1,
       unit: "Ω",
       value: component.ohms,
@@ -33,16 +36,24 @@ function controlRange(component: Component): ControlRange {
   const value =
     component.type === "voltageSource" ? component.volts : component.amps;
   const unit = component.type === "voltageSource" ? "V" : "A";
+  if (component.type === "voltageSource") {
+    return {
+      min: -MAX_VOLTAGE_VOLTS,
+      max: MAX_VOLTAGE_VOLTS,
+      step: 0.1,
+      unit,
+      value,
+      kind: "Fuente de tensión",
+    };
+  }
+
   return {
     min: -Math.max(30, Math.ceil(Math.abs(value) * 2)),
     max: Math.max(30, Math.ceil(Math.abs(value) * 2)),
     step: 0.1,
     unit,
     value,
-    kind:
-      component.type === "voltageSource"
-        ? "Fuente de tensión"
-        : "Fuente de corriente",
+    kind: "Fuente de corriente",
   };
 }
 
@@ -74,6 +85,14 @@ export function ComponentControls({
         {circuit.components.map((component) => {
           const range = controlRange(component);
           const inputId = `component-${component.label}`;
+          const updateValue = (value: number) => {
+            if (!Number.isFinite(value)) return;
+            const limitedValue = Math.min(
+              range.max,
+              Math.max(range.min, value),
+            );
+            onValueChange(component.label, limitedValue);
+          };
 
           return (
             <div
@@ -105,10 +124,7 @@ export function ComponentControls({
                 step={range.step}
                 value={range.value}
                 onChange={(event) =>
-                  onValueChange(
-                    component.label,
-                    Number(event.currentTarget.value),
-                  )
+                  updateValue(Number(event.currentTarget.value))
                 }
                 className="h-2 w-full cursor-pointer accent-cyan-400"
               />
@@ -124,13 +140,7 @@ export function ComponentControls({
                   value={range.value}
                   onChange={(event) => {
                     if (event.currentTarget.value === "") return;
-                    const value = Number(event.currentTarget.value);
-                    if (
-                      Number.isFinite(value) &&
-                      (component.type !== "resistor" || value > 0)
-                    ) {
-                      onValueChange(component.label, value);
-                    }
+                    updateValue(Number(event.currentTarget.value));
                   }}
                   className="h-9 min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-950 px-2.5 font-mono text-sm text-slate-100 outline-none transition focus:border-cyan-400"
                 />
