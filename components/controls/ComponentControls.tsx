@@ -1,12 +1,13 @@
 "use client";
 
-import { SlidersHorizontal } from "lucide-react";
+import { RotateCcw, SlidersHorizontal } from "lucide-react";
 
 import type { Circuit, Component } from "@/lib/engine/model";
 
 type ComponentControlsProps = {
   circuit: Circuit;
   onValueChange: (label: string, value: number) => void;
+  onReset?: () => void;
   compact?: boolean;
 };
 
@@ -67,6 +68,7 @@ function formatValue(value: number): string {
 export function ComponentControls({
   circuit,
   onValueChange,
+  onReset,
   compact = false,
 }: ComponentControlsProps) {
   return (
@@ -77,16 +79,28 @@ export function ComponentControls({
           : "xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto"
       }`}
     >
-      <div className="mb-5 flex items-start gap-3">
-        <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-cyan-400/20 bg-cyan-400/10 text-cyan-300">
-          <SlidersHorizontal className="size-5" />
-        </span>
-        <div>
-          <h2 className="font-semibold text-slate-100">Parámetros</h2>
-          <p className="mt-1 text-xs leading-5 text-slate-500">
-            Cambiá un valor: el circuito se resuelve al instante.
-          </p>
+      <div className="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+        <div className="flex items-start gap-3">
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-cyan-400/20 bg-cyan-400/10 text-cyan-300">
+            <SlidersHorizontal className="size-5" />
+          </span>
+          <div>
+            <h2 className="font-semibold text-slate-100">Parámetros</h2>
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              Cambiá un valor: el circuito se resuelve al instante.
+            </p>
+          </div>
         </div>
+        {onReset ? (
+          <button
+            type="button"
+            onClick={onReset}
+            className="inline-flex h-10 w-fit items-center justify-center gap-2 rounded-xl border border-cyan-400/25 bg-cyan-400/10 px-4 text-sm font-semibold text-cyan-100 transition hover:border-cyan-300/50 hover:bg-cyan-400/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+          >
+            <RotateCcw className="size-4" />
+            Restablecer valores
+          </button>
+        ) : null}
       </div>
 
       <div

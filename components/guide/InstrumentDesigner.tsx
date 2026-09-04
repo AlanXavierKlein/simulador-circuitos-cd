@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertTriangle, RotateCcw, SlidersHorizontal } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { GuideValidationPanel } from "@/components/guide/GuideValidationPanel";
 import type { ValidationReading } from "@/components/guide/GuideValidationPanel";
@@ -151,11 +151,16 @@ function buildVoltmeterSteps(
 export function InstrumentDesigner({ kind }: { kind: InstrumentKind }) {
   const defaults =
     kind === "ammeter" ? defaultAmmeterInput : defaultVoltmeterInput;
+  const originalValuesRef = useRef({
+    rg: defaults.rg,
+    galvanometerCurrent: defaults.galvanometerCurrent,
+    scales: [...defaults.scales] as [number, number, number],
+  });
   const [rg, setRg] = useState(defaults.rg);
   const [ig, setIg] = useState(defaults.galvanometerCurrent);
-  const [scales, setScales] = useState<[number, number, number]>(
-    defaults.scales,
-  );
+  const [scales, setScales] = useState<[number, number, number]>(() => [
+    ...defaults.scales,
+  ]);
   const calculation = useMemo(() => {
     try {
       const input = { rg, galvanometerCurrent: ig, scales };
@@ -193,9 +198,9 @@ export function InstrumentDesigner({ kind }: { kind: InstrumentKind }) {
     : [];
 
   const reset = () => {
-    setRg(defaults.rg);
-    setIg(defaults.galvanometerCurrent);
-    setScales(defaults.scales);
+    setRg(originalValuesRef.current.rg);
+    setIg(originalValuesRef.current.galvanometerCurrent);
+    setScales([...originalValuesRef.current.scales]);
   };
 
   return (
@@ -204,27 +209,25 @@ export function InstrumentDesigner({ kind }: { kind: InstrumentKind }) {
 
       <div className="grid gap-6 xl:grid-cols-[22rem_minmax(0,1fr)] xl:items-start">
         <aside className="rounded-3xl border border-slate-800 bg-slate-950/70 p-5 shadow-xl shadow-black/20">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-start gap-3">
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-cyan-400/20 bg-cyan-400/10 text-cyan-300">
-                <SlidersHorizontal className="size-5" />
-              </span>
-              <div>
-                <h2 className="font-semibold text-slate-100">Datos</h2>
-                <p className="mt-1 text-xs leading-5 text-slate-500">
-                  El cálculo se actualiza al instante.
-                </p>
-              </div>
+          <div className="flex items-start gap-3">
+            <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-cyan-400/20 bg-cyan-400/10 text-cyan-300">
+              <SlidersHorizontal className="size-5" />
+            </span>
+            <div>
+              <h2 className="font-semibold text-slate-100">Datos</h2>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                El cálculo se actualiza al instante.
+              </p>
             </div>
-            <button
-              type="button"
-              onClick={reset}
-              aria-label="Restablecer valores oficiales"
-              className="grid size-9 place-items-center rounded-lg border border-slate-700 text-slate-400 transition hover:border-cyan-400/40 hover:text-cyan-200"
-            >
-              <RotateCcw className="size-4" />
-            </button>
           </div>
+          <button
+            type="button"
+            onClick={reset}
+            className="mt-4 inline-flex h-10 w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-cyan-400/25 bg-cyan-400/10 px-3 text-xs font-semibold text-cyan-100 transition hover:border-cyan-300/50 hover:bg-cyan-400/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+          >
+            <RotateCcw className="size-4" />
+            Restablecer valores
+          </button>
 
           <div className="mt-5 space-y-4">
             <NumberField

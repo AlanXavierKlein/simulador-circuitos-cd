@@ -1,5 +1,13 @@
 import type { Circuit, Component } from "./model";
 
+/** Crea una copia independiente de la netlist para conservar un estado base. */
+export function cloneCircuit(circuit: Circuit): Circuit {
+  return {
+    nodes: circuit.nodes.map((node) => ({ ...node })),
+    components: circuit.components.map((component) => ({ ...component })),
+  };
+}
+
 function withComponentValue(component: Component, value: number): Component {
   if (!Number.isFinite(value)) {
     throw new Error("El valor debe ser un número finito.");

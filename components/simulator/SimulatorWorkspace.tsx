@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertTriangle } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { CircuitCanvas } from "@/components/circuit/CircuitCanvas";
 import type {
@@ -16,7 +16,10 @@ import { ResultsPanel } from "@/components/results/ResultsPanel";
 import { SolutionSteps } from "@/components/steps/SolutionSteps";
 import { solveCircuit, voltageBetween } from "@/lib/engine/kirchhoff";
 import type { Circuit } from "@/lib/engine/model";
-import { updateCircuitComponentValue } from "@/lib/engine/circuit-state";
+import {
+  cloneCircuit,
+  updateCircuitComponentValue,
+} from "@/lib/engine/circuit-state";
 import { buildSolutionSteps } from "@/lib/engine/steps";
 import type { GuideValidationDefinition } from "@/lib/problems/guia04";
 
@@ -43,7 +46,8 @@ export function SimulatorWorkspace({
   title = "Red de tres mallas",
   guide,
 }: SimulatorWorkspaceProps) {
-  const [circuit, setCircuit] = useState(initialCircuit);
+  const originalCircuitRef = useRef<Circuit>(cloneCircuit(initialCircuit));
+  const [circuit, setCircuit] = useState(() => cloneCircuit(initialCircuit));
   const calculation = useMemo(() => {
     try {
       const result = solveCircuit(circuit);
@@ -88,6 +92,11 @@ export function SimulatorWorkspace({
     <ComponentControls
       circuit={circuit}
       compact={Boolean(guide)}
+      onReset={
+        guide
+          ? () => setCircuit(cloneCircuit(originalCircuitRef.current))
+          : undefined
+      }
       onValueChange={(label, value) =>
         setCircuit((currentCircuit) =>
           updateCircuitComponentValue(currentCircuit, label, value),
