@@ -171,7 +171,7 @@ export const guideNetworkProblems: Record<
     eyebrow: "Problema 8 · Asociaciones",
     title: "Resistencia equivalente y corrientes",
     description:
-      "Se identifican las asociaciones serie/paralelo de las dos redes de la figura 5. Para el circuito (a), una batería de 9 V permite calcular además la corriente que atraviesa cada resistencia.",
+      "Determine el valor de la resistencia equivalente de los circuitos de la figura 5. Si en el caso (a) se conecta una batería de 9 voltios, calcular la corriente que circula por cada resistencia.",
     image: "/problemas/p8.png",
     cases: [
       {
@@ -278,7 +278,7 @@ export const guideNetworkProblems: Record<
     eyebrow: "Problema 9 · Kirchhoff",
     title: "Red de tres mallas",
     description:
-      "A partir de cinco resistencias y tres fuentes se determinan I0, I1 e I2 mediante KCL y KVL, y luego se calcula la diferencia de potencial Vb − Va por un camino entre ambos puntos.",
+      "En el circuito de la figura 6, determinar las corrientes y la diferencia de potencial Vb − Va. Los valores de las resistencias, en Ω, son R1 = 25, R2 = 20, R3 = 10, R4 = 15, R5 = 30. Los valores de las fuentes son E1 = 10 V, E2 = 15 V y E3 = 10 V.",
     image: "/problemas/p9.png",
     cases: [
       {
@@ -330,7 +330,7 @@ export const guideNetworkProblems: Record<
     eyebrow: "Problema 11 · Corrientes de rama",
     title: "Distribución de una corriente entrante",
     description:
-      "Una corriente de 1 A entra en la red y una corriente de 0,25 A sale de ella. Se determina cómo se distribuyen las corrientes entre R1, R2 y R3.",
+      "Determine las corrientes en cada resistencia, para el circuito de la figura 8.",
     image: "/problemas/p11.png",
     cases: [
       {
@@ -418,7 +418,7 @@ export const guideItems: GuideListItem[] = [
     title: "Amperímetro multiescala",
     type: "Diseño de instrumento",
     description:
-      "Diseñar un amperímetro con shunt Ayrton para escalas de 0,1 A, 1 A y 10 A, usando un galvanómetro de 10 Ω y 0,01 A a fondo de escala.",
+      "Un circuito básico de un amperímetro está mostrado en la figura 9. El galvanómetro de bobina móvil empleado tiene una resistencia rg = 10 Ω y para una corriente de 0,01 A se desvía a fondo de escala. Hallar los valores de resistencias necesarias para que se desvíe a fondo de escala con una corriente de 10 A, 1 A y 0,1 A.",
     image: "/problemas/p12.png",
     href: "/guia/p12",
   },
@@ -428,7 +428,7 @@ export const guideItems: GuideListItem[] = [
     title: "Voltímetro multiescala",
     type: "Diseño de instrumento",
     description:
-      "Diseñar las resistencias multiplicadoras en cascada de un voltímetro para escalas de 3 V, 15 V y 150 V, con rg = 10 Ω e Ig = 0,001 A.",
+      "La figura 10 muestra un circuito típico de un voltímetro de tres escalas cuyas entradas podrán medir hasta 3 V, 15 V y 150 V. El galvanómetro de bobina móvil empleado tiene una resistencia de 10 Ω y para una corriente de 0,001 A se desvía a fondo de escala. Hallar los valores de las resistencias indicadas para que, en cada caso, se desvíe a fondo de la escala.",
     image: "/problemas/p13.png",
     href: "/guia/p13",
   },
