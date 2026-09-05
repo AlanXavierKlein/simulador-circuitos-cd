@@ -10,6 +10,7 @@ import type {
   NodePositionMap,
 } from "@/components/circuit/circuit-adapter";
 import { ComponentControls } from "@/components/controls/ComponentControls";
+import { GuideExplanation } from "@/components/guide/GuideExplanation";
 import { GuideValidationPanel } from "@/components/guide/GuideValidationPanel";
 import type { ValidationReading } from "@/components/guide/GuideValidationPanel";
 import { ResultsPanel } from "@/components/results/ResultsPanel";
@@ -22,10 +23,12 @@ import {
 } from "@/lib/engine/circuit-state";
 import { buildSolutionSteps } from "@/lib/engine/steps";
 import type { GuideValidationDefinition } from "@/lib/problems/guia04";
+import type { GuideResolution } from "@/lib/problems/guide-explanations";
 
 type GuideWorkspaceOptions = {
   stepExplanations: Record<string, string>;
   stepContentOverrides?: Record<string, string>;
+  resolution: GuideResolution;
   validations: GuideValidationDefinition[];
 };
 
@@ -139,15 +142,22 @@ export function SimulatorWorkspace({
         <>
           {guide ? (
             <>
-              <SolutionSteps
-                steps={calculation.steps.map((step) => ({
-                  ...step,
-                  content:
-                    guide.stepContentOverrides?.[step.id] ?? step.content,
-                }))}
-                explanations={guide.stepExplanations}
-                defaultOpen
-              />
+              {guide.resolution.mode === "prepend-analysis" ? (
+                <GuideExplanation explanation={guide.resolution.explanation} />
+              ) : null}
+              {guide.resolution.mode === "replace-kirchhoff" ? (
+                <GuideExplanation explanation={guide.resolution.explanation} />
+              ) : (
+                <SolutionSteps
+                  steps={calculation.steps.map((step) => ({
+                    ...step,
+                    content:
+                      guide.stepContentOverrides?.[step.id] ?? step.content,
+                  }))}
+                  explanations={guide.stepExplanations}
+                  defaultOpen
+                />
+              )}
               <ResultsPanel circuit={circuit} result={calculation.result} />
             </>
           ) : (

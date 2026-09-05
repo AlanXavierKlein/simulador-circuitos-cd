@@ -80,6 +80,7 @@ export function NetworkGuidePage({
                 guide={{
                   stepExplanations: problemCase.stepExplanations,
                   stepContentOverrides: problemCase.stepContentOverrides,
+                  resolution: problemCase.resolution,
                   validations: problemCase.validations,
                 }}
               />
