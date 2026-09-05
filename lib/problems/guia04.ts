@@ -1,4 +1,8 @@
 import type { Circuit } from "../engine/model";
+import {
+  guideNetworkResolutions,
+  type GuideResolution,
+} from "./guide-explanations";
 
 export type GuideProblemId = "p8" | "p9" | "p11" | "p12" | "p13";
 
@@ -41,6 +45,7 @@ export type GuideCircuitCase = {
   circuit: Circuit;
   stepExplanations: Record<string, string>;
   stepContentOverrides?: Record<string, string>;
+  resolution: GuideResolution;
   validations: GuideValidationDefinition[];
 };
 
@@ -187,6 +192,7 @@ export const guideNetworkProblems: Record<
           solution:
             "La corriente total atraviesa R2 y R6. En el paralelo se divide entre R3 y la rama formada por R1, R4 y R5.",
         },
+        resolution: guideNetworkResolutions.p8a,
         validations: [
           {
             id: "req",
@@ -236,6 +242,7 @@ export const guideNetworkProblems: Record<
           solution:
             "La corriente total atraviesa R1, R4 y R5. Como R2 y R3 son iguales, la corriente se divide por partes iguales en el paralelo.",
         },
+        resolution: guideNetworkResolutions.p8b,
         validations: [
           {
             id: "req",
@@ -288,6 +295,7 @@ export const guideNetworkProblems: Record<
           "Se plantean tres ecuaciones: KCL en el nodo A y una KVL para cada una de las dos mallas independientes.",
         circuit: problem9,
         stepExplanations: commonKirchhoffExplanation,
+        resolution: guideNetworkResolutions.p9,
         validations: [
           {
             id: "i0",
@@ -355,6 +363,7 @@ export const guideNetworkProblems: Record<
           signs:
             "I2 = 0,09 A en el sentido c → b; opuesto al sentido asignado.",
         },
+        resolution: guideNetworkResolutions.p11,
         validations: [
           {
             id: "i0",

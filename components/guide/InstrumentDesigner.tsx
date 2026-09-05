@@ -3,150 +3,21 @@
 import { AlertTriangle, RotateCcw, SlidersHorizontal } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 
+import { GuideExplanation } from "@/components/guide/GuideExplanation";
 import { GuideValidationPanel } from "@/components/guide/GuideValidationPanel";
 import type { ValidationReading } from "@/components/guide/GuideValidationPanel";
+import { guideInstrumentExplanations } from "@/lib/problems/guide-explanations";
 import {
   defaultAmmeterInput,
   defaultVoltmeterInput,
   solveAmmeter,
   solveVoltmeter,
 } from "@/lib/problems/instruments";
-import type {
-  AmmeterInput,
-  InstrumentResistances,
-  VoltmeterInput,
-} from "@/lib/problems/instruments";
+import type { AmmeterInput, VoltmeterInput } from "@/lib/problems/instruments";
 
 import { InstrumentDiagram } from "./InstrumentDiagram";
 
 type InstrumentKind = "ammeter" | "voltmeter";
-
-type InstrumentStep = {
-  title: string;
-  explanation: string;
-  equations: string[];
-};
-
-function formatNumber(value: number, digits = 6): string {
-  return new Intl.NumberFormat("es-AR", {
-    maximumFractionDigits: digits,
-  }).format(value);
-}
-
-function buildAmmeterSteps(
-  input: AmmeterInput,
-  result: InstrumentResistances,
-): InstrumentStep[] {
-  const [i1, i2, i3] = input.scales;
-  const ig = input.galvanometerCurrent;
-  const vg = input.rg * ig;
-  const ir1 = i1 - ig;
-  const ir2 = i2 - ig;
-  const ir3 = i3 - ig;
-
-  return [
-    {
-      title: "1. Tensión del galvanómetro",
-      explanation:
-        "A fondo de escala, la caída sobre el galvanómetro queda fijada por rg e Ig.",
-      equations: [`Vg = rg·Ig = ${formatNumber(vg)} V`],
-    },
-    {
-      title: "2. Corrientes de derivación",
-      explanation:
-        "En cada escala, la corriente que no atraviesa el galvanómetro circula por la cadena del shunt.",
-      equations: [
-        `I1r = I1 − Ig = ${formatNumber(ir1)} A`,
-        `I2r = I2 − Ig = ${formatNumber(ir2)} A`,
-        `I3r = I3 − Ig = ${formatNumber(ir3)} A`,
-      ],
-    },
-    {
-      title: "3. Sistema del shunt Ayrton",
-      explanation:
-        "Igualamos las diferencias de potencial de las ramas para las tres posiciones del selector.",
-      equations: [
-        "R1 + R2 + R3 = Vg / I1r",
-        "I2r·R1 + I2r·R2 − Ig·R3 = Ig·rg",
-        "I3r·R1 − Ig·R2 − Ig·R3 = Ig·rg",
-      ],
-    },
-    {
-      title: "4. Valores reemplazados",
-      explanation:
-        "Se sustituyen los datos del enunciado, sin desarrollar la resolución matricial intermedia.",
-      equations: [
-        `R1 + R2 + R3 = ${formatNumber(vg)} / ${formatNumber(ir1)}`,
-        `${formatNumber(ir2)}·R1 + ${formatNumber(ir2)}·R2 − ${formatNumber(ig)}·R3 = ${formatNumber(vg)}`,
-        `${formatNumber(ir3)}·R1 − ${formatNumber(ig)}·R2 − ${formatNumber(ig)}·R3 = ${formatNumber(vg)}`,
-      ],
-    },
-    {
-      title: "5. Solución",
-      explanation:
-        "Estas resistencias mantienen Ig en su valor de fondo de escala para cada corriente seleccionada.",
-      equations: [
-        `R1 = ${formatNumber(result.R1)} Ω`,
-        `R2 = ${formatNumber(result.R2)} Ω`,
-        `R3 = ${formatNumber(result.R3)} Ω`,
-      ],
-    },
-  ];
-}
-
-function buildVoltmeterSteps(
-  input: VoltmeterInput,
-  result: InstrumentResistances,
-): InstrumentStep[] {
-  const [v1, v2, v3] = input.scales;
-  const ig = input.galvanometerCurrent;
-  const vg = input.rg * ig;
-
-  return [
-    {
-      title: "1. Condición de fondo de escala",
-      explanation:
-        "En las tres entradas debe circular la misma Ig por el galvanómetro y por las resistencias conectadas en serie.",
-      equations: [`Vg = Ig·rg = ${formatNumber(vg)} V`],
-    },
-    {
-      title: "2. Diferencias de potencial acumuladas",
-      explanation:
-        "Cada nueva escala agrega una resistencia multiplicadora a las anteriores.",
-      equations: [
-        "Ig·rg + Ig·R1 = V1",
-        "Ig·rg + Ig·R1 + Ig·R2 = V2",
-        "Ig·rg + Ig·R1 + Ig·R2 + Ig·R3 = V3",
-      ],
-    },
-    {
-      title: "3. Sistema con datos",
-      explanation:
-        "Despejamos la contribución del galvanómetro y reemplazamos las tensiones de cada escala.",
-      equations: [
-        `${formatNumber(ig)}·R1 = ${formatNumber(v1 - vg)} V`,
-        `${formatNumber(ig)}·R1 + ${formatNumber(ig)}·R2 = ${formatNumber(v2 - vg)} V`,
-        `${formatNumber(ig)}·R1 + ${formatNumber(ig)}·R2 + ${formatNumber(ig)}·R3 = ${formatNumber(v3 - vg)} V`,
-      ],
-    },
-    {
-      title: "4. Resistencias incrementales",
-      explanation:
-        "R1 completa la primera escala; R2 aporta el salto de V1 a V2 y R3 el salto de V2 a V3.",
-      equations: ["R1 = V1/Ig − rg", "R2 = (V2 − V1)/Ig", "R3 = (V3 − V2)/Ig"],
-    },
-    {
-      title: "5. Solución",
-      explanation:
-        "Al elegir un borne se conecta la resistencia total necesaria para la tensión máxima indicada.",
-      equations: [
-        `R1 = ${formatNumber(result.R1)} Ω`,
-        `R2 = ${formatNumber(result.R2)} Ω`,
-        `R3 = ${formatNumber(result.R3)} Ω`,
-      ],
-    },
-  ];
-}
 
 export function InstrumentDesigner({ kind }: { kind: InstrumentKind }) {
   const defaults =
@@ -168,15 +39,10 @@ export function InstrumentDesigner({ kind }: { kind: InstrumentKind }) {
         kind === "ammeter"
           ? solveAmmeter(input as AmmeterInput)
           : solveVoltmeter(input as VoltmeterInput);
-      const steps =
-        kind === "ammeter"
-          ? buildAmmeterSteps(input as AmmeterInput, result)
-          : buildVoltmeterSteps(input as VoltmeterInput, result);
-      return { result, steps, error: null };
+      return { result, error: null };
     } catch (error) {
       return {
         result: null,
-        steps: [],
         error: error instanceof Error ? error.message : "No se pudo calcular.",
       };
     }
@@ -277,42 +143,7 @@ export function InstrumentDesigner({ kind }: { kind: InstrumentKind }) {
       </div>
 
       {calculation.result ? (
-        <section className="rounded-3xl border border-slate-800 bg-slate-950/70 p-5 shadow-xl shadow-black/20 sm:p-6">
-          <p className="font-mono text-xs uppercase tracking-[0.18em] text-lime-300">
-            Resolución de cátedra
-          </p>
-          <h2 className="mt-1 text-2xl font-semibold text-white">
-            Paso a paso
-          </h2>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
-            Se conserva la deducción de la resolución oficial, sin agregar
-            desarrollo algebraico innecesario.
-          </p>
-
-          <div className="mt-6 grid gap-4 lg:grid-cols-2">
-            {calculation.steps.map((step) => (
-              <article
-                key={step.title}
-                className="rounded-2xl border border-slate-800 bg-slate-900/55 p-4"
-              >
-                <h3 className="font-medium text-cyan-100">{step.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-400">
-                  {step.explanation}
-                </p>
-                <div className="mt-3 space-y-2">
-                  {step.equations.map((equation) => (
-                    <code
-                      key={equation}
-                      className="block overflow-x-auto rounded-lg bg-slate-950/80 px-3 py-2 font-mono text-xs leading-5 text-slate-300"
-                    >
-                      {equation}
-                    </code>
-                  ))}
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
+        <GuideExplanation explanation={guideInstrumentExplanations[kind]} />
       ) : null}
     </div>
   );
