@@ -73,7 +73,7 @@ export function ComponentControls({
 }: ComponentControlsProps) {
   return (
     <aside
-      className={`rounded-3xl border border-slate-800 bg-slate-950/70 p-5 shadow-xl shadow-black/20 ${
+      className={`min-w-0 max-w-full rounded-3xl border border-slate-800 bg-slate-950/70 p-5 shadow-xl shadow-black/20 ${
         compact
           ? ""
           : "xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto"
@@ -153,7 +153,7 @@ export function ComponentControls({
                 onChange={(event) =>
                   updateValue(Number(event.currentTarget.value))
                 }
-                className="h-2 w-full cursor-pointer accent-cyan-400"
+                className="h-8 w-full cursor-pointer accent-cyan-400"
               />
 
               <div className="mt-3 flex items-center gap-2">

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cable, CircuitBoard, Sparkles } from "lucide-react";
+import { Cable, CircuitBoard, MonitorSmartphone, Sparkles } from "lucide-react";
 
 import { CircuitConstructor } from "@/components/constructor/CircuitConstructor";
 
@@ -36,7 +36,27 @@ export default function ConstructorPage() {
         </div>
       </header>
 
-      <CircuitConstructor />
+      <div className="lg:hidden">
+        <div className="rounded-3xl border border-amber-400/25 bg-amber-400/[0.06] p-5 text-amber-100 shadow-xl shadow-black/20">
+          <div className="flex items-start gap-3">
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-amber-400/25 bg-amber-400/10 text-amber-300">
+              <MonitorSmartphone className="size-5" />
+            </span>
+            <div>
+              <h2 className="font-semibold">
+                El constructor funciona mejor en una computadora.
+              </h2>
+              <p className="mt-1 text-sm leading-6 text-amber-100/70">
+                Para arrastrar componentes y conectar terminales con precisión,
+                abrí esta sección desde una pantalla más grande.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="hidden lg:block">
+        <CircuitConstructor />
+      </div>
     </section>
   );
 }

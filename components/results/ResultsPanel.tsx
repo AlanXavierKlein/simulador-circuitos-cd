@@ -106,13 +106,13 @@ export function ResultsPanel({ circuit, result }: ResultsPanelProps) {
           <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-violet-300">
             Diferencia de potencial
           </p>
-          <div className="mt-2 flex items-center gap-2">
+          <div className="mt-2 flex flex-wrap items-center gap-2">
             <select
               suppressHydrationWarning
               aria-label="Nodo A para diferencia de potencial"
               value={nodeA}
               onChange={(event) => setNodeA(event.currentTarget.value)}
-              className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 font-mono text-sm text-slate-100 outline-none focus:border-violet-400"
+              className="h-10 rounded-lg border border-slate-700 bg-slate-950 px-2 font-mono text-sm text-slate-100 outline-none focus:border-violet-400"
             >
               {nodeIds.map((nodeId) => (
                 <option key={nodeId} value={nodeId}>
@@ -126,7 +126,7 @@ export function ResultsPanel({ circuit, result }: ResultsPanelProps) {
               aria-label="Nodo B para diferencia de potencial"
               value={nodeB}
               onChange={(event) => setNodeB(event.currentTarget.value)}
-              className="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 font-mono text-sm text-slate-100 outline-none focus:border-violet-400"
+              className="h-10 rounded-lg border border-slate-700 bg-slate-950 px-2 font-mono text-sm text-slate-100 outline-none focus:border-violet-400"
             >
               {nodeIds.map((nodeId) => (
                 <option key={nodeId} value={nodeId}>

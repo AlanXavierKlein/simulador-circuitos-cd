@@ -9,9 +9,9 @@ import {
   Panel,
   ReactFlow,
 } from "@xyflow/react";
-import type { EdgeTypes, NodeTypes } from "@xyflow/react";
+import type { EdgeTypes, NodeTypes, ReactFlowInstance } from "@xyflow/react";
 import { Maximize2, MousePointer2, Move3d } from "lucide-react";
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import type { Circuit } from "@/lib/engine/model";
 
@@ -22,6 +22,7 @@ import type {
   CurrentLabelPlacementMap,
   NodePositionMap,
 } from "./circuit-adapter";
+import type { CircuitFlowEdge, CircuitFlowNode } from "./flow-types";
 import { JunctionNode } from "./JunctionNode";
 import { ResistorNode } from "./ResistorNode";
 import { SourceNode } from "./SourceNode";
@@ -53,6 +54,26 @@ export function CircuitCanvas({
   currentLabelPlacements,
   title = "Circuito",
 }: CircuitCanvasProps) {
+  const flowInstanceRef = useRef<ReactFlowInstance<
+    CircuitFlowNode,
+    CircuitFlowEdge
+  > | null>(null);
+  const fitView = useCallback(() => {
+    window.requestAnimationFrame(() => {
+      flowInstanceRef.current?.fitView({
+        padding: 0.16,
+        minZoom: 0.45,
+        maxZoom: 1.15,
+        duration: 180,
+      });
+    });
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("resize", fitView);
+    return () => window.removeEventListener("resize", fitView);
+  }, [fitView]);
+
   const flow = useMemo(
     () =>
       circuitToFlow(circuit, {
@@ -71,7 +92,7 @@ export function CircuitCanvas({
   );
 
   return (
-    <div className="circuit-flow relative h-[min(720px,calc(100vh-13.5rem))] min-h-[500px] w-full overflow-hidden rounded-3xl border border-slate-800 bg-[#080d18] shadow-2xl shadow-black/30">
+    <div className="circuit-flow relative h-[58svh] min-h-[360px] w-full touch-none overflow-hidden rounded-3xl border border-slate-800 bg-[#080d18] shadow-2xl shadow-black/30 sm:h-[min(720px,calc(100vh-13.5rem))] sm:min-h-[500px]">
       <ReactFlow
         nodes={flow.nodes}
         edges={flow.edges}
@@ -79,8 +100,8 @@ export function CircuitCanvas({
         edgeTypes={edgeTypes}
         connectionMode={ConnectionMode.Loose}
         nodesDraggable={false}
-        nodesConnectable
-        elementsSelectable
+        nodesConnectable={false}
+        elementsSelectable={false}
         panOnDrag
         zoomOnScroll
         zoomOnPinch
@@ -88,6 +109,10 @@ export function CircuitCanvas({
         maxZoom={2}
         fitView
         fitViewOptions={{ padding: 0.16, minZoom: 0.45, maxZoom: 1.15 }}
+        onInit={(instance) => {
+          flowInstanceRef.current = instance;
+          fitView();
+        }}
         colorMode="dark"
         aria-label={title}
       >
@@ -100,6 +125,7 @@ export function CircuitCanvas({
         <MiniMap
           pannable
           zoomable
+          className="hidden sm:block"
           position="bottom-right"
           nodeColor={(node) =>
             node.type === "source"

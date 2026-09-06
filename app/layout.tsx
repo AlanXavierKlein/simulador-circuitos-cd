@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import { SiteHeader } from "@/components/site-header";
@@ -23,6 +23,13 @@ export const metadata: Metadata = {
   },
   description:
     "Simulador interactivo de circuitos resistivos de corriente directa.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#070b14",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({
