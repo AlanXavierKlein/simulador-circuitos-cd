@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
+import { ViewCounter } from "@/components/home/ViewCounter";
+
 const navigation = [
   { href: "/", label: "Home" },
   { href: "/simulador", label: "Simulador" },
@@ -22,7 +24,7 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-xl">
-      <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-6 px-5 sm:px-8">
+      <div className="relative mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-6 px-5 sm:px-8">
         <Link
           href="/"
           className="flex items-center gap-3 font-semibold tracking-tight text-slate-50"
@@ -33,7 +35,12 @@ export function SiteHeader() {
           <span className="hidden sm:inline">Circuitos CC</span>
         </Link>
 
-        <div className="relative md:hidden">
+        <ViewCounter
+          countVisit={pathname === "/"}
+          className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-cyan-400/15 bg-slate-950/75 px-3 py-1 font-mono text-xs tracking-wide text-cyan-100 backdrop-blur-sm"
+        />
+
+        <div className="relative lg:hidden">
           <button
             type="button"
             aria-expanded={isMobileMenuOpen}
@@ -80,7 +87,7 @@ export function SiteHeader() {
           ) : null}
         </div>
 
-        <nav aria-label="Navegación principal" className="hidden md:block">
+        <nav aria-label="Navegación principal" className="hidden lg:block">
           <ul className="flex items-center gap-1 text-sm text-slate-400">
             {navigation.map((item) => {
               const active = isActive(item.href);

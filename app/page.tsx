@@ -48,13 +48,6 @@ export default function HomePage() {
               Modo guía
             </Link>
           </div>
-
-          <p
-            className="mt-14 font-mono text-sm tracking-wide text-slate-500"
-            aria-label="Contador de visitas pendiente"
-          >
-            — visitas
-          </p>
         </div>
       </div>
     </section>
