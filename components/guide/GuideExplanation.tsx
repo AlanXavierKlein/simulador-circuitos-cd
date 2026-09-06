@@ -4,11 +4,13 @@ import type { GuideExplanation as GuideExplanationContent } from "@/lib/problems
 
 export function GuideExplanation({
   explanation,
+  className,
 }: {
   explanation: GuideExplanationContent;
+  className?: string;
 }) {
   return (
-    <section className="app-surface overflow-hidden">
+    <section className={`app-surface overflow-hidden ${className ?? ""}`}>
       <header className="flex items-start gap-3 p-5 sm:p-6">
         <span className="app-icon size-11 border-lime-400/20 bg-lime-400/10 text-lime-300">
           <BookOpenCheck className="size-5" />

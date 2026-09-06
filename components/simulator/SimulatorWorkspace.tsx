@@ -116,10 +116,16 @@ export function SimulatorWorkspace({
           {guide ? (
             <>
               {guide.resolution.mode === "prepend-analysis" ? (
-                <GuideExplanation explanation={guide.resolution.explanation} />
+                <GuideExplanation
+                  explanation={guide.resolution.explanation}
+                  className="mt-6"
+                />
               ) : null}
               {guide.resolution.mode === "replace-kirchhoff" ? (
-                <GuideExplanation explanation={guide.resolution.explanation} />
+                <GuideExplanation
+                  explanation={guide.resolution.explanation}
+                  className="mt-6"
+                />
               ) : (
                 <SolutionSteps
                   steps={calculation.steps.map((step) => ({

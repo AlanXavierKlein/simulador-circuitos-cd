@@ -75,12 +75,30 @@ function formatValue(value: number): string {
   }).format(value);
 }
 
+function componentOrder(left: Component, right: Component): number {
+  const typePriority = {
+    resistor: 0,
+    voltageSource: 1,
+    currentSource: 2,
+  } as const;
+  const priorityDifference = typePriority[left.type] - typePriority[right.type];
+
+  return priorityDifference !== 0
+    ? priorityDifference
+    : left.label.localeCompare(right.label, "es", {
+        numeric: true,
+        sensitivity: "base",
+      });
+}
+
 export function ComponentControls({
   circuit,
   onValueChange,
   onReset,
   compact = false,
 }: ComponentControlsProps) {
+  const orderedComponents = [...circuit.components].sort(componentOrder);
+
   return (
     <aside
       className={`app-surface min-w-0 max-w-full p-5 ${
@@ -118,7 +136,7 @@ export function ComponentControls({
           compact ? "grid gap-3 md:grid-cols-2 2xl:grid-cols-3" : "space-y-3"
         }
       >
-        {circuit.components.map((component) => {
+        {orderedComponents.map((component) => {
           const range = controlRange(component);
           const inputId = `component-${component.label}`;
           const sliderValue = Math.min(
