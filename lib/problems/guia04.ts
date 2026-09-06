@@ -6,6 +6,144 @@ import {
 
 export type GuideProblemId = "p8" | "p9" | "p11" | "p12" | "p13";
 
+export type GuideTheory = {
+  title: string;
+  sections: Array<{
+    heading: string;
+    content?: string;
+    formulas?: string[];
+  }>;
+};
+
+export const guideTheories: Record<GuideProblemId, GuideTheory> = {
+  p8: {
+    title: "P8 — Resistencias en serie y paralelo",
+    sections: [
+      {
+        heading: "Ley de Ohm",
+        content:
+          "la tensión sobre una resistencia es proporcional a la corriente que circula por ella.",
+      },
+      {
+        heading: "Resistencias en serie",
+        content:
+          "cuando están una a continuación de otra en la misma rama, circula la misma corriente por todas y sus resistencias se suman. Las tensiones se reparten.",
+      },
+      {
+        heading: "Resistencias en paralelo",
+        content:
+          "cuando están conectadas entre los mismos dos nodos, tienen la misma tensión entre sus extremos y las corrientes se reparten. La inversa de la equivalente es la suma de las inversas.",
+      },
+      {
+        heading: "Cómo se resuelve",
+        content:
+          'se reduce la red por grupos (serie / paralelo) hasta una resistencia equivalente, se calcula la corriente total con la ley de Ohm y se "vuelve hacia atrás" para hallar la corriente por cada resistencia.',
+      },
+      {
+        heading: "Fórmulas",
+        formulas: [
+          "V = I · R",
+          "Serie: R_eq = R₁ + R₂ + … + Rₙ",
+          "Paralelo: 1 / R_eq = 1/R₁ + 1/R₂ + … + 1/Rₙ",
+          "Potencia: P = V · I = I²·R = V²/R",
+        ],
+      },
+    ],
+  },
+  p9: {
+    title: "P9 — Leyes de Kirchhoff",
+    sections: [
+      {
+        heading: "Ley de nodos (KCL)",
+        content:
+          "por conservación de la carga, la suma de las corrientes que entran a un nodo es igual a la suma de las que salen (la suma algebraica en un nodo es cero).",
+      },
+      {
+        heading: "Ley de mallas (KVL)",
+        content:
+          "por conservación de la energía, la suma de las diferencias de potencial a lo largo de una malla cerrada es cero.",
+      },
+      {
+        heading: "Cómo se aplica",
+        content:
+          "se asigna un sentido arbitrario a cada corriente y se plantean tantas ecuaciones (de nodo y de malla) como incógnitas. Si una corriente da negativa, su sentido real es el opuesto al asumido. Al recorrer una malla, la caída R·I es negativa si se va a favor de la corriente y positiva si se va en contra; una fuente aporta +E si se pasa de su borne − al +, y −E en el caso contrario.",
+      },
+      {
+        heading: "Fórmulas",
+        formulas: ["Nodos: Σ I = 0", "Mallas: Σ V = 0", "V = I · R"],
+      },
+    ],
+  },
+  p11: {
+    title: "P11 — Kirchhoff con fuentes de corriente",
+    sections: [
+      {
+        heading: "Idea",
+        content:
+          "se resuelve con las leyes de Kirchhoff igual que cualquier red. Cuando hay fuentes de corriente, esas corrientes son datos conocidos (no incógnitas) y entran directamente en las ecuaciones de nodo.",
+      },
+      {
+        heading: "Cómo se aplica",
+        content:
+          "se plantean ecuaciones de nodo (KCL) y de malla (KVL) hasta igualar la cantidad de incógnitas, y se resuelve el sistema. Las corrientes negativas indican sentido opuesto al asumido.",
+      },
+      {
+        heading: "Fórmulas",
+        formulas: [
+          "Nodos: Σ I_entran = Σ I_salen",
+          "Mallas: Σ V = 0",
+          "V = I · R",
+        ],
+      },
+    ],
+  },
+  p12: {
+    title: "P12 — Amperímetro (resistencia shunt)",
+    sections: [
+      {
+        heading: "Idea",
+        content:
+          "un galvanómetro se desvía a fondo de escala con una corriente muy chica (Ig) y tiene una resistencia interna rg. Para poder medir corrientes grandes, se le conecta en paralelo una resistencia llamada shunt, que deriva el exceso de corriente.",
+      },
+      {
+        heading: "Cómo funciona",
+        content:
+          "como el galvanómetro y el shunt están en paralelo, tienen la misma tensión: Vg = rg · Ig. Del total que entra, Ig pasa por el galvanómetro y el resto (I − Ig) pasa por el shunt. En un shunt Ayrton (universal), varias resistencias en cadena permiten tener varias escalas con el mismo galvanómetro.",
+      },
+      {
+        heading: "Fórmulas",
+        formulas: [
+          "Vg = rg · Ig",
+          "Corriente por el shunt: I_shunt = I − Ig",
+          "Misma tensión en paralelo: rg · Ig = R_shunt · (I − Ig)",
+        ],
+      },
+    ],
+  },
+  p13: {
+    title: "P13 — Voltímetro (resistencia multiplicadora)",
+    sections: [
+      {
+        heading: "Idea",
+        content:
+          "para medir tensión, el galvanómetro se conecta en serie con una resistencia grande llamada multiplicadora, que limita la corriente a Ig justo cuando se aplica la tensión de fondo de escala.",
+      },
+      {
+        heading: "Cómo funciona",
+        content:
+          "toda la tensión medida cae en la multiplicadora más la resistencia interna del galvanómetro: V = Ig · (rg + R). Para tener varias escalas se agregan resistencias en serie (en cascada): cada escala mayor suma una resistencia más.",
+      },
+      {
+        heading: "Fórmulas",
+        formulas: [
+          "V = Ig · (rg + R)",
+          "Resistencia multiplicadora: R = V / Ig − rg",
+        ],
+      },
+    ],
+  },
+};
+
 export type GuideListItem = {
   id: GuideProblemId | "constructor";
   number: string;
@@ -55,6 +193,7 @@ export type GuideNetworkProblem = {
   eyebrow: string;
   description: string;
   image: string;
+  theory: GuideTheory;
   cases: GuideCircuitCase[];
 };
 
@@ -178,6 +317,7 @@ export const guideNetworkProblems: Record<
     description:
       "Determine el valor de la resistencia equivalente de los circuitos de la figura 5. Si en el caso (a) se conecta una batería de 9 voltios, calcular la corriente que circula por cada resistencia.",
     image: "/problemas/p8.png",
+    theory: guideTheories.p8,
     cases: [
       {
         id: "p8a",
@@ -287,6 +427,7 @@ export const guideNetworkProblems: Record<
     description:
       "En el circuito de la figura 6, determinar las corrientes y la diferencia de potencial Vb − Va. Los valores de las resistencias, en Ω, son R1 = 25, R2 = 20, R3 = 10, R4 = 15, R5 = 30. Los valores de las fuentes son E1 = 10 V, E2 = 15 V y E3 = 10 V.",
     image: "/problemas/p9.png",
+    theory: guideTheories.p9,
     cases: [
       {
         id: "p9",
@@ -340,6 +481,7 @@ export const guideNetworkProblems: Record<
     description:
       "Determine las corrientes en cada resistencia, para el circuito de la figura 8.",
     image: "/problemas/p11.png",
+    theory: guideTheories.p11,
     cases: [
       {
         id: "p11",
