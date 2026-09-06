@@ -93,7 +93,7 @@ export function GuideAccordionList({ items }: { items: GuideListItem[] }) {
                         </p>
                         <Link
                           href={item.href}
-                          className="mt-5 inline-flex h-11 items-center gap-2 rounded-xl bg-cyan-300 px-5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-300"
+                          className="app-button-primary mt-5 inline-flex h-11 items-center gap-2 px-5 text-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-300"
                         >
                           <ItemIcon id={item.id} />
                           Resolver

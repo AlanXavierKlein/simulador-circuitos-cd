@@ -132,7 +132,7 @@ export function CircuitCanvas({
               ? "#fbbf24"
               : node.type === "resistor"
                 ? "#22d3ee"
-                : "#a3e635"
+                : "#c4b5fd"
           }
           nodeStrokeColor="#020617"
           nodeBorderRadius={10}

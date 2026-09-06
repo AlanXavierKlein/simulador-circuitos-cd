@@ -16,9 +16,13 @@ export function JunctionNode({ data, selected }: NodeProps<JunctionFlowNode>) {
   return (
     <div
       className={`relative grid place-items-center rounded-full border-[4px] ${
-        isConstructorNode
-          ? "size-11 bg-violet-300 shadow-[0_0_22px_rgba(196,181,253,0.5)]"
-          : "size-[22px] bg-cyan-300 shadow-[0_0_18px_rgba(34,211,238,0.65)]"
+        data.isGround
+          ? isConstructorNode
+            ? "size-11 bg-sky-300 shadow-[0_0_22px_rgba(125,211,252,0.5)]"
+            : "size-[22px] bg-sky-300 shadow-[0_0_18px_rgba(125,211,252,0.62)]"
+          : isConstructorNode
+            ? "size-11 bg-violet-300 shadow-[0_0_22px_rgba(196,181,253,0.5)]"
+            : "size-[22px] bg-violet-300 shadow-[0_0_18px_rgba(196,181,253,0.62)]"
       } ${
         selected
           ? "border-white ring-2 ring-violet-300/70 ring-offset-2 ring-offset-slate-950"

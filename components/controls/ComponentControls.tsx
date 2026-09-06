@@ -73,7 +73,7 @@ export function ComponentControls({
 }: ComponentControlsProps) {
   return (
     <aside
-      className={`min-w-0 max-w-full rounded-3xl border border-slate-800 bg-slate-950/70 p-5 shadow-xl shadow-black/20 ${
+      className={`app-surface min-w-0 max-w-full p-5 ${
         compact
           ? ""
           : "xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto"
@@ -81,7 +81,7 @@ export function ComponentControls({
     >
       <div className="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
         <div className="flex items-start gap-3">
-          <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-cyan-400/20 bg-cyan-400/10 text-cyan-300">
+          <span className="app-icon size-10">
             <SlidersHorizontal className="size-5" />
           </span>
           <div>
@@ -95,7 +95,7 @@ export function ComponentControls({
           <button
             type="button"
             onClick={onReset}
-            className="inline-flex h-10 w-fit items-center justify-center gap-2 rounded-xl border border-cyan-400/25 bg-cyan-400/10 px-4 text-sm font-semibold text-cyan-100 transition hover:border-cyan-300/50 hover:bg-cyan-400/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+            className="app-button-secondary inline-flex h-10 w-fit items-center justify-center gap-2 px-4 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
           >
             <RotateCcw className="size-4" />
             Restablecer valores
@@ -121,10 +121,7 @@ export function ComponentControls({
           };
 
           return (
-            <div
-              key={component.label}
-              className="rounded-2xl border border-slate-800 bg-slate-900/65 p-3.5"
-            >
+            <div key={component.label} className="app-surface-inset p-3.5">
               <div className="mb-3 flex items-baseline justify-between gap-3">
                 <div>
                   <label
@@ -170,7 +167,7 @@ export function ComponentControls({
                     if (event.currentTarget.value === "") return;
                     updateValue(Number(event.currentTarget.value));
                   }}
-                  className="h-9 min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-950 px-2.5 font-mono text-sm text-slate-100 outline-none transition focus:border-cyan-400"
+                  className="app-input h-9 min-w-0 flex-1 px-2.5 font-mono text-sm"
                 />
                 <span className="w-5 font-mono text-xs text-slate-500">
                   {range.unit}

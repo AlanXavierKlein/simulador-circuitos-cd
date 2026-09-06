@@ -8,9 +8,9 @@ export function GuideExplanation({
   explanation: GuideExplanationContent;
 }) {
   return (
-    <section className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-950/70 shadow-xl shadow-black/20">
+    <section className="app-surface overflow-hidden">
       <header className="flex items-start gap-3 p-5 sm:p-6">
-        <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-lime-400/20 bg-lime-400/10 text-lime-300">
+        <span className="app-icon size-11 border-lime-400/20 bg-lime-400/10 text-lime-300">
           <BookOpenCheck className="size-5" />
         </span>
         <div>
@@ -48,10 +48,7 @@ export function GuideExplanation({
                 {section.steps?.length ? (
                   <ol className="mt-4 grid gap-4 lg:grid-cols-2">
                     {section.steps.map((step) => (
-                      <li
-                        key={step.title}
-                        className="rounded-2xl border border-slate-800 bg-slate-900/55 p-4"
-                      >
+                      <li key={step.title} className="app-surface-inset p-4">
                         <h4 className="font-medium text-cyan-100">
                           {step.title}
                         </h4>

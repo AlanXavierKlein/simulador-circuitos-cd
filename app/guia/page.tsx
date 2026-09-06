@@ -14,7 +14,7 @@ export default function GuidePage() {
           <Sparkles className="size-3.5" />
           Guía 04 · Electrodinámica
         </div>
-        <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-cyan-400/20 bg-cyan-400/10 text-cyan-300 shadow-lg shadow-cyan-950/30">
+        <span className="app-icon mx-auto size-14 rounded-2xl shadow-lg shadow-cyan-950/30">
           <BookOpenCheck className="size-7" />
         </span>
         <h1 className="mt-5 text-4xl font-semibold tracking-tight text-white sm:text-5xl">

@@ -51,7 +51,7 @@ const paletteItems: Array<{
     title: "Fuente de corriente",
     description: "Fija una corriente de rama",
     icon: <Zap className="size-5" />,
-    tone: "border-amber-400/20 bg-amber-400/[0.06] text-amber-200",
+    tone: "border-cyan-400/20 bg-cyan-400/[0.06] text-cyan-200",
   },
   {
     kind: "junction",
@@ -149,9 +149,9 @@ export function ConstructorSidebar({
 
   return (
     <aside className="space-y-4 lg:sticky lg:top-24">
-      <section className="rounded-3xl border border-slate-800 bg-slate-950/75 p-4 shadow-xl shadow-black/20">
+      <section className="app-surface p-4">
         <div className="flex items-start gap-3">
-          <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-cyan-400/20 bg-cyan-400/10 text-cyan-300">
+          <span className="app-icon size-10">
             <GitFork className="size-5" />
           </span>
           <div>
@@ -168,7 +168,7 @@ export function ConstructorSidebar({
         </div>
       </section>
 
-      <section className="rounded-3xl border border-slate-800 bg-slate-950/75 p-4 shadow-xl shadow-black/20">
+      <section className="app-surface p-4">
         <h2 className="font-semibold text-slate-100">Propiedades</h2>
         {!selectedNode && !selectedEdge ? (
           <p className="mt-3 rounded-2xl border border-dashed border-slate-700 p-4 text-xs leading-5 text-slate-500">
@@ -190,7 +190,7 @@ export function ConstructorSidebar({
                   selectedKind === "junction" && selectedNode.data.isGround
                 }
                 onChange={(event) => onUpdateLabel(event.currentTarget.value)}
-                className="mt-1.5 h-10 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 font-mono text-sm text-slate-100 outline-none transition disabled:cursor-not-allowed disabled:text-slate-500 focus:border-cyan-400"
+                className="app-input mt-1.5 h-10 w-full px-3 font-mono text-sm disabled:cursor-not-allowed disabled:text-slate-500"
               />
             </label>
 
@@ -327,7 +327,7 @@ export function ConstructorSidebar({
         ) : null}
       </section>
 
-      <section className="rounded-3xl border border-slate-800 bg-slate-950/75 p-4 shadow-xl shadow-black/20">
+      <section className="app-surface p-4">
         <h2 className="font-semibold text-slate-100">Circuito guardado</h2>
         <p className="mt-1 text-xs leading-5 text-slate-500">
           Se conserva localmente en este navegador.
@@ -336,14 +336,14 @@ export function ConstructorSidebar({
           <button
             type="button"
             onClick={onSave}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-cyan-300 px-3 text-xs font-semibold text-slate-950 transition hover:bg-cyan-200"
+            className="app-button-primary inline-flex h-10 items-center justify-center gap-2 px-3 text-xs"
           >
             <Save className="size-4" /> Guardar
           </button>
           <button
             type="button"
             onClick={onLoad}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-3 text-xs font-semibold text-slate-200 transition hover:border-cyan-400/40"
+            className="app-button-secondary inline-flex h-10 items-center justify-center gap-2 px-3 text-xs"
           >
             <FolderOpen className="size-4" /> Cargar
           </button>

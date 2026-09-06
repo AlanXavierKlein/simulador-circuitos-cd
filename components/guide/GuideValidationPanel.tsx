@@ -35,10 +35,10 @@ export function GuideValidationPanel({
   const passedCount = evaluated.filter((reading) => reading.passed).length;
 
   return (
-    <section className="min-w-0 max-w-full rounded-3xl border border-slate-800 bg-slate-950/70 p-5 shadow-xl shadow-black/20 sm:p-6">
+    <section className="app-surface min-w-0 max-w-full p-5 sm:p-6">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
         <div className="flex items-start gap-3">
-          <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-lime-400/20 bg-lime-400/10 text-lime-300">
+          <span className="app-icon size-11 border-lime-400/20 bg-lime-400/10 text-lime-300">
             <FlaskConical className="size-5" />
           </span>
           <div>

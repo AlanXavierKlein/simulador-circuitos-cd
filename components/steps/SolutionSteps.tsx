@@ -14,11 +14,11 @@ export function SolutionSteps({
   return (
     <details
       open={defaultOpen}
-      className="group mt-6 overflow-hidden rounded-3xl border border-slate-800 bg-slate-950/70 shadow-xl shadow-black/20"
+      className="app-surface group mt-6 overflow-hidden"
     >
       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 marker:hidden sm:p-6">
         <span className="flex items-center gap-3">
-          <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-lime-400/20 bg-lime-400/10 text-lime-300">
+          <span className="app-icon size-11 border-lime-400/20 bg-lime-400/10 text-lime-300">
             <BookOpenCheck className="size-5" />
           </span>
           <span>
@@ -43,10 +43,7 @@ export function SolutionSteps({
         </p>
         <div className="grid gap-4 lg:grid-cols-2">
           {steps.map((step) => (
-            <section
-              key={step.id}
-              className="rounded-2xl border border-slate-800 bg-slate-900/55 p-4"
-            >
+            <section key={step.id} className="app-surface-inset p-4">
               <h3 className="font-medium text-cyan-100">{step.title}</h3>
               {explanations?.[step.id] ? (
                 <p className="mt-2 text-sm leading-6 text-slate-400">

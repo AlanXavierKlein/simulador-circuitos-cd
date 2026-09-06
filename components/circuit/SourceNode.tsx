@@ -5,11 +5,16 @@ import { cn } from "@/lib/utils";
 
 import type { SourceFlowNode } from "./flow-types";
 
-const handleStyle = {
+const voltageHandleStyle = {
   width: 13,
   height: 13,
   border: "3px solid #0f172a",
   background: "#fbbf24",
+};
+
+const currentHandleStyle = {
+  ...voltageHandleStyle,
+  background: "#67e8f9",
 };
 
 function VoltageSymbol({
@@ -113,7 +118,7 @@ function CurrentSymbol({
     >
       <path
         d="M58 0 V42 M58 138 V180"
-        stroke="#fbbf24"
+        stroke="#67e8f9"
         strokeWidth="4"
         strokeLinecap="round"
       />
@@ -122,7 +127,7 @@ function CurrentSymbol({
         cy="90"
         r="47"
         fill="#111827"
-        stroke="#fbbf24"
+        stroke="#67e8f9"
         strokeWidth="4"
       />
       <path
@@ -132,7 +137,7 @@ function CurrentSymbol({
             : "M58 64 V114 M45 100 L58 114 L71 100"
         }
         fill="none"
-        stroke="#fbbf24"
+        stroke="#67e8f9"
         strokeWidth="4"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -146,7 +151,7 @@ function CurrentSymbol({
     >
       <path
         d="M0 52 H38 M142 52 H180"
-        stroke="#fbbf24"
+        stroke="#67e8f9"
         strokeWidth="4"
         strokeLinecap="round"
       />
@@ -155,7 +160,7 @@ function CurrentSymbol({
         cy="52"
         r="47"
         fill="#111827"
-        stroke="#fbbf24"
+        stroke="#67e8f9"
         strokeWidth="4"
       />
       <path
@@ -165,7 +170,7 @@ function CurrentSymbol({
             : "M63 52 H113 M99 39 L113 52 L99 65"
         }
         fill="none"
-        stroke="#fbbf24"
+        stroke="#67e8f9"
         strokeWidth="4"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -176,6 +181,22 @@ function CurrentSymbol({
 
 export function SourceNode({ data, selected }: NodeProps<SourceFlowNode>) {
   const isVertical = data.orientation === "vertical";
+  const isVoltage = data.sourceType === "voltage";
+  const tone = isVoltage
+    ? {
+        border: "border-amber-400/35",
+        selected: "border-amber-300 shadow-[0_0_28px_rgba(251,191,36,0.22)]",
+        label: "border-amber-400/25 text-amber-100",
+        value: "text-amber-300",
+        handle: voltageHandleStyle,
+      }
+    : {
+        border: "border-cyan-400/35",
+        selected: "border-cyan-300 shadow-[0_0_28px_rgba(34,211,238,0.22)]",
+        label: "border-cyan-400/25 text-cyan-100",
+        value: "text-cyan-300",
+        handle: currentHandleStyle,
+      };
   const fromPosition = isVertical
     ? data.reversed
       ? Position.Bottom
@@ -194,9 +215,10 @@ export function SourceNode({ data, selected }: NodeProps<SourceFlowNode>) {
   return (
     <div
       className={cn(
-        "relative grid place-items-center rounded-2xl border border-amber-400/35 bg-slate-950/92 shadow-xl shadow-black/30 transition-[border-color,box-shadow]",
+        "relative grid place-items-center rounded-2xl border bg-slate-950/92 shadow-xl shadow-black/30 transition-[border-color,box-shadow]",
+        tone.border,
         isVertical ? "h-[180px] w-[116px]" : "h-[104px] w-[180px]",
-        selected && "border-amber-300 shadow-[0_0_28px_rgba(251,191,36,0.22)]",
+        selected && tone.selected,
       )}
       aria-label={`${data.label}, ${data.value}`}
     >
@@ -204,10 +226,10 @@ export function SourceNode({ data, selected }: NodeProps<SourceFlowNode>) {
         id="from"
         type="source"
         position={fromPosition}
-        style={handleStyle}
+        style={tone.handle}
       />
 
-      {data.sourceType === "voltage" ? (
+      {isVoltage ? (
         <VoltageSymbol vertical={isVertical} reversed={data.reversed} />
       ) : (
         <CurrentSymbol vertical={isVertical} reversed={data.reversed} />
@@ -215,7 +237,8 @@ export function SourceNode({ data, selected }: NodeProps<SourceFlowNode>) {
 
       <span
         className={cn(
-          "absolute rounded-md border border-amber-400/25 bg-slate-900/95 px-2 py-1 text-xs font-semibold tracking-wide text-amber-100",
+          "absolute rounded-md border bg-slate-900/95 px-2 py-1 text-xs font-semibold tracking-wide",
+          tone.label,
           isVertical ? "right-2 top-5" : "left-1/2 top-2 -translate-x-1/2",
         )}
       >
@@ -223,7 +246,8 @@ export function SourceNode({ data, selected }: NodeProps<SourceFlowNode>) {
       </span>
       <span
         className={cn(
-          "absolute rounded-md bg-slate-900/95 px-2 py-1 font-mono text-[11px] text-amber-300",
+          "absolute rounded-md bg-slate-900/95 px-2 py-1 font-mono text-[11px]",
+          tone.value,
           isVertical
             ? "bottom-5 right-2"
             : "bottom-2 left-1/2 -translate-x-1/2",
@@ -232,7 +256,7 @@ export function SourceNode({ data, selected }: NodeProps<SourceFlowNode>) {
         {data.value}
       </span>
 
-      <Handle id="to" type="source" position={toPosition} style={handleStyle} />
+      <Handle id="to" type="source" position={toPosition} style={tone.handle} />
     </div>
   );
 }
