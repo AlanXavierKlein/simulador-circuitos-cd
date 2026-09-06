@@ -4,8 +4,6 @@ import { AlertTriangle, RotateCcw, SlidersHorizontal } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 
 import { GuideExplanation } from "@/components/guide/GuideExplanation";
-import { GuideValidationPanel } from "@/components/guide/GuideValidationPanel";
-import type { ValidationReading } from "@/components/guide/GuideValidationPanel";
 import { guideInstrumentExplanations } from "@/lib/problems/guide-explanations";
 import {
   defaultAmmeterInput,
@@ -47,21 +45,6 @@ export function InstrumentDesigner({ kind }: { kind: InstrumentKind }) {
       };
     }
   }, [ig, kind, rg, scales]);
-
-  const official =
-    kind === "ammeter"
-      ? { R1: 1 / 90, R2: 0.1, R3: 1 }
-      : { R1: 2990, R2: 12000, R3: 135000 };
-  const readings: ValidationReading[] = calculation.result
-    ? (["R1", "R2", "R3"] as const).map((label) => ({
-        id: label,
-        label,
-        actual: calculation.result[label],
-        expected: official[label],
-        unit: "Ω",
-        tolerancePercent: 0.1,
-      }))
-    : [];
 
   const reset = () => {
     setRg(originalValuesRef.current.rg);
@@ -129,9 +112,7 @@ export function InstrumentDesigner({ kind }: { kind: InstrumentKind }) {
           </div>
         </aside>
 
-        {calculation.result ? (
-          <GuideValidationPanel readings={readings} />
-        ) : (
+        {!calculation.result ? (
           <div
             role="alert"
             className="flex items-start gap-3 rounded-3xl border border-amber-400/30 bg-amber-400/10 p-5 text-sm text-amber-100"
@@ -144,7 +125,7 @@ export function InstrumentDesigner({ kind }: { kind: InstrumentKind }) {
               </p>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
 
       {calculation.result ? (

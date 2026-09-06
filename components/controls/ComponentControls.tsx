@@ -14,6 +14,8 @@ type ComponentControlsProps = {
 type ControlRange = {
   min: number;
   max: number;
+  sliderMin: number;
+  sliderMax: number;
   step: number;
   unit: string;
   value: number;
@@ -22,12 +24,15 @@ type ControlRange = {
 
 const MAX_RESISTANCE_OHMS = 1000;
 const MAX_VOLTAGE_VOLTS = 1000;
+const MAX_SLIDER_VALUE = 500;
 
 function controlRange(component: Component): ControlRange {
   if (component.type === "resistor") {
     return {
       min: 0.1,
       max: MAX_RESISTANCE_OHMS,
+      sliderMin: 0.1,
+      sliderMax: MAX_SLIDER_VALUE,
       step: 0.1,
       unit: "Ω",
       value: component.ohms,
@@ -42,6 +47,8 @@ function controlRange(component: Component): ControlRange {
     return {
       min: -MAX_VOLTAGE_VOLTS,
       max: MAX_VOLTAGE_VOLTS,
+      sliderMin: -MAX_SLIDER_VALUE,
+      sliderMax: MAX_SLIDER_VALUE,
       step: 0.1,
       unit,
       value,
@@ -49,9 +56,12 @@ function controlRange(component: Component): ControlRange {
     };
   }
 
+  const currentSourceLimit = Math.max(30, Math.ceil(Math.abs(value) * 2));
   return {
-    min: -Math.max(30, Math.ceil(Math.abs(value) * 2)),
-    max: Math.max(30, Math.ceil(Math.abs(value) * 2)),
+    min: -currentSourceLimit,
+    max: currentSourceLimit,
+    sliderMin: -Math.min(MAX_SLIDER_VALUE, currentSourceLimit),
+    sliderMax: Math.min(MAX_SLIDER_VALUE, currentSourceLimit),
     step: 0.1,
     unit,
     value,
@@ -111,6 +121,10 @@ export function ComponentControls({
         {circuit.components.map((component) => {
           const range = controlRange(component);
           const inputId = `component-${component.label}`;
+          const sliderValue = Math.min(
+            range.sliderMax,
+            Math.max(range.sliderMin, range.value),
+          );
           const updateValue = (value: number) => {
             if (!Number.isFinite(value)) return;
             const limitedValue = Math.min(
@@ -143,10 +157,10 @@ export function ComponentControls({
                 suppressHydrationWarning
                 aria-label={`Control deslizante de ${component.label}`}
                 type="range"
-                min={range.min}
-                max={range.max}
+                min={range.sliderMin}
+                max={range.sliderMax}
                 step={range.step}
-                value={range.value}
+                value={sliderValue}
                 onChange={(event) =>
                   updateValue(Number(event.currentTarget.value))
                 }

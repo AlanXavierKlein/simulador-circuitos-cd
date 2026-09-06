@@ -140,13 +140,21 @@ export function ConstructorSidebar({
   const selectedComponent =
     selectedNode && isComponentNode(selectedNode) ? selectedNode : null;
   const maximumValue = 1000;
+  const maximumSliderValue = 500;
   const minimumValue = selectedKind === "resistor" ? 0.1 : -1000;
+  const minimumSliderValue = selectedKind === "resistor" ? 0.1 : -500;
   const valueStep = 0.1;
   const updateBoundedValue = (value: number) => {
     if (!Number.isFinite(value)) return;
     const boundedValue = Math.min(maximumValue, Math.max(minimumValue, value));
     onUpdateValue(Number(boundedValue.toFixed(3)));
   };
+  const sliderValue = selectedComponent
+    ? Math.min(
+        maximumSliderValue,
+        Math.max(minimumSliderValue, selectedComponent.data.numericValue),
+      )
+    : minimumSliderValue;
 
   return (
     <aside className="space-y-4 lg:sticky lg:top-24">
@@ -254,10 +262,10 @@ export function ConstructorSidebar({
                   <input
                     aria-label={`Control deslizante de ${selectedComponent.data.label}`}
                     type="range"
-                    min={minimumValue}
-                    max={maximumValue}
+                    min={minimumSliderValue}
+                    max={maximumSliderValue}
                     step={valueStep}
-                    value={selectedComponent.data.numericValue}
+                    value={sliderValue}
                     onChange={(event) =>
                       updateBoundedValue(Number(event.currentTarget.value))
                     }
