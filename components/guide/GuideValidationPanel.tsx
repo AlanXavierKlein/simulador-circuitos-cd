@@ -33,12 +33,13 @@ export function GuideValidationPanel({
     return { ...reading, error, tolerance, passed: error <= tolerance };
   });
   const passedCount = evaluated.filter((reading) => reading.passed).length;
+  const allPassed = passedCount === evaluated.length;
 
   return (
-    <section className="min-w-0 max-w-full rounded-3xl border border-slate-800 bg-slate-950/70 p-5 shadow-xl shadow-black/20 sm:p-6">
+    <section className="app-surface min-w-0 max-w-full p-5 sm:p-6">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
         <div className="flex items-start gap-3">
-          <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-lime-400/20 bg-lime-400/10 text-lime-300">
+          <span className="app-icon size-11 border-lime-400/20 bg-lime-400/10 text-lime-300">
             <FlaskConical className="size-5" />
           </span>
           <div>
@@ -50,7 +51,13 @@ export function GuideValidationPanel({
             </h2>
           </div>
         </div>
-        <span className="w-fit rounded-full border border-lime-400/20 bg-lime-400/10 px-3 py-1 font-mono text-xs text-lime-200">
+        <span
+          className={`w-fit rounded-full border px-3 py-1 font-mono text-xs ${
+            allPassed
+              ? "border-lime-400/20 bg-lime-400/10 text-lime-200"
+              : "border-amber-400/25 bg-amber-400/10 text-amber-200"
+          }`}
+        >
           {passedCount}/{evaluated.length} dentro de tolerancia
         </span>
       </div>
@@ -73,10 +80,10 @@ export function GuideValidationPanel({
                   {reading.label}
                 </td>
                 <td className="px-3 py-3 font-mono">
-                  {formatNumber(reading.actual)} {reading.unit}
+                  {formatNumber(reading.actual, 4)} {reading.unit}
                 </td>
                 <td className="px-3 py-3 font-mono">
-                  {formatNumber(reading.expected)} {reading.unit}
+                  {formatNumber(reading.expected, 4)} {reading.unit}
                 </td>
                 <td className="px-3 py-3 font-mono">
                   {Number.isFinite(reading.error)
@@ -102,7 +109,7 @@ export function GuideValidationPanel({
           </tbody>
         </table>
       </div>
-      <p className="mt-3 text-xs leading-5 text-slate-500">
+      <p className="mt-3 text-xs leading-5 text-slate-400">
         Se admite hasta 2 % de diferencia por el redondeo de los valores
         publicados, salvo que el caso indique otra tolerancia.
       </p>

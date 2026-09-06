@@ -35,15 +35,13 @@ function ResultCard({
   };
 
   return (
-    <article className={`rounded-2xl border p-4 ${colors[tone]}`}>
+    <article className={`app-surface-inset p-4 ${colors[tone]}`}>
       <p className="font-mono text-xs text-slate-400">{label}</p>
       <p className="mt-2 font-mono text-xl font-semibold tracking-tight text-slate-50">
         <AnimatedNumber value={value} />{" "}
         <span className="text-sm font-medium text-slate-400">{unit}</span>
       </p>
-      {detail ? (
-        <p className="mt-2 text-[11px] text-slate-500">{detail}</p>
-      ) : null}
+      {detail ? <p className="mt-2 text-xs text-slate-400">{detail}</p> : null}
     </article>
   );
 }
@@ -62,7 +60,7 @@ function SectionTitle({
       <span className="text-cyan-300">{icon}</span>
       <div>
         <h3 className="font-medium text-slate-100">{title}</h3>
-        <p className="text-xs text-slate-500">{description}</p>
+        <p className="text-xs text-slate-400">{description}</p>
       </div>
     </div>
   );
@@ -91,7 +89,7 @@ export function ResultsPanel({ circuit, result }: ResultsPanelProps) {
     (result.nodePotentials[nodeB] ?? 0) - (result.nodePotentials[nodeA] ?? 0);
 
   return (
-    <section className="mt-6 rounded-3xl border border-slate-800 bg-slate-950/70 p-5 shadow-xl shadow-black/20 sm:p-6">
+    <section className="app-surface mt-6 p-5 sm:p-6">
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan-300">
@@ -102,8 +100,8 @@ export function ResultsPanel({ circuit, result }: ResultsPanelProps) {
           </h2>
         </div>
 
-        <div className="rounded-2xl border border-violet-400/20 bg-violet-400/[0.045] px-4 py-3">
-          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-violet-300">
+        <div className="app-surface-inset border-amber-400/25 bg-amber-400/[0.055] px-4 py-3">
+          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-amber-300">
             Diferencia de potencial
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -112,7 +110,7 @@ export function ResultsPanel({ circuit, result }: ResultsPanelProps) {
               aria-label="Nodo A para diferencia de potencial"
               value={nodeA}
               onChange={(event) => setNodeA(event.currentTarget.value)}
-              className="h-10 rounded-lg border border-slate-700 bg-slate-950 px-2 font-mono text-sm text-slate-100 outline-none focus:border-violet-400"
+              className="app-input h-10 px-2 font-mono text-sm focus:border-amber-400"
             >
               {nodeIds.map((nodeId) => (
                 <option key={nodeId} value={nodeId}>
@@ -126,7 +124,7 @@ export function ResultsPanel({ circuit, result }: ResultsPanelProps) {
               aria-label="Nodo B para diferencia de potencial"
               value={nodeB}
               onChange={(event) => setNodeB(event.currentTarget.value)}
-              className="h-10 rounded-lg border border-slate-700 bg-slate-950 px-2 font-mono text-sm text-slate-100 outline-none focus:border-violet-400"
+              className="app-input h-10 px-2 font-mono text-sm focus:border-amber-400"
             >
               {nodeIds.map((nodeId) => (
                 <option key={nodeId} value={nodeId}>
@@ -135,11 +133,11 @@ export function ResultsPanel({ circuit, result }: ResultsPanelProps) {
               ))}
             </select>
             <span className="font-mono text-sm text-slate-500">=</span>
-            <span className="font-mono text-lg font-semibold text-violet-200">
+            <span className="font-mono text-lg font-semibold text-amber-200">
               <AnimatedNumber value={difference} /> V
             </span>
           </div>
-          <p className="mt-2 text-[11px] text-slate-500">
+          <p className="mt-2 text-xs text-slate-400">
             V({nodeB}) − V({nodeA})
           </p>
         </div>
@@ -185,7 +183,7 @@ export function ResultsPanel({ circuit, result }: ResultsPanelProps) {
                 label={`V(${nodeId})`}
                 value={result.nodePotentials[nodeId] ?? 0}
                 unit="V"
-                tone="lime"
+                tone="amber"
               />
             ))}
           </div>

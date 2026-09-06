@@ -14,6 +14,8 @@ type ComponentControlsProps = {
 type ControlRange = {
   min: number;
   max: number;
+  sliderMin: number;
+  sliderMax: number;
   step: number;
   unit: string;
   value: number;
@@ -22,12 +24,15 @@ type ControlRange = {
 
 const MAX_RESISTANCE_OHMS = 1000;
 const MAX_VOLTAGE_VOLTS = 1000;
+const MAX_SLIDER_VALUE = 500;
 
 function controlRange(component: Component): ControlRange {
   if (component.type === "resistor") {
     return {
       min: 0.1,
       max: MAX_RESISTANCE_OHMS,
+      sliderMin: 0.1,
+      sliderMax: MAX_SLIDER_VALUE,
       step: 0.1,
       unit: "Ω",
       value: component.ohms,
@@ -42,6 +47,8 @@ function controlRange(component: Component): ControlRange {
     return {
       min: -MAX_VOLTAGE_VOLTS,
       max: MAX_VOLTAGE_VOLTS,
+      sliderMin: -MAX_SLIDER_VALUE,
+      sliderMax: MAX_SLIDER_VALUE,
       step: 0.1,
       unit,
       value,
@@ -49,9 +56,12 @@ function controlRange(component: Component): ControlRange {
     };
   }
 
+  const currentSourceLimit = Math.max(30, Math.ceil(Math.abs(value) * 2));
   return {
-    min: -Math.max(30, Math.ceil(Math.abs(value) * 2)),
-    max: Math.max(30, Math.ceil(Math.abs(value) * 2)),
+    min: -currentSourceLimit,
+    max: currentSourceLimit,
+    sliderMin: -Math.min(MAX_SLIDER_VALUE, currentSourceLimit),
+    sliderMax: Math.min(MAX_SLIDER_VALUE, currentSourceLimit),
     step: 0.1,
     unit,
     value,
@@ -65,15 +75,33 @@ function formatValue(value: number): string {
   }).format(value);
 }
 
+function componentOrder(left: Component, right: Component): number {
+  const typePriority = {
+    resistor: 0,
+    voltageSource: 1,
+    currentSource: 2,
+  } as const;
+  const priorityDifference = typePriority[left.type] - typePriority[right.type];
+
+  return priorityDifference !== 0
+    ? priorityDifference
+    : left.label.localeCompare(right.label, "es", {
+        numeric: true,
+        sensitivity: "base",
+      });
+}
+
 export function ComponentControls({
   circuit,
   onValueChange,
   onReset,
   compact = false,
 }: ComponentControlsProps) {
+  const orderedComponents = [...circuit.components].sort(componentOrder);
+
   return (
     <aside
-      className={`min-w-0 max-w-full rounded-3xl border border-slate-800 bg-slate-950/70 p-5 shadow-xl shadow-black/20 ${
+      className={`app-surface min-w-0 max-w-full p-5 ${
         compact
           ? ""
           : "xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto"
@@ -81,7 +109,7 @@ export function ComponentControls({
     >
       <div className="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
         <div className="flex items-start gap-3">
-          <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-cyan-400/20 bg-cyan-400/10 text-cyan-300">
+          <span className="app-icon size-10">
             <SlidersHorizontal className="size-5" />
           </span>
           <div>
@@ -95,7 +123,7 @@ export function ComponentControls({
           <button
             type="button"
             onClick={onReset}
-            className="inline-flex h-10 w-fit items-center justify-center gap-2 rounded-xl border border-cyan-400/25 bg-cyan-400/10 px-4 text-sm font-semibold text-cyan-100 transition hover:border-cyan-300/50 hover:bg-cyan-400/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+            className="app-button-secondary inline-flex h-10 w-fit items-center justify-center gap-2 px-4 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
           >
             <RotateCcw className="size-4" />
             Restablecer valores
@@ -108,23 +136,24 @@ export function ComponentControls({
           compact ? "grid gap-3 md:grid-cols-2 2xl:grid-cols-3" : "space-y-3"
         }
       >
-        {circuit.components.map((component) => {
+        {orderedComponents.map((component) => {
           const range = controlRange(component);
           const inputId = `component-${component.label}`;
+          const sliderValue = Math.min(
+            range.sliderMax,
+            Math.max(range.sliderMin, range.value),
+          );
           const updateValue = (value: number) => {
             if (!Number.isFinite(value)) return;
             const limitedValue = Math.min(
               range.max,
               Math.max(range.min, value),
             );
-            onValueChange(component.label, limitedValue);
+            onValueChange(component.label, Number(limitedValue.toFixed(3)));
           };
 
           return (
-            <div
-              key={component.label}
-              className="rounded-2xl border border-slate-800 bg-slate-900/65 p-3.5"
-            >
+            <div key={component.label} className="app-surface-inset p-3.5">
               <div className="mb-3 flex items-baseline justify-between gap-3">
                 <div>
                   <label
@@ -133,7 +162,7 @@ export function ComponentControls({
                   >
                     {component.label}
                   </label>
-                  <p className="mt-0.5 text-[11px] text-slate-500">
+                  <p className="mt-0.5 text-[11px] text-slate-400">
                     {range.kind}
                   </p>
                 </div>
@@ -146,10 +175,10 @@ export function ComponentControls({
                 suppressHydrationWarning
                 aria-label={`Control deslizante de ${component.label}`}
                 type="range"
-                min={range.min}
-                max={range.max}
+                min={range.sliderMin}
+                max={range.sliderMax}
                 step={range.step}
-                value={range.value}
+                value={sliderValue}
                 onChange={(event) =>
                   updateValue(Number(event.currentTarget.value))
                 }
@@ -170,9 +199,9 @@ export function ComponentControls({
                     if (event.currentTarget.value === "") return;
                     updateValue(Number(event.currentTarget.value));
                   }}
-                  className="h-9 min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-950 px-2.5 font-mono text-sm text-slate-100 outline-none transition focus:border-cyan-400"
+                  className="app-input h-9 min-w-0 flex-1 px-2.5 font-mono text-sm"
                 />
-                <span className="w-5 font-mono text-xs text-slate-500">
+                <span className="w-5 font-mono text-xs text-slate-400">
                   {range.unit}
                 </span>
               </div>

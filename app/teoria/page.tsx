@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Teoría" };
 export default function TheoryPage() {
   return (
     <SectionPlaceholder
-      eyebrow="Fase 0"
+      eyebrow="Fundamentos"
       title="Teoría"
       description="Teoría (en construcción)"
     />

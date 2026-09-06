@@ -4,8 +4,6 @@ import { AlertTriangle, RotateCcw, SlidersHorizontal } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 
 import { GuideExplanation } from "@/components/guide/GuideExplanation";
-import { GuideValidationPanel } from "@/components/guide/GuideValidationPanel";
-import type { ValidationReading } from "@/components/guide/GuideValidationPanel";
 import { guideInstrumentExplanations } from "@/lib/problems/guide-explanations";
 import {
   defaultAmmeterInput,
@@ -47,21 +45,6 @@ export function InstrumentDesigner({ kind }: { kind: InstrumentKind }) {
       };
     }
   }, [ig, kind, rg, scales]);
-
-  const official =
-    kind === "ammeter"
-      ? { R1: 1 / 90, R2: 0.1, R3: 1 }
-      : { R1: 2990, R2: 12000, R3: 135000 };
-  const readings: ValidationReading[] = calculation.result
-    ? (["R1", "R2", "R3"] as const).map((label) => ({
-        id: label,
-        label,
-        actual: calculation.result[label],
-        expected: official[label],
-        unit: "Ω",
-        tolerancePercent: 0.1,
-      }))
-    : [];
 
   const reset = () => {
     setRg(originalValuesRef.current.rg);
@@ -129,17 +112,20 @@ export function InstrumentDesigner({ kind }: { kind: InstrumentKind }) {
           </div>
         </aside>
 
-        {calculation.result ? (
-          <GuideValidationPanel readings={readings} />
-        ) : (
-          <div className="flex items-start gap-3 rounded-3xl border border-amber-400/30 bg-amber-400/10 p-5 text-sm text-amber-100">
+        {!calculation.result ? (
+          <div
+            role="alert"
+            className="flex items-start gap-3 rounded-3xl border border-amber-400/30 bg-amber-400/10 p-5 text-sm text-amber-100"
+          >
             <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-300" />
             <div>
               <p className="font-medium">Revisá los datos ingresados.</p>
-              <p className="mt-1 text-amber-200/75">{calculation.error}</p>
+              <p className="mt-1 leading-6 text-amber-100/85">
+                {calculation.error}
+              </p>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
 
       {calculation.result ? (

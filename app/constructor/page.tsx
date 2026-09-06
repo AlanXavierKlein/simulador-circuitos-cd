@@ -9,7 +9,7 @@ export default function ConstructorPage() {
   return (
     <section className="mx-auto w-full max-w-[1800px] px-4 py-8 sm:px-8 sm:py-10">
       <header className="mb-8 flex max-w-5xl items-start gap-4">
-        <span className="grid size-14 shrink-0 place-items-center rounded-2xl border border-cyan-400/20 bg-cyan-400/10 text-cyan-300">
+        <span className="app-icon size-14 rounded-2xl">
           <CircuitBoard className="size-7" />
         </span>
         <div>

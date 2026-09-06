@@ -15,10 +15,8 @@ export function SectionPlaceholder({
 }: SectionPlaceholderProps) {
   return (
     <section className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-7xl items-center px-5 py-20 sm:px-8">
-      <div className="w-full rounded-3xl border border-slate-800 bg-slate-900/45 p-8 shadow-2xl shadow-cyan-950/10 sm:p-14">
-        <p className="font-mono text-sm uppercase tracking-[0.2em] text-cyan-300">
-          {eyebrow}
-        </p>
+      <div className="app-surface w-full p-8 sm:p-14">
+        <p className="app-kicker">{eyebrow}</p>
         <h1 className="mt-4 text-4xl font-semibold tracking-tight text-white sm:text-6xl">
           {title}
         </h1>
@@ -30,7 +28,8 @@ export function SectionPlaceholder({
             href="/"
             className={buttonVariants({
               variant: "outline",
-              className: "border-slate-700 bg-transparent hover:bg-slate-800",
+              className:
+                "app-button-secondary border-slate-700 bg-transparent hover:bg-slate-800",
             })}
           >
             Volver al inicio

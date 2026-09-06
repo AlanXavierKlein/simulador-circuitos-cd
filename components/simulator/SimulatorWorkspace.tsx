@@ -11,25 +11,21 @@ import type {
 } from "@/components/circuit/circuit-adapter";
 import { ComponentControls } from "@/components/controls/ComponentControls";
 import { GuideExplanation } from "@/components/guide/GuideExplanation";
-import { GuideValidationPanel } from "@/components/guide/GuideValidationPanel";
-import type { ValidationReading } from "@/components/guide/GuideValidationPanel";
 import { ResultsPanel } from "@/components/results/ResultsPanel";
 import { SolutionSteps } from "@/components/steps/SolutionSteps";
-import { solveCircuit, voltageBetween } from "@/lib/engine/kirchhoff";
+import { solveCircuit } from "@/lib/engine/kirchhoff";
 import type { Circuit } from "@/lib/engine/model";
 import {
   cloneCircuit,
   updateCircuitComponentValue,
 } from "@/lib/engine/circuit-state";
 import { buildSolutionSteps } from "@/lib/engine/steps";
-import type { GuideValidationDefinition } from "@/lib/problems/guia04";
 import type { GuideResolution } from "@/lib/problems/guide-explanations";
 
 type GuideWorkspaceOptions = {
   stepExplanations: Record<string, string>;
   stepContentOverrides?: Record<string, string>;
   resolution: GuideResolution;
-  validations: GuideValidationDefinition[];
 };
 
 type SimulatorWorkspaceProps = {
@@ -71,26 +67,6 @@ export function SimulatorWorkspace({
     }
   }, [circuit]);
 
-  const validationReadings = useMemo<ValidationReading[]>(() => {
-    if (!guide || !calculation.result) return [];
-
-    return guide.validations.map((validation) => {
-      const { source } = validation;
-      let actual: number;
-      if (source.kind === "branchCurrent") {
-        actual = calculation.result.branchCurrents[source.branchLabel] ?? 0;
-      } else if (source.kind === "potentialDifference") {
-        actual = voltageBetween(calculation.result, source.nodeA, source.nodeB);
-      } else {
-        const current =
-          calculation.result.branchCurrents[source.branchLabel] ?? 0;
-        actual = Math.abs(source.volts / current);
-      }
-
-      return { ...validation, actual };
-    });
-  }, [calculation.result, guide]);
-
   const controls = (
     <ComponentControls
       circuit={circuit}
@@ -126,9 +102,6 @@ export function SimulatorWorkspace({
           {canvas}
           <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6">
             {controls}
-            {calculation.result ? (
-              <GuideValidationPanel readings={validationReadings} />
-            ) : null}
           </div>
         </div>
       ) : (
@@ -143,10 +116,16 @@ export function SimulatorWorkspace({
           {guide ? (
             <>
               {guide.resolution.mode === "prepend-analysis" ? (
-                <GuideExplanation explanation={guide.resolution.explanation} />
+                <GuideExplanation
+                  explanation={guide.resolution.explanation}
+                  className="mt-6"
+                />
               ) : null}
               {guide.resolution.mode === "replace-kirchhoff" ? (
-                <GuideExplanation explanation={guide.resolution.explanation} />
+                <GuideExplanation
+                  explanation={guide.resolution.explanation}
+                  className="mt-6"
+                />
               ) : (
                 <SolutionSteps
                   steps={calculation.steps.map((step) => ({
@@ -168,11 +147,18 @@ export function SimulatorWorkspace({
           )}
         </>
       ) : (
-        <div className="mt-6 flex items-start gap-3 rounded-2xl border border-rose-400/30 bg-rose-400/10 p-4 text-sm text-rose-100">
+        <div
+          role="alert"
+          className="mt-6 flex items-start gap-3 rounded-2xl border border-rose-400/30 bg-rose-400/10 p-4 text-sm text-rose-100"
+        >
           <AlertTriangle className="mt-0.5 size-5 shrink-0 text-rose-300" />
           <div>
-            <p className="font-medium">No se pudo resolver el circuito.</p>
-            <p className="mt-1 text-rose-200/75">{calculation.error}</p>
+            <p className="font-medium">
+              No se puede resolver el circuito con estos valores.
+            </p>
+            <p className="mt-1 leading-6 text-rose-100/85">
+              {calculation.error}
+            </p>
           </div>
         </div>
       )}
