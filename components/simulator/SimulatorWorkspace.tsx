@@ -122,9 +122,9 @@ export function SimulatorWorkspace({
   return (
     <>
       {guide ? (
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           {canvas}
-          <div className="grid gap-6">
+          <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6">
             {controls}
             {calculation.result ? (
               <GuideValidationPanel readings={validationReadings} />

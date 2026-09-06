@@ -35,7 +35,7 @@ export function GuideValidationPanel({
   const passedCount = evaluated.filter((reading) => reading.passed).length;
 
   return (
-    <section className="rounded-3xl border border-slate-800 bg-slate-950/70 p-5 shadow-xl shadow-black/20 sm:p-6">
+    <section className="min-w-0 max-w-full rounded-3xl border border-slate-800 bg-slate-950/70 p-5 shadow-xl shadow-black/20 sm:p-6">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
         <div className="flex items-start gap-3">
           <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-lime-400/20 bg-lime-400/10 text-lime-300">
@@ -55,7 +55,7 @@ export function GuideValidationPanel({
         </span>
       </div>
 
-      <div className="mt-5 overflow-x-auto">
+      <div className="mt-5 min-w-0 max-w-full overflow-x-auto">
         <table className="w-full min-w-[620px] border-separate border-spacing-y-2 text-left text-sm">
           <thead className="font-mono text-[11px] uppercase tracking-[0.12em] text-slate-500">
             <tr>

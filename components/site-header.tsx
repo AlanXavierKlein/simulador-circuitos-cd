@@ -1,3 +1,4 @@
+import { Menu, X } from "lucide-react";
 import Link from "next/link";
 
 const navigation = [
@@ -22,8 +23,33 @@ export function SiteHeader() {
           <span className="hidden sm:inline">Circuitos CC</span>
         </Link>
 
-        <nav aria-label="Navegación principal">
-          <ul className="flex items-center gap-1 overflow-x-auto text-sm text-slate-400">
+        <details className="group relative md:hidden">
+          <summary className="grid size-11 cursor-pointer list-none place-items-center rounded-xl border border-slate-700 bg-slate-900/80 text-slate-200 transition marker:hidden hover:border-cyan-400/50 hover:text-cyan-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300">
+            <span className="sr-only">Abrir o cerrar menú</span>
+            <Menu className="size-5 group-open:hidden" />
+            <X className="hidden size-5 group-open:block" />
+          </summary>
+          <nav
+            aria-label="Navegación principal móvil"
+            className="absolute right-0 top-[calc(100%+0.5rem)] w-[min(18rem,calc(100vw-2.5rem))] rounded-2xl border border-slate-700 bg-slate-950/95 p-2 shadow-2xl shadow-black/40 backdrop-blur-xl"
+          >
+            <ul className="flex flex-col gap-1 text-sm text-slate-300">
+              {navigation.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className="block min-h-11 whitespace-nowrap rounded-xl px-3 py-2.5 transition-colors hover:bg-slate-800/70 hover:text-slate-50"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </details>
+
+        <nav aria-label="Navegación principal" className="hidden md:block">
+          <ul className="flex items-center gap-1 text-sm text-slate-400">
             {navigation.map((item) => (
               <li key={item.href}>
                 <Link
