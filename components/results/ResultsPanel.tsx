@@ -41,9 +41,7 @@ function ResultCard({
         <AnimatedNumber value={value} />{" "}
         <span className="text-sm font-medium text-slate-400">{unit}</span>
       </p>
-      {detail ? (
-        <p className="mt-2 text-[11px] text-slate-500">{detail}</p>
-      ) : null}
+      {detail ? <p className="mt-2 text-xs text-slate-400">{detail}</p> : null}
     </article>
   );
 }
@@ -62,7 +60,7 @@ function SectionTitle({
       <span className="text-cyan-300">{icon}</span>
       <div>
         <h3 className="font-medium text-slate-100">{title}</h3>
-        <p className="text-xs text-slate-500">{description}</p>
+        <p className="text-xs text-slate-400">{description}</p>
       </div>
     </div>
   );
@@ -139,7 +137,7 @@ export function ResultsPanel({ circuit, result }: ResultsPanelProps) {
               <AnimatedNumber value={difference} /> V
             </span>
           </div>
-          <p className="mt-2 text-[11px] text-slate-500">
+          <p className="mt-2 text-xs text-slate-400">
             V({nodeB}) − V({nodeA})
           </p>
         </div>

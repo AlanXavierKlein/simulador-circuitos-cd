@@ -25,7 +25,12 @@ import type {
   OnSelectionChangeParams,
   XYPosition,
 } from "@xyflow/react";
-import { AlertTriangle, CheckCircle2, MousePointer2 } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  CircleDashed,
+  MousePointer2,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { AnimatedWire } from "@/components/circuit/AnimatedWire";
@@ -759,17 +764,7 @@ function ConstructorWorkspace() {
     setStorageMessage("Canvas limpio. El circuito guardado sigue disponible.");
   }, []);
 
-  const displayedIssues =
-    nodes.length === 0
-      ? [
-          "Arrastrá componentes y nodos al canvas. El primer nodo de unión se usa como tierra.",
-        ]
-      : calculation.error
-        ? [
-            "La red está cerrada, pero el sistema todavía no tiene una solución física única.",
-            calculation.error,
-          ]
-        : validation.issues;
+  const isEmptyCircuit = nodes.length === 0;
   const circuitKey = validation.circuit
     ? validation.circuit.nodes.map((node) => node.id).join("|")
     : "invalid";
@@ -875,6 +870,33 @@ function ConstructorWorkspace() {
               </p>
             </div>
           </div>
+        ) : isEmptyCircuit ? (
+          <div
+            role="status"
+            className="mt-5 flex items-start gap-3 rounded-2xl border border-slate-700 bg-slate-900/65 p-4 text-sm text-slate-200"
+          >
+            <CircleDashed className="mt-0.5 size-5 shrink-0 text-cyan-300" />
+            <div>
+              <p className="font-medium">Todavía no hay un circuito.</p>
+              <p className="mt-1 leading-6 text-slate-300">
+                Agregá un nodo de unión y conectá los componentes. El primer
+                nodo se usa como tierra.
+              </p>
+            </div>
+          </div>
+        ) : calculation.error ? (
+          <div
+            role="alert"
+            className="mt-5 flex items-start gap-3 rounded-2xl border border-rose-400/30 bg-rose-400/10 p-4 text-sm text-rose-100"
+          >
+            <AlertTriangle className="mt-0.5 size-5 shrink-0 text-rose-300" />
+            <div>
+              <p className="font-medium">No se puede resolver esta red.</p>
+              <p className="mt-1 leading-6 text-rose-100/85">
+                {calculation.error}
+              </p>
+            </div>
+          </div>
         ) : (
           <div className="mt-5 flex items-start gap-3 rounded-2xl border border-amber-400/25 bg-amber-400/[0.06] p-4 text-sm text-amber-100">
             <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-300" />
@@ -883,7 +905,7 @@ function ConstructorWorkspace() {
                 El circuito todavía está incompleto.
               </p>
               <ul className="mt-2 list-disc space-y-1 pl-5 text-amber-100/70">
-                {displayedIssues.slice(0, 5).map((issue) => (
+                {validation.issues.slice(0, 5).map((issue) => (
                   <li key={issue}>{issue}</li>
                 ))}
               </ul>

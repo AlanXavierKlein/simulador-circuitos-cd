@@ -144,7 +144,8 @@ export function ConstructorSidebar({
   const valueStep = 0.1;
   const updateBoundedValue = (value: number) => {
     if (!Number.isFinite(value)) return;
-    onUpdateValue(Math.min(maximumValue, Math.max(minimumValue, value)));
+    const boundedValue = Math.min(maximumValue, Math.max(minimumValue, value));
+    onUpdateValue(Number(boundedValue.toFixed(3)));
   };
 
   return (
@@ -263,7 +264,7 @@ export function ConstructorSidebar({
                     className="block h-2 w-full cursor-pointer accent-cyan-400"
                   />
                 </div>
-                <p className="mt-1.5 text-[10px] text-slate-600">
+                <p className="mt-1.5 text-[11px] text-slate-400">
                   {selectedKind === "resistor"
                     ? "Valor positivo entre 0,1 Ω y 1000 Ω."
                     : `Rango permitido: −1000 a 1000 ${componentUnit(selectedComponent)}.`}
@@ -295,7 +296,7 @@ export function ConstructorSidebar({
                   )}
                   °
                 </button>
-                <p className="-mt-1 text-center text-[10px] text-slate-600">
+                <p className="-mt-1 text-center text-[11px] text-slate-400">
                   También podés usar la tecla R.
                 </p>
               </>

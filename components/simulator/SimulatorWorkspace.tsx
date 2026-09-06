@@ -168,11 +168,18 @@ export function SimulatorWorkspace({
           )}
         </>
       ) : (
-        <div className="mt-6 flex items-start gap-3 rounded-2xl border border-rose-400/30 bg-rose-400/10 p-4 text-sm text-rose-100">
+        <div
+          role="alert"
+          className="mt-6 flex items-start gap-3 rounded-2xl border border-rose-400/30 bg-rose-400/10 p-4 text-sm text-rose-100"
+        >
           <AlertTriangle className="mt-0.5 size-5 shrink-0 text-rose-300" />
           <div>
-            <p className="font-medium">No se pudo resolver el circuito.</p>
-            <p className="mt-1 text-rose-200/75">{calculation.error}</p>
+            <p className="font-medium">
+              No se puede resolver el circuito con estos valores.
+            </p>
+            <p className="mt-1 leading-6 text-rose-100/85">
+              {calculation.error}
+            </p>
           </div>
         </div>
       )}

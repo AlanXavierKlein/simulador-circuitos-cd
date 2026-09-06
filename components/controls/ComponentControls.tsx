@@ -117,7 +117,7 @@ export function ComponentControls({
               range.max,
               Math.max(range.min, value),
             );
-            onValueChange(component.label, limitedValue);
+            onValueChange(component.label, Number(limitedValue.toFixed(3)));
           };
 
           return (
@@ -130,7 +130,7 @@ export function ComponentControls({
                   >
                     {component.label}
                   </label>
-                  <p className="mt-0.5 text-[11px] text-slate-500">
+                  <p className="mt-0.5 text-[11px] text-slate-400">
                     {range.kind}
                   </p>
                 </div>
@@ -169,7 +169,7 @@ export function ComponentControls({
                   }}
                   className="app-input h-9 min-w-0 flex-1 px-2.5 font-mono text-sm"
                 />
-                <span className="w-5 font-mono text-xs text-slate-500">
+                <span className="w-5 font-mono text-xs text-slate-400">
                   {range.unit}
                 </span>
               </div>
