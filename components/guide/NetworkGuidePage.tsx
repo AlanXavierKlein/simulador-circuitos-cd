@@ -6,6 +6,8 @@ import { guideCircuitLayouts } from "@/components/circuit/example-layouts";
 import { SimulatorWorkspace } from "@/components/simulator/SimulatorWorkspace";
 import type { GuideNetworkProblem } from "@/lib/problems/guia04";
 
+import { TheorySummaryDialog } from "./TheorySummaryDialog";
+
 export function NetworkGuidePage({
   problem,
 }: {
@@ -31,6 +33,9 @@ export function NetworkGuidePage({
           <p className="mt-4 max-w-3xl text-base leading-7 text-slate-400">
             {problem.description}
           </p>
+          <div className="mt-5">
+            <TheorySummaryDialog theory={problem.theory} />
+          </div>
         </div>
         <div className="relative min-h-56 overflow-hidden rounded-3xl border border-slate-700 bg-white shadow-2xl shadow-black/20">
           <Image
