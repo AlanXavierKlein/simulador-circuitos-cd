@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertTriangle } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { CircuitCanvas } from "@/components/circuit/CircuitCanvas";
 import type {
@@ -17,6 +17,7 @@ import { solveCircuit } from "@/lib/engine/kirchhoff";
 import type { Circuit } from "@/lib/engine/model";
 import {
   cloneCircuit,
+  hasOriginalCircuitValues,
   updateCircuitComponentValue,
 } from "@/lib/engine/circuit-state";
 import { buildSolutionSteps } from "@/lib/engine/steps";
@@ -46,9 +47,13 @@ export function SimulatorWorkspace({
   title = "Red de tres mallas",
   guide,
 }: SimulatorWorkspaceProps) {
-  const originalCircuitRef = useRef<Circuit>(cloneCircuit(initialCircuit));
+  const [originalCircuit] = useState<Circuit>(() => cloneCircuit(initialCircuit));
   const [circuit, setCircuit] = useState(() => cloneCircuit(initialCircuit));
   const allowZeroResistance = guide?.allowZeroResistance ?? false;
+  const hasOriginalValues = hasOriginalCircuitValues(
+    circuit,
+    originalCircuit,
+  );
   const calculation = useMemo(() => {
     try {
       const result = solveCircuit(circuit, {
@@ -78,7 +83,7 @@ export function SimulatorWorkspace({
       allowZeroResistance={allowZeroResistance}
       onReset={
         guide
-          ? () => setCircuit(cloneCircuit(originalCircuitRef.current))
+          ? () => setCircuit(cloneCircuit(originalCircuit))
           : undefined
       }
       onValueChange={(label, value) =>
@@ -125,12 +130,14 @@ export function SimulatorWorkspace({
               {guide.resolution.mode === "prepend-analysis" ? (
                 <GuideExplanation
                   explanation={guide.resolution.explanation}
+                  hasOriginalValues={hasOriginalValues}
                   className="mt-6"
                 />
               ) : null}
               {guide.resolution.mode === "replace-kirchhoff" ? (
                 <GuideExplanation
                   explanation={guide.resolution.explanation}
+                  hasOriginalValues={hasOriginalValues}
                   className="mt-6"
                 />
               ) : (

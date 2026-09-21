@@ -93,10 +93,10 @@ export function ResultsPanel({ circuit, result }: ResultsPanelProps) {
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan-300">
-            Resultados en vivo
+            Resultado actual
           </p>
           <h2 className="mt-1 text-2xl font-semibold tracking-tight text-white">
-            Lecturas del circuito
+            Lecturas con los valores cargados
           </h2>
         </div>
 

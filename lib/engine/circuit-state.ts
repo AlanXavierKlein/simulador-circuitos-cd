@@ -13,6 +13,38 @@ export function cloneCircuit(circuit: Circuit): Circuit {
   };
 }
 
+/** Compara únicamente los valores eléctricos de dos netlists equivalentes. */
+export function hasOriginalCircuitValues(
+  circuit: Circuit,
+  originalCircuit: Circuit,
+): boolean {
+  if (circuit.components.length !== originalCircuit.components.length) {
+    return false;
+  }
+
+  return originalCircuit.components.every((originalComponent) => {
+    const component = circuit.components.find(
+      (candidate) => candidate.label === originalComponent.label,
+    );
+    if (!component || component.type !== originalComponent.type) return false;
+
+    if (component.type === "resistor" && originalComponent.type === "resistor") {
+      return component.ohms === originalComponent.ohms;
+    }
+    if (
+      component.type === "voltageSource" &&
+      originalComponent.type === "voltageSource"
+    ) {
+      return component.volts === originalComponent.volts;
+    }
+    return (
+      component.type === "currentSource" &&
+      originalComponent.type === "currentSource" &&
+      component.amps === originalComponent.amps
+    );
+  });
+}
+
 function withComponentValue(
   component: Component,
   value: number,

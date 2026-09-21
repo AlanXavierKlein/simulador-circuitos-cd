@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertTriangle, RotateCcw, SlidersHorizontal } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { GuideExplanation } from "@/components/guide/GuideExplanation";
 import { guideInstrumentExplanations } from "@/lib/problems/guide-explanations";
@@ -20,11 +20,11 @@ type InstrumentKind = "ammeter" | "voltmeter";
 export function InstrumentDesigner({ kind }: { kind: InstrumentKind }) {
   const defaults =
     kind === "ammeter" ? defaultAmmeterInput : defaultVoltmeterInput;
-  const originalValuesRef = useRef({
+  const [originalValues] = useState(() => ({
     rg: defaults.rg,
     galvanometerCurrent: defaults.galvanometerCurrent,
     scales: [...defaults.scales] as [number, number, number],
-  });
+  }));
   const [rg, setRg] = useState(defaults.rg);
   const [ig, setIg] = useState(defaults.galvanometerCurrent);
   const [scales, setScales] = useState<[number, number, number]>(() => [
@@ -45,11 +45,17 @@ export function InstrumentDesigner({ kind }: { kind: InstrumentKind }) {
       };
     }
   }, [ig, kind, rg, scales]);
+  const hasOriginalValues =
+    rg === originalValues.rg &&
+    ig === originalValues.galvanometerCurrent &&
+    scales.every(
+      (scale, index) => scale === originalValues.scales[index],
+    );
 
   const reset = () => {
-    setRg(originalValuesRef.current.rg);
-    setIg(originalValuesRef.current.galvanometerCurrent);
-    setScales([...originalValuesRef.current.scales]);
+    setRg(originalValues.rg);
+    setIg(originalValues.galvanometerCurrent);
+    setScales([...originalValues.scales]);
   };
 
   return (
@@ -129,9 +135,50 @@ export function InstrumentDesigner({ kind }: { kind: InstrumentKind }) {
       </div>
 
       {calculation.result ? (
-        <GuideExplanation explanation={guideInstrumentExplanations[kind]} />
+        <>
+          <InstrumentCurrentResult result={calculation.result} />
+          <GuideExplanation
+            explanation={guideInstrumentExplanations[kind]}
+            hasOriginalValues={hasOriginalValues}
+            showOriginalValuesNotice
+          />
+        </>
       ) : null}
     </div>
+  );
+}
+
+function formatResistance(value: number): string {
+  return new Intl.NumberFormat("es-AR", {
+    maximumFractionDigits: 4,
+  }).format(value);
+}
+
+function InstrumentCurrentResult({
+  result,
+}: {
+  result: { R1: number; R2: number; R3: number };
+}) {
+  return (
+    <section className="app-surface p-5 sm:p-6">
+      <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan-300">
+        Resultado actual
+      </p>
+      <h2 className="mt-1 text-2xl font-semibold tracking-tight text-white">
+        Resistencias calculadas con los valores cargados
+      </h2>
+      <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        {(["R1", "R2", "R3"] as const).map((label) => (
+          <article key={label} className="app-surface-inset p-4">
+            <p className="font-mono text-xs text-slate-400">{label}</p>
+            <p className="mt-2 font-mono text-xl font-semibold text-cyan-100">
+              {formatResistance(result[label])}{" "}
+              <span className="text-sm font-medium text-slate-400">Ω</span>
+            </p>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }
 
