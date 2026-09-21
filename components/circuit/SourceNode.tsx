@@ -3,7 +3,7 @@ import type { NodeProps } from "@xyflow/react";
 
 import { cn } from "@/lib/utils";
 
-import type { SourceFlowNode } from "./flow-types";
+import type { SourceFlowNode, VoltagePolarity } from "./flow-types";
 
 const voltageHandleStyle = {
   width: 13,
@@ -20,10 +20,16 @@ const currentHandleStyle = {
 function VoltageSymbol({
   vertical,
   reversed,
+  polarity,
 }: {
   vertical: boolean;
   reversed: boolean;
+  polarity: VoltagePolarity;
 }) {
+  const showsPolarity = polarity !== "neutral";
+  const effectiveReversed =
+    polarity === "negative" ? !reversed : reversed;
+
   return vertical ? (
     <svg
       viewBox="0 0 116 180"
@@ -37,12 +43,18 @@ function VoltageSymbol({
         strokeLinecap="round"
       />
       <path
-        d={reversed ? "M39 68 H77 M27 91 H89" : "M27 68 H89 M39 91 H77"}
+        d={
+          showsPolarity
+            ? effectiveReversed
+              ? "M39 68 H77 M27 91 H89"
+              : "M27 68 H89 M39 91 H77"
+            : "M31 68 H85 M31 91 H85"
+        }
         stroke="#fbbf24"
         strokeWidth="5"
         strokeLinecap="round"
       />
-      {reversed ? (
+      {showsPolarity && effectiveReversed ? (
         <>
           <text x="91" y="72" fill="#94a3b8" fontSize="20" fontWeight="700">
             −
@@ -51,7 +63,7 @@ function VoltageSymbol({
             +
           </text>
         </>
-      ) : (
+      ) : showsPolarity ? (
         <>
           <text x="94" y="72" fill="#fbbf24" fontSize="18" fontWeight="700">
             +
@@ -60,7 +72,7 @@ function VoltageSymbol({
             −
           </text>
         </>
-      )}
+      ) : null}
     </svg>
   ) : (
     <svg
@@ -75,12 +87,18 @@ function VoltageSymbol({
         strokeLinecap="round"
       />
       <path
-        d={reversed ? "M68 33 V71 M91 21 V83" : "M68 21 V83 M91 33 V71"}
+        d={
+          showsPolarity
+            ? effectiveReversed
+              ? "M68 33 V71 M91 21 V83"
+              : "M68 21 V83 M91 33 V71"
+            : "M68 28 V76 M91 28 V76"
+        }
         stroke="#fbbf24"
         strokeWidth="5"
         strokeLinecap="round"
       />
-      {reversed ? (
+      {showsPolarity && effectiveReversed ? (
         <>
           <text x="62" y="28" fill="#94a3b8" fontSize="20" fontWeight="700">
             −
@@ -89,7 +107,7 @@ function VoltageSymbol({
             +
           </text>
         </>
-      ) : (
+      ) : showsPolarity ? (
         <>
           <text x="57" y="20" fill="#fbbf24" fontSize="18" fontWeight="700">
             +
@@ -98,7 +116,7 @@ function VoltageSymbol({
             −
           </text>
         </>
-      )}
+      ) : null}
     </svg>
   );
 }
@@ -182,6 +200,13 @@ function CurrentSymbol({
 export function SourceNode({ data, selected }: NodeProps<SourceFlowNode>) {
   const isVertical = data.orientation === "vertical";
   const isVoltage = data.sourceType === "voltage";
+  const voltagePolarity =
+    data.voltagePolarity ??
+    (data.value.startsWith("-")
+      ? "negative"
+      : data.value.startsWith("0")
+        ? "neutral"
+        : "positive");
   const tone = isVoltage
     ? {
         border: "border-amber-400/35",
@@ -230,7 +255,11 @@ export function SourceNode({ data, selected }: NodeProps<SourceFlowNode>) {
       />
 
       {isVoltage ? (
-        <VoltageSymbol vertical={isVertical} reversed={data.reversed} />
+        <VoltageSymbol
+          vertical={isVertical}
+          reversed={data.reversed}
+          polarity={voltagePolarity}
+        />
       ) : (
         <CurrentSymbol vertical={isVertical} reversed={data.reversed} />
       )}

@@ -7,6 +7,7 @@ import type {
   CircuitFlowEdge,
   CircuitFlowNode,
   ComponentOrientation,
+  VoltagePolarity,
 } from "./flow-types";
 
 export type NodePositionMap = Record<NodeId, XYPosition>;
@@ -80,6 +81,12 @@ function componentCenter(from: XYPosition, to: XYPosition): XYPosition {
   return { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 };
 }
 
+function voltagePolarity(volts: number): VoltagePolarity {
+  if (volts > 0) return "positive";
+  if (volts < 0) return "negative";
+  return "neutral";
+}
+
 function componentNode(
   component: Component,
   positions: NodePositionMap,
@@ -132,6 +139,7 @@ function componentNode(
       sourceType: isVoltage ? "voltage" : "current",
       orientation,
       reversed: isReversed(from, to, orientation),
+      ...(isVoltage ? { voltagePolarity: voltagePolarity(component.volts) } : {}),
     },
     zIndex: 2,
     draggable: false,

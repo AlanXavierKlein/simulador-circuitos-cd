@@ -147,6 +147,7 @@ function createConstructorNode(
       sourceType: isVoltage ? "voltage" : "current",
       orientation: componentOrientation,
       reversed: false,
+      ...(isVoltage ? { voltagePolarity: "positive" as const } : {}),
     },
     zIndex: 2,
   };
@@ -609,6 +610,16 @@ function ConstructorWorkspace() {
               ...node.data,
               numericValue: boundedValue,
               value: formatValue(boundedValue, unit),
+              ...(node.data.builderKind === "voltageSource"
+                ? {
+                    voltagePolarity:
+                      boundedValue > 0
+                        ? ("positive" as const)
+                        : boundedValue < 0
+                          ? ("negative" as const)
+                          : ("neutral" as const),
+                  }
+                : {}),
             },
           } as ConstructorFlowNode;
         }),

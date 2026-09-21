@@ -1,6 +1,7 @@
 import type { Edge, Node } from "@xyflow/react";
 
 export type ComponentOrientation = "horizontal" | "vertical";
+export type VoltagePolarity = "positive" | "negative" | "neutral";
 
 export type ResistorNodeData = Record<string, unknown> & {
   label: string;
@@ -15,6 +16,7 @@ export type SourceNodeData = Record<string, unknown> & {
   sourceType: "voltage" | "current";
   orientation: ComponentOrientation;
   reversed: boolean;
+  voltagePolarity?: VoltagePolarity;
 };
 
 export type JunctionNodeData = Record<string, unknown> & {
