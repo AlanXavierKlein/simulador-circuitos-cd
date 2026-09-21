@@ -39,4 +39,16 @@ describe("estado editable del circuito", () => {
       originalSnapshot.components.find((component) => component.label === "R1"),
     ).toMatchObject({ ohms: 25 });
   });
+
+  it("solo acepta 0 Ω cuando el caso lo habilita explícitamente", () => {
+    expect(() => updateCircuitComponentValue(problem9, "R1", 0)).toThrow(
+      "mayor que cero",
+    );
+
+    const modified = updateCircuitComponentValue(problem9, "R1", 0, {
+      allowZeroResistance: true,
+    });
+    expect(modified.components.find((component) => component.label === "R1"))
+      .toMatchObject({ ohms: 0 });
+  });
 });

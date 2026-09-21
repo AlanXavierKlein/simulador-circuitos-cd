@@ -185,6 +185,8 @@ export type GuideCircuitCase = {
   stepContentOverrides?: Record<string, string>;
   resolution: GuideResolution;
   validations: GuideValidationDefinition[];
+  /** Habilita 0 Ω exclusivamente en los casos de la guía que lo permiten. */
+  allowZeroResistance?: boolean;
 };
 
 export type GuideNetworkProblem = {
@@ -333,6 +335,7 @@ export const guideNetworkProblems: Record<
             "La corriente total atraviesa R2 y R6. En el paralelo se divide entre R3 y la rama formada por R1, R4 y R5.",
         },
         resolution: guideNetworkResolutions.p8a,
+        allowZeroResistance: true,
         validations: [
           {
             id: "req",
@@ -383,6 +386,7 @@ export const guideNetworkProblems: Record<
             "La corriente total atraviesa R1, R4 y R5. Como R2 y R3 son iguales, la corriente se divide por partes iguales en el paralelo.",
         },
         resolution: guideNetworkResolutions.p8b,
+        allowZeroResistance: true,
         validations: [
           {
             id: "req",

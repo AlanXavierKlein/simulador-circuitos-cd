@@ -26,6 +26,7 @@ type GuideWorkspaceOptions = {
   stepExplanations: Record<string, string>;
   stepContentOverrides?: Record<string, string>;
   resolution: GuideResolution;
+  allowZeroResistance?: boolean;
 };
 
 type SimulatorWorkspaceProps = {
@@ -47,9 +48,12 @@ export function SimulatorWorkspace({
 }: SimulatorWorkspaceProps) {
   const originalCircuitRef = useRef<Circuit>(cloneCircuit(initialCircuit));
   const [circuit, setCircuit] = useState(() => cloneCircuit(initialCircuit));
+  const allowZeroResistance = guide?.allowZeroResistance ?? false;
   const calculation = useMemo(() => {
     try {
-      const result = solveCircuit(circuit);
+      const result = solveCircuit(circuit, {
+        allowZeroResistance,
+      });
       return {
         result,
         steps: buildSolutionSteps(circuit, result),
@@ -65,12 +69,13 @@ export function SimulatorWorkspace({
             : "No se pudo resolver el circuito.",
       };
     }
-  }, [circuit]);
+  }, [allowZeroResistance, circuit]);
 
   const controls = (
     <ComponentControls
       circuit={circuit}
       compact={Boolean(guide)}
+      allowZeroResistance={allowZeroResistance}
       onReset={
         guide
           ? () => setCircuit(cloneCircuit(originalCircuitRef.current))
@@ -78,7 +83,9 @@ export function SimulatorWorkspace({
       }
       onValueChange={(label, value) =>
         setCircuit((currentCircuit) =>
-          updateCircuitComponentValue(currentCircuit, label, value),
+          updateCircuitComponentValue(currentCircuit, label, value, {
+            allowZeroResistance,
+          }),
         )
       }
     />

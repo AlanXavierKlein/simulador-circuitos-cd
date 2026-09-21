@@ -86,6 +86,7 @@ export function NetworkGuidePage({
                   stepExplanations: problemCase.stepExplanations,
                   stepContentOverrides: problemCase.stepContentOverrides,
                   resolution: problemCase.resolution,
+                  allowZeroResistance: problemCase.allowZeroResistance,
                 }}
               />
             </article>

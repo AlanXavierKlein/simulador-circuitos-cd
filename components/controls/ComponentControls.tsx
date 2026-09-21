@@ -9,6 +9,7 @@ type ComponentControlsProps = {
   onValueChange: (label: string, value: number) => void;
   onReset?: () => void;
   compact?: boolean;
+  allowZeroResistance?: boolean;
 };
 
 type ControlRange = {
@@ -26,12 +27,15 @@ const MAX_RESISTANCE_OHMS = 1000;
 const MAX_VOLTAGE_VOLTS = 1000;
 const MAX_SLIDER_VALUE = 500;
 
-function controlRange(component: Component): ControlRange {
+function controlRange(
+  component: Component,
+  allowZeroResistance: boolean,
+): ControlRange {
   if (component.type === "resistor") {
     return {
-      min: 0.1,
+      min: allowZeroResistance ? 0 : 0.1,
       max: MAX_RESISTANCE_OHMS,
-      sliderMin: 0.1,
+      sliderMin: allowZeroResistance ? 0 : 0.1,
       sliderMax: MAX_SLIDER_VALUE,
       step: 0.1,
       unit: "Ω",
@@ -96,6 +100,7 @@ export function ComponentControls({
   onValueChange,
   onReset,
   compact = false,
+  allowZeroResistance = false,
 }: ComponentControlsProps) {
   const orderedComponents = [...circuit.components].sort(componentOrder);
 
@@ -117,6 +122,11 @@ export function ComponentControls({
             <p className="mt-1 text-xs leading-5 text-slate-500">
               Cambiá un valor: el circuito se resuelve al instante.
             </p>
+            {allowZeroResistance ? (
+              <p className="mt-1 text-xs leading-5 text-amber-200/85">
+                En este ejercicio, 0 Ω representa un cable ideal.
+              </p>
+            ) : null}
           </div>
         </div>
         {onReset ? (
@@ -137,7 +147,7 @@ export function ComponentControls({
         }
       >
         {orderedComponents.map((component) => {
-          const range = controlRange(component);
+          const range = controlRange(component, allowZeroResistance);
           const inputId = `component-${component.label}`;
           const sliderValue = Math.min(
             range.sliderMax,
