@@ -8,7 +8,6 @@ import {
   BackgroundVariant,
   ConnectionMode,
   Controls,
-  MiniMap,
   Panel,
   ReactFlow,
   ReactFlowProvider,
@@ -34,6 +33,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { AnimatedWire } from "@/components/circuit/AnimatedWire";
+import { CircuitMiniMap } from "@/components/circuit/CircuitMiniMap";
 import { JunctionNode } from "@/components/circuit/JunctionNode";
 import { ResistorNode } from "@/components/circuit/ResistorNode";
 import { SourceNode } from "@/components/circuit/SourceNode";
@@ -112,6 +112,8 @@ function createConstructorNode(
         label: isGround ? "0" : nextLabel(nodes, "N"),
         isGround,
       },
+      initialWidth: 44,
+      initialHeight: 44,
       zIndex: 3,
     };
   }
@@ -129,6 +131,8 @@ function createConstructorNode(
         orientation: componentOrientation,
         reversed: false,
       },
+      initialWidth: 180,
+      initialHeight: 104,
       zIndex: 2,
     };
   }
@@ -149,6 +153,8 @@ function createConstructorNode(
       reversed: false,
       ...(isVoltage ? { voltagePolarity: "positive" as const } : {}),
     },
+    initialWidth: 180,
+    initialHeight: 104,
     zIndex: 2,
   };
 }
@@ -836,21 +842,7 @@ function ConstructorWorkspace() {
               size={1.35}
               color="#263449"
             />
-            <MiniMap
-              pannable
-              zoomable
-              nodeColor={(node) =>
-                node.type === "source"
-                  ? "#fbbf24"
-                  : node.type === "resistor"
-                    ? "#22d3ee"
-                    : "#c4b5fd"
-              }
-              nodeStrokeColor="#020617"
-              nodeBorderRadius={10}
-              maskColor="rgba(2, 6, 23, 0.72)"
-              bgColor="#0f172a"
-            />
+            <CircuitMiniMap />
             <Controls position="bottom-left" showInteractive={false} />
             <Panel position="top-left" className="m-4!">
               <div className="rounded-xl border border-slate-700/80 bg-slate-950/85 px-4 py-3 shadow-xl backdrop-blur-md">

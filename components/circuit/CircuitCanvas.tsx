@@ -5,7 +5,6 @@ import {
   BackgroundVariant,
   ConnectionMode,
   Controls,
-  MiniMap,
   Panel,
   ReactFlow,
 } from "@xyflow/react";
@@ -16,6 +15,7 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { Circuit } from "@/lib/engine/model";
 
 import { AnimatedWire } from "./AnimatedWire";
+import { CircuitMiniMap } from "./CircuitMiniMap";
 import { circuitToFlow } from "./circuit-adapter";
 import type {
   ComponentPositionMap,
@@ -122,23 +122,7 @@ export function CircuitCanvas({
           size={1.35}
           color="#263449"
         />
-        <MiniMap
-          pannable
-          zoomable
-          className="hidden sm:block"
-          position="bottom-right"
-          nodeColor={(node) =>
-            node.type === "source"
-              ? "#fbbf24"
-              : node.type === "resistor"
-                ? "#22d3ee"
-                : "#c4b5fd"
-          }
-          nodeStrokeColor="#020617"
-          nodeBorderRadius={10}
-          maskColor="rgba(2, 6, 23, 0.72)"
-          bgColor="#0f172a"
-        />
+        <CircuitMiniMap />
         <Controls position="bottom-left" showInteractive={false} />
 
         <Panel position="top-left" className="m-4!">

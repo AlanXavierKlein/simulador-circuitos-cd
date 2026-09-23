@@ -22,6 +22,11 @@ describe("adaptador Circuit -> React Flow", () => {
       5,
     );
     expect(flow.nodes.filter((node) => node.type === "source")).toHaveLength(3);
+    expect(
+      flow.nodes.every(
+        (node) => node.initialWidth !== undefined && node.initialHeight !== undefined,
+      ),
+    ).toBe(true);
   });
 
   it("expone valores y lleva la corriente resuelta a los cables animados", () => {
