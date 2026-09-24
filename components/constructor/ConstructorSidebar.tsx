@@ -192,7 +192,7 @@ export function ConstructorSidebar({
 
         {selectedNode ? (
           <div className="mt-4 space-y-3">
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,9rem),1fr))] gap-3">
+            <div className="space-y-3">
               <label className="block">
                 <span className="text-xs font-medium text-slate-400">
                   Etiqueta
@@ -265,18 +265,20 @@ export function ConstructorSidebar({
                         <Plus className="size-4" />
                       </button>
                     </div>
-                    <input
-                      aria-label={`Control deslizante de ${selectedComponent.data.label}`}
-                      type="range"
-                      min={minimumSliderValue}
-                      max={maximumSliderValue}
-                      step={valueStep}
-                      value={sliderValue}
-                      onChange={(event) =>
-                        updateBoundedValue(Number(event.currentTarget.value))
-                      }
-                      className="block h-2 w-full cursor-pointer accent-cyan-400"
-                    />
+                    <div className="border-t border-slate-700 px-3 py-2">
+                      <input
+                        aria-label={`Control deslizante de ${selectedComponent.data.label}`}
+                        type="range"
+                        min={minimumSliderValue}
+                        max={maximumSliderValue}
+                        step={valueStep}
+                        value={sliderValue}
+                        onChange={(event) =>
+                          updateBoundedValue(Number(event.currentTarget.value))
+                        }
+                        className="block h-4 w-full cursor-pointer accent-cyan-400"
+                      />
+                    </div>
                   </div>
                   <p className="mt-1.5 text-[11px] text-slate-400">
                     {selectedKind === "resistor"
