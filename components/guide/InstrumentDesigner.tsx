@@ -60,10 +60,10 @@ export function InstrumentDesigner({ kind }: { kind: InstrumentKind }) {
 
   return (
     <div className="min-w-0 space-y-6">
-      <InstrumentDiagram kind={kind} scales={scales} />
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start">
+        <InstrumentDiagram kind={kind} scales={scales} />
 
-      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-[22rem_minmax(0,1fr)] xl:items-start">
-        <aside className="min-w-0 max-w-full rounded-3xl border border-slate-800 bg-slate-950/70 p-5 shadow-xl shadow-black/20">
+        <aside className="app-surface min-w-0 max-w-full p-5 xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto">
           <div className="flex items-start gap-3">
             <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-cyan-400/20 bg-cyan-400/10 text-cyan-300">
               <SlidersHorizontal className="size-5" />
@@ -84,7 +84,7 @@ export function InstrumentDesigner({ kind }: { kind: InstrumentKind }) {
             Restablecer valores
           </button>
 
-          <div className="mt-5 space-y-4">
+          <div className="mt-5 grid grid-cols-[repeat(auto-fit,minmax(min(100%,9rem),1fr))] gap-3">
             <NumberField
               label="rg"
               value={rg}
@@ -118,21 +118,22 @@ export function InstrumentDesigner({ kind }: { kind: InstrumentKind }) {
           </div>
         </aside>
 
-        {!calculation.result ? (
-          <div
-            role="alert"
-            className="flex items-start gap-3 rounded-3xl border border-amber-400/30 bg-amber-400/10 p-5 text-sm text-amber-100"
-          >
-            <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-300" />
-            <div>
-              <p className="font-medium">Revisá los datos ingresados.</p>
-              <p className="mt-1 leading-6 text-amber-100/85">
-                {calculation.error}
-              </p>
-            </div>
-          </div>
-        ) : null}
       </div>
+
+      {!calculation.result ? (
+        <div
+          role="alert"
+          className="flex items-start gap-3 rounded-3xl border border-amber-400/30 bg-amber-400/10 p-5 text-sm text-amber-100"
+        >
+          <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-300" />
+          <div>
+            <p className="font-medium">Revisá los datos ingresados.</p>
+            <p className="mt-1 leading-6 text-amber-100/85">
+              {calculation.error}
+            </p>
+          </div>
+        </div>
+      ) : null}
 
       {calculation.result ? (
         <>

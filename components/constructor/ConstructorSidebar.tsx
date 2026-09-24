@@ -110,6 +110,7 @@ function componentUnit(node: ConstructorComponentNode): string {
 }
 
 export function ConstructorSidebar({
+  section,
   selectedNode,
   selectedEdge,
   storageMessage,
@@ -123,6 +124,7 @@ export function ConstructorSidebar({
   onLoad,
   onClear,
 }: {
+  section: "palette" | "properties";
   selectedNode: ConstructorFlowNode | null;
   selectedEdge: ConstructorFlowEdge | null;
   storageMessage: string | null;
@@ -157,8 +159,9 @@ export function ConstructorSidebar({
     : minimumSliderValue;
 
   return (
-    <aside className="space-y-4 lg:sticky lg:top-24">
-      <section className="app-surface p-4">
+    <aside className="space-y-4 xl:sticky xl:top-24">
+      {section === "palette" ? (
+        <section className="app-surface p-4">
         <div className="flex items-start gap-3">
           <span className="app-icon size-10">
             <GitFork className="size-5" />
@@ -175,9 +178,11 @@ export function ConstructorSidebar({
             <PaletteButton key={item.kind} item={item} onAdd={onAdd} />
           ))}
         </div>
-      </section>
+        </section>
+      ) : null}
 
-      <section className="app-surface p-4">
+      {section === "properties" ? (
+        <section className="app-surface p-4">
         <h2 className="font-semibold text-slate-100">Propiedades</h2>
         {!selectedNode && !selectedEdge ? (
           <p className="mt-3 rounded-2xl border border-dashed border-slate-700 p-4 text-xs leading-5 text-slate-500">
@@ -187,98 +192,100 @@ export function ConstructorSidebar({
 
         {selectedNode ? (
           <div className="mt-4 space-y-3">
-            <label className="block">
-              <span className="text-xs font-medium text-slate-400">
-                Etiqueta
-              </span>
-              <input
-                type="text"
-                maxLength={18}
-                value={selectedNode.data.label}
-                disabled={
-                  selectedKind === "junction" && selectedNode.data.isGround
-                }
-                onChange={(event) => onUpdateLabel(event.currentTarget.value)}
-                className="app-input mt-1.5 h-10 w-full px-3 font-mono text-sm disabled:cursor-not-allowed disabled:text-slate-500"
-              />
-            </label>
-
-            {selectedComponent ? (
-              <div>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,9rem),1fr))] gap-3">
+              <label className="block">
                 <span className="text-xs font-medium text-slate-400">
-                  Valor
+                  Etiqueta
                 </span>
-                <div className="mt-1.5 overflow-hidden rounded-xl border border-slate-700 bg-slate-900 focus-within:border-cyan-400">
-                  <div className="flex items-stretch">
-                    <button
-                      type="button"
-                      aria-label={`Disminuir ${selectedComponent.data.label}`}
-                      onClick={() =>
-                        updateBoundedValue(
-                          Number(
-                            (
-                              selectedComponent.data.numericValue - valueStep
-                            ).toFixed(3),
-                          ),
-                        )
-                      }
-                      className="grid size-10 shrink-0 place-items-center border-r border-slate-700 text-slate-400 transition hover:bg-slate-800 hover:text-cyan-200"
-                    >
-                      <Minus className="size-4" />
-                    </button>
+                <input
+                  type="text"
+                  maxLength={18}
+                  value={selectedNode.data.label}
+                  disabled={
+                    selectedKind === "junction" && selectedNode.data.isGround
+                  }
+                  onChange={(event) => onUpdateLabel(event.currentTarget.value)}
+                  className="app-input mt-1.5 h-10 w-full px-3 font-mono text-sm disabled:cursor-not-allowed disabled:text-slate-500"
+                />
+              </label>
+
+              {selectedComponent ? (
+                <div>
+                  <span className="text-xs font-medium text-slate-400">
+                    Valor
+                  </span>
+                  <div className="mt-1.5 overflow-hidden rounded-xl border border-slate-700 bg-slate-900 focus-within:border-cyan-400">
+                    <div className="flex items-stretch">
+                      <button
+                        type="button"
+                        aria-label={`Disminuir ${selectedComponent.data.label}`}
+                        onClick={() =>
+                          updateBoundedValue(
+                            Number(
+                              (
+                                selectedComponent.data.numericValue - valueStep
+                              ).toFixed(3),
+                            ),
+                          )
+                        }
+                        className="grid size-10 shrink-0 place-items-center border-r border-slate-700 text-slate-400 transition hover:bg-slate-800 hover:text-cyan-200"
+                      >
+                        <Minus className="size-4" />
+                      </button>
+                      <input
+                        aria-label={`Valor de ${selectedComponent.data.label}`}
+                        type="number"
+                        min={minimumValue}
+                        max={maximumValue}
+                        step={valueStep}
+                        value={selectedComponent.data.numericValue}
+                        onChange={(event) => {
+                          const value = Number(event.currentTarget.value);
+                          updateBoundedValue(value);
+                        }}
+                        className="h-10 min-w-0 flex-1 bg-transparent px-2 text-center font-mono text-sm text-slate-100 outline-none"
+                      />
+                      <span className="grid h-10 min-w-8 place-items-center border-l border-slate-700 px-1.5 font-mono text-xs text-cyan-200">
+                        {componentUnit(selectedComponent)}
+                      </span>
+                      <button
+                        type="button"
+                        aria-label={`Aumentar ${selectedComponent.data.label}`}
+                        onClick={() =>
+                          updateBoundedValue(
+                            Number(
+                              (
+                                selectedComponent.data.numericValue + valueStep
+                              ).toFixed(3),
+                            ),
+                          )
+                        }
+                        className="grid size-10 shrink-0 place-items-center border-l border-slate-700 text-slate-400 transition hover:bg-slate-800 hover:text-cyan-200"
+                      >
+                        <Plus className="size-4" />
+                      </button>
+                    </div>
                     <input
-                      aria-label={`Valor de ${selectedComponent.data.label}`}
-                      type="number"
-                      min={minimumValue}
-                      max={maximumValue}
+                      aria-label={`Control deslizante de ${selectedComponent.data.label}`}
+                      type="range"
+                      min={minimumSliderValue}
+                      max={maximumSliderValue}
                       step={valueStep}
-                      value={selectedComponent.data.numericValue}
-                      onChange={(event) => {
-                        const value = Number(event.currentTarget.value);
-                        updateBoundedValue(value);
-                      }}
-                      className="h-10 min-w-0 flex-1 bg-transparent px-3 text-center font-mono text-sm text-slate-100 outline-none"
-                    />
-                    <span className="grid h-10 min-w-10 place-items-center border-l border-slate-700 px-2 font-mono text-xs text-cyan-200">
-                      {componentUnit(selectedComponent)}
-                    </span>
-                    <button
-                      type="button"
-                      aria-label={`Aumentar ${selectedComponent.data.label}`}
-                      onClick={() =>
-                        updateBoundedValue(
-                          Number(
-                            (
-                              selectedComponent.data.numericValue + valueStep
-                            ).toFixed(3),
-                          ),
-                        )
+                      value={sliderValue}
+                      onChange={(event) =>
+                        updateBoundedValue(Number(event.currentTarget.value))
                       }
-                      className="grid size-10 shrink-0 place-items-center border-l border-slate-700 text-slate-400 transition hover:bg-slate-800 hover:text-cyan-200"
-                    >
-                      <Plus className="size-4" />
-                    </button>
+                      className="block h-2 w-full cursor-pointer accent-cyan-400"
+                    />
                   </div>
-                  <input
-                    aria-label={`Control deslizante de ${selectedComponent.data.label}`}
-                    type="range"
-                    min={minimumSliderValue}
-                    max={maximumSliderValue}
-                    step={valueStep}
-                    value={sliderValue}
-                    onChange={(event) =>
-                      updateBoundedValue(Number(event.currentTarget.value))
-                    }
-                    className="block h-2 w-full cursor-pointer accent-cyan-400"
-                  />
+                  <p className="mt-1.5 text-[11px] text-slate-400">
+                    {selectedKind === "resistor"
+                      ? "Valor positivo entre 0,1 Ω y 1000 Ω."
+                      : `Rango permitido: −1000 a 1000 ${componentUnit(selectedComponent)}.`}
+                  </p>
                 </div>
-                <p className="mt-1.5 text-[11px] text-slate-400">
-                  {selectedKind === "resistor"
-                    ? "Valor positivo entre 0,1 Ω y 1000 Ω."
-                    : `Rango permitido: −1000 a 1000 ${componentUnit(selectedComponent)}.`}
-                </p>
-              </div>
-            ) : null}
+              ) : null}
+            </div>
 
             {selectedKind === "junction" && !selectedNode.data.isGround ? (
               <button
@@ -334,9 +341,11 @@ export function ConstructorSidebar({
             </button>
           </div>
         ) : null}
-      </section>
+        </section>
+      ) : null}
 
-      <section className="app-surface p-4">
+      {section === "palette" ? (
+        <section className="app-surface p-4">
         <h2 className="font-semibold text-slate-100">Circuito guardado</h2>
         <p className="mt-1 text-xs leading-5 text-slate-500">
           Se conserva localmente en este navegador.
@@ -369,7 +378,8 @@ export function ConstructorSidebar({
             {storageMessage}
           </p>
         ) : null}
-      </section>
+        </section>
+      ) : null}
     </aside>
   );
 }

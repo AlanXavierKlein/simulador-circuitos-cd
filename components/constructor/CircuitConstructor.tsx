@@ -785,25 +785,28 @@ function ConstructorWorkspace() {
   const circuitKey = validation.circuit
     ? validation.circuit.nodes.map((node) => node.id).join("|")
     : "invalid";
+  const sidebarProps = {
+    selectedNode,
+    selectedEdge,
+    storageMessage,
+    onAdd: addFromPalette,
+    onUpdateLabel: updateSelectedLabel,
+    onUpdateValue: updateSelectedValue,
+    onSetGround: setSelectedAsGround,
+    onRotate: rotateSelected,
+    onDeleteSelection: deleteSelection,
+    onSave: saveCircuit,
+    onLoad: loadCircuit,
+    onClear: clearCanvas,
+  };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[18rem_minmax(0,1fr)] lg:items-start">
-      <ConstructorSidebar
-        selectedNode={selectedNode}
-        selectedEdge={selectedEdge}
-        storageMessage={storageMessage}
-        onAdd={addFromPalette}
-        onUpdateLabel={updateSelectedLabel}
-        onUpdateValue={updateSelectedValue}
-        onSetGround={setSelectedAsGround}
-        onRotate={rotateSelected}
-        onDeleteSelection={deleteSelection}
-        onSave={saveCircuit}
-        onLoad={loadCircuit}
-        onClear={clearCanvas}
-      />
+    <div className="grid min-w-0 gap-6 xl:grid-cols-[18rem_minmax(0,1fr)_22rem] xl:items-start">
+      <div className="order-2 min-w-0 xl:order-1">
+        <ConstructorSidebar {...sidebarProps} section="palette" />
+      </div>
 
-      <div className="min-w-0">
+      <div className="order-1 min-w-0 xl:order-2">
         <div
           ref={canvasRef}
           onDrop={onDrop}
@@ -862,9 +865,15 @@ function ConstructorWorkspace() {
             </Panel>
           </ReactFlow>
         </div>
+      </div>
 
+      <div className="order-3 min-w-0">
+        <ConstructorSidebar {...sidebarProps} section="properties" />
+      </div>
+
+      <div className="order-4 min-w-0 xl:col-span-3">
         {calculation.result && validation.circuit ? (
-          <div className="mt-5 flex items-start gap-3 rounded-2xl border border-lime-400/25 bg-lime-400/[0.06] p-4 text-sm text-lime-100">
+          <div className="flex items-start gap-3 rounded-2xl border border-lime-400/25 bg-lime-400/[0.06] p-4 text-sm text-lime-100">
             <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-lime-300" />
             <div>
               <p className="font-medium">Circuito válido y resuelto.</p>
@@ -876,7 +885,7 @@ function ConstructorWorkspace() {
         ) : isEmptyCircuit ? (
           <div
             role="status"
-            className="mt-5 flex items-start gap-3 rounded-2xl border border-slate-700 bg-slate-900/65 p-4 text-sm text-slate-200"
+            className="flex items-start gap-3 rounded-2xl border border-slate-700 bg-slate-900/65 p-4 text-sm text-slate-200"
           >
             <CircleDashed className="mt-0.5 size-5 shrink-0 text-cyan-300" />
             <div>
@@ -890,7 +899,7 @@ function ConstructorWorkspace() {
         ) : calculation.error ? (
           <div
             role="alert"
-            className="mt-5 flex items-start gap-3 rounded-2xl border border-rose-400/30 bg-rose-400/10 p-4 text-sm text-rose-100"
+            className="flex items-start gap-3 rounded-2xl border border-rose-400/30 bg-rose-400/10 p-4 text-sm text-rose-100"
           >
             <AlertTriangle className="mt-0.5 size-5 shrink-0 text-rose-300" />
             <div>
@@ -901,7 +910,7 @@ function ConstructorWorkspace() {
             </div>
           </div>
         ) : (
-          <div className="mt-5 flex items-start gap-3 rounded-2xl border border-amber-400/25 bg-amber-400/[0.06] p-4 text-sm text-amber-100">
+          <div className="flex items-start gap-3 rounded-2xl border border-amber-400/25 bg-amber-400/[0.06] p-4 text-sm text-amber-100">
             <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-300" />
             <div>
               <p className="font-medium">

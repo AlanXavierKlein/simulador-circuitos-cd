@@ -79,7 +79,6 @@ export function SimulatorWorkspace({
   const controls = (
     <ComponentControls
       circuit={circuit}
-      compact={Boolean(guide)}
       allowZeroResistance={allowZeroResistance}
       onReset={
         guide
@@ -109,19 +108,10 @@ export function SimulatorWorkspace({
 
   return (
     <>
-      {guide ? (
-        <div className="min-w-0 space-y-6">
-          {canvas}
-          <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6">
-            {controls}
-          </div>
-        </div>
-      ) : (
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start">
-          {canvas}
-          {controls}
-        </div>
-      )}
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start">
+        {canvas}
+        {controls}
+      </div>
 
       {calculation.result ? (
         <>
