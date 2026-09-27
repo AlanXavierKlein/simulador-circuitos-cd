@@ -63,7 +63,7 @@ export function NetworkGuidePage({
                 <div>
                   <div className="flex items-center gap-2 text-lime-300">
                     <BookOpenText className="size-4" />
-                    <p className="font-mono text-[11px] uppercase tracking-[0.16em]">
+                    <p className="font-mono text-xs uppercase tracking-[0.16em]">
                       Caso de estudio
                     </p>
                   </div>

@@ -91,7 +91,7 @@ function PaletteButton({
       </span>
       <span>
         <span className="block text-sm font-semibold">{item.title}</span>
-        <span className="mt-0.5 block text-[11px] leading-4 text-slate-500">
+        <span className="mt-0.5 block text-xs leading-4 text-slate-400">
           {item.description}
         </span>
       </span>
@@ -191,7 +191,7 @@ export function ConstructorSidebar({
         <section className="app-surface p-4">
         <h2 className="font-semibold text-slate-100">Propiedades</h2>
         {!selectedNode && !selectedEdge ? (
-          <p className="mt-3 rounded-2xl border border-dashed border-slate-700 p-4 text-xs leading-5 text-slate-500">
+          <p className="mt-3 rounded-2xl border border-dashed border-slate-700 p-4 text-xs leading-5 text-slate-400">
             Seleccioná un componente, nodo o cable para editarlo o borrarlo.
           </p>
         ) : null}
@@ -436,7 +436,7 @@ export function ConstructorSidebar({
             ) : null}
           </div>
 
-          <h3 className="mt-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+          <h3 className="mt-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
             Señales al conectar
           </h3>
           <ul className="mt-4 space-y-3 text-xs leading-5 text-slate-300">
@@ -462,7 +462,7 @@ export function ConstructorSidebar({
 
           <div className="my-4 h-px bg-slate-800" />
 
-          <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+          <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
             Reglas del circuito
           </h3>
           <ul className="space-y-2.5 text-xs leading-5 text-slate-400">

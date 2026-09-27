@@ -1014,7 +1014,7 @@ function ConstructorWorkspace() {
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
                   Circuito propio
                 </p>
-                <p className="mt-1 font-mono text-[11px] text-slate-500">
+                <p className="mt-1 font-mono text-xs text-slate-400">
                   {nodes.length} elementos · {edges.length} cables
                 </p>
               </div>
@@ -1033,7 +1033,7 @@ function ConstructorWorkspace() {
                     <p className="text-xs font-semibold text-slate-100">
                       Armado del circuito
                     </p>
-                    <p className="mt-0.5 text-[10px] leading-4 text-slate-500">
+                    <p className="mt-0.5 text-[11px] leading-4 text-slate-400">
                       Cada terminal se conecta a un nodo.
                     </p>
                   </div>
@@ -1044,7 +1044,7 @@ function ConstructorWorkspace() {
                     return (
                       <li
                         key={item.label}
-                        className={`flex items-start gap-2 rounded-lg px-2 py-1.5 text-[10px] leading-4 ${
+                        className={`flex items-start gap-2 rounded-lg px-2 py-1.5 text-[11px] leading-4 ${
                           item.complete
                             ? "bg-lime-400/[0.07] text-lime-200"
                             : isCurrent
@@ -1062,7 +1062,7 @@ function ConstructorWorkspace() {
                           />
                         )}
                         <span>
-                          <span className="mr-1 font-mono text-[9px] opacity-70">
+                          <span className="mr-1 font-mono text-[10px] opacity-75">
                             {index + 1}.
                           </span>
                           {item.label}

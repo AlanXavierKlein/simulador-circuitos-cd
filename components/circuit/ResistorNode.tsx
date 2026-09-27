@@ -119,7 +119,7 @@ export function ResistorNode({ data, selected }: NodeProps<ResistorFlowNode>) {
       </span>
       <span
         className={cn(
-          "absolute rounded-md bg-slate-900/95 px-2 py-1 font-mono text-[11px] text-lime-300",
+          "absolute rounded-md bg-slate-900/95 px-2 py-1 font-mono text-xs font-semibold text-lime-300",
           isVertical
             ? "bottom-6 right-2"
             : "bottom-2 left-1/2 -translate-x-1/2",
@@ -129,7 +129,7 @@ export function ResistorNode({ data, selected }: NodeProps<ResistorFlowNode>) {
       </span>
 
       {data.connectionHintMessage ? (
-        <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-3 w-max max-w-56 -translate-x-1/2 rounded-lg border border-amber-400/30 bg-slate-950/95 px-3 py-2 text-center text-[11px] leading-4 text-amber-100 shadow-xl">
+        <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-3 w-max max-w-56 -translate-x-1/2 rounded-lg border border-amber-400/30 bg-slate-950/95 px-3 py-2 text-center text-xs leading-5 text-amber-100 shadow-xl">
           {data.connectionHintMessage}
         </span>
       ) : null}

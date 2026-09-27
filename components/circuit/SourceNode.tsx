@@ -307,7 +307,7 @@ export function SourceNode({ data, selected }: NodeProps<SourceFlowNode>) {
       </span>
       <span
         className={cn(
-          "absolute rounded-md bg-slate-900/95 px-2 py-1 font-mono text-[11px]",
+          "absolute rounded-md bg-slate-900/95 px-2 py-1 font-mono text-xs font-semibold",
           tone.value,
           isVertical
             ? "bottom-5 right-2"
@@ -318,7 +318,7 @@ export function SourceNode({ data, selected }: NodeProps<SourceFlowNode>) {
       </span>
 
       {data.connectionHintMessage ? (
-        <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-3 w-max max-w-56 -translate-x-1/2 rounded-lg border border-amber-400/30 bg-slate-950/95 px-3 py-2 text-center text-[11px] leading-4 text-amber-100 shadow-xl">
+        <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-3 w-max max-w-56 -translate-x-1/2 rounded-lg border border-amber-400/30 bg-slate-950/95 px-3 py-2 text-center text-xs leading-5 text-amber-100 shadow-xl">
           {data.connectionHintMessage}
         </span>
       ) : null}

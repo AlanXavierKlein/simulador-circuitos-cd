@@ -70,7 +70,7 @@ export function InstrumentDesigner({ kind }: { kind: InstrumentKind }) {
             </span>
             <div>
               <h2 className="font-semibold text-slate-100">Datos</h2>
-              <p className="mt-1 text-xs leading-5 text-slate-500">
+              <p className="mt-1 text-xs leading-5 text-slate-400">
                 El cálculo se actualiza al instante.
               </p>
             </div>
@@ -215,7 +215,7 @@ function NumberField({
           }}
           className="h-10 min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 font-mono text-sm text-slate-100 outline-none transition focus:border-cyan-400"
         />
-        <span className="w-6 font-mono text-xs text-slate-500">{unit}</span>
+        <span className="w-6 font-mono text-xs text-slate-400">{unit}</span>
       </span>
     </label>
   );

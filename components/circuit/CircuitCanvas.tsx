@@ -9,7 +9,7 @@ import {
   ReactFlow,
 } from "@xyflow/react";
 import type { EdgeTypes, NodeTypes, ReactFlowInstance } from "@xyflow/react";
-import { Maximize2, MousePointer2, Move3d } from "lucide-react";
+import { Maximize2, Move3d } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import type { Circuit } from "@/lib/engine/model";
@@ -130,24 +130,20 @@ export function CircuitCanvas({
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
               {title}
             </p>
-            <p className="mt-1 font-mono text-[11px] text-slate-500">
+            <p className="mt-1 font-mono text-xs text-slate-400">
               {circuit.nodes.length} nodos · {circuit.components.length} ramas
             </p>
           </div>
         </Panel>
 
         <Panel position="top-right" className="m-4! hidden sm:block">
-          <div className="flex items-center gap-3 rounded-xl border border-slate-700/80 bg-slate-950/85 px-3 py-2 text-[11px] text-slate-400 shadow-xl backdrop-blur-md">
+          <div className="flex items-center gap-3 rounded-xl border border-slate-700/80 bg-slate-950/85 px-3 py-2 text-xs text-slate-300 shadow-xl backdrop-blur-md">
             <span className="flex items-center gap-1.5">
-              <Move3d className="size-3.5 text-cyan-300" /> mover
+              <Move3d className="size-3.5 text-cyan-300" /> desplazar
             </span>
             <span className="h-3 w-px bg-slate-700" />
             <span className="flex items-center gap-1.5">
               <Maximize2 className="size-3.5 text-cyan-300" /> zoom
-            </span>
-            <span className="h-3 w-px bg-slate-700" />
-            <span className="flex items-center gap-1.5">
-              <MousePointer2 className="size-3.5 text-cyan-300" /> seleccionar
             </span>
           </div>
         </Panel>

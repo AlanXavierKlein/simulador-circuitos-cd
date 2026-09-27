@@ -111,7 +111,7 @@ export function ComponentControls({
           </span>
           <div>
             <h2 className="font-semibold text-slate-100">Parámetros</h2>
-            <p className="mt-1 text-xs leading-5 text-slate-500">
+            <p className="mt-1 text-xs leading-5 text-slate-400">
               Cambiá un valor: el circuito se resuelve al instante.
             </p>
             {allowZeroResistance ? (

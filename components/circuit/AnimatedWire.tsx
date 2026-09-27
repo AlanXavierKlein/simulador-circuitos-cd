@@ -69,8 +69,8 @@ function AnimatedWireComponent({
           animationDuration: `${1.9 - intensity * 1.48}s`,
           animationDirection: current < 0 ? "reverse" : "normal",
           animationPlayState: isStopped ? "paused" : "running",
-          opacity: isStopped ? 0.2 : 0.42 + intensity * 0.58,
-          filter: `drop-shadow(0 0 ${2 + intensity * 5}px ${currentColor(intensity)})`,
+          opacity: isStopped ? 0.2 : 0.38 + intensity * 0.47,
+          filter: `drop-shadow(0 0 ${1 + intensity * 3}px ${currentColor(intensity)})`,
         }}
         data-branch={data?.branchLabel}
         data-current={current}
@@ -107,7 +107,7 @@ function AnimatedWireComponent({
               />
             </span>
             {data.referenceIsOpposite ? (
-              <span className="whitespace-nowrap text-[9px] font-semibold uppercase tracking-wide text-rose-300">
+              <span className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-wide text-rose-200">
                 real: opuesto
               </span>
             ) : null}

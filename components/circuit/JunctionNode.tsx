@@ -24,11 +24,11 @@ export function JunctionNode({ data, selected }: NodeProps<JunctionFlowNode>) {
       className={`relative grid place-items-center rounded-full border-[4px] ${
         data.isGround
           ? isConstructorNode
-            ? "size-11 bg-sky-300 shadow-[0_0_22px_rgba(125,211,252,0.5)]"
-            : "size-[22px] bg-sky-300 shadow-[0_0_18px_rgba(125,211,252,0.62)]"
+            ? "size-11 bg-sky-300 shadow-[0_0_16px_rgba(125,211,252,0.38)]"
+            : "size-[22px] bg-sky-300 shadow-[0_0_12px_rgba(125,211,252,0.42)]"
           : isConstructorNode
-            ? "size-11 bg-violet-300 shadow-[0_0_22px_rgba(196,181,253,0.5)]"
-            : "size-[22px] bg-violet-300 shadow-[0_0_18px_rgba(196,181,253,0.62)]"
+            ? "size-11 bg-violet-300 shadow-[0_0_16px_rgba(196,181,253,0.38)]"
+            : "size-[22px] bg-violet-300 shadow-[0_0_12px_rgba(196,181,253,0.42)]"
       } ${
         selected
           ? "border-white ring-2 ring-violet-300/70 ring-offset-2 ring-offset-slate-950"
@@ -78,14 +78,14 @@ export function JunctionNode({ data, selected }: NodeProps<JunctionFlowNode>) {
         />
       ))}
       <span
-        className={`pointer-events-none absolute whitespace-nowrap rounded-md border border-slate-700 bg-slate-950/95 px-2 py-0.5 font-mono text-[10px] text-slate-300 shadow-lg ${
+        className={`pointer-events-none absolute whitespace-nowrap rounded-md border border-slate-700 bg-slate-950/95 px-2 py-0.5 font-mono text-[11px] font-medium text-slate-200 shadow-md ${
           isConstructorNode ? "top-12" : "top-6"
         }`}
       >
         {data.isGround ? "⏚ 0" : data.label}
       </span>
       {data.connectionHintMessage ? (
-        <span className="pointer-events-none absolute left-1/2 top-16 z-20 w-max max-w-56 -translate-x-1/2 rounded-lg border border-amber-400/30 bg-slate-950/95 px-3 py-2 text-center text-[11px] leading-4 text-amber-100 shadow-xl">
+        <span className="pointer-events-none absolute left-1/2 top-16 z-20 w-max max-w-56 -translate-x-1/2 rounded-lg border border-amber-400/30 bg-slate-950/95 px-3 py-2 text-center text-xs leading-5 text-amber-100 shadow-xl">
           {data.connectionHintMessage}
         </span>
       ) : null}
