@@ -12,6 +12,8 @@ const positions = [
 
 export function JunctionNode({ data, selected }: NodeProps<JunctionFlowNode>) {
   const isConstructorNode = "builderKind" in data;
+  const isValidTarget = data.connectionHint === "valid";
+  const isInvalidTarget = data.connectionHint === "invalid";
 
   return (
     <div
@@ -27,7 +29,11 @@ export function JunctionNode({ data, selected }: NodeProps<JunctionFlowNode>) {
         selected
           ? "border-white ring-2 ring-violet-300/70 ring-offset-2 ring-offset-slate-950"
           : "border-slate-950"
-      }`}
+      } ${
+        isValidTarget
+          ? "border-lime-100 ring-4 ring-lime-300/75 ring-offset-2 ring-offset-slate-950 shadow-[0_0_30px_rgba(163,230,53,0.75)]"
+          : ""
+      } ${isInvalidTarget ? "opacity-35" : ""}`}
       aria-label={data.isGround ? "Nodo 0, tierra" : `Nodo ${data.label}`}
     >
       {positions.map(([id, position]) => (
@@ -42,8 +48,13 @@ export function JunctionNode({ data, selected }: NodeProps<JunctionFlowNode>) {
               ? {
                   width: 16,
                   height: 16,
-                  border: "3px solid #0f172a",
-                  background: "#c4b5fd",
+                  border: isValidTarget
+                    ? "3px solid #f8fafc"
+                    : "3px solid #0f172a",
+                  background: isValidTarget ? "#a3e635" : "#c4b5fd",
+                  boxShadow: isValidTarget
+                    ? "0 0 16px rgba(163,230,53,0.9)"
+                    : undefined,
                 }
               : { width: 8, height: 8 }
           }
@@ -56,6 +67,11 @@ export function JunctionNode({ data, selected }: NodeProps<JunctionFlowNode>) {
       >
         {data.isGround ? "⏚ 0" : data.label}
       </span>
+      {data.connectionHintMessage ? (
+        <span className="pointer-events-none absolute left-1/2 top-16 z-20 w-max max-w-56 -translate-x-1/2 rounded-lg border border-amber-400/30 bg-slate-950/95 px-3 py-2 text-center text-[11px] leading-4 text-amber-100 shadow-xl">
+          {data.connectionHintMessage}
+        </span>
+      ) : null}
     </div>
   );
 }

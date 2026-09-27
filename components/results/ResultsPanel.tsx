@@ -155,7 +155,9 @@ export function ResultsPanel({ circuit, result }: ResultsPanelProps) {
               const current = group.current;
               return (
                 <ResultCard
-                  key={group.label}
+                  key={JSON.stringify(
+                    group.segments.map((segment) => segment.componentLabel),
+                  )}
                   label={group.label}
                   value={current}
                   unit="A"

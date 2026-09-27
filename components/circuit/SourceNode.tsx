@@ -222,6 +222,29 @@ export function SourceNode({ data, selected }: NodeProps<SourceFlowNode>) {
         value: "text-cyan-300",
         handle: currentHandleStyle,
       };
+  const guidedHandleStyle = (handleId: "from" | "to") => {
+    const isValidTarget = data.validTargetHandles?.includes(handleId);
+    const isOrigin = data.connectionOriginHandle === handleId;
+    return {
+      ...tone.handle,
+      opacity:
+        data.connectionActive && !isValidTarget && !isOrigin ? 0.28 : 1,
+      ...(isValidTarget
+        ? {
+            background: "#a3e635",
+            border: "3px solid #f8fafc",
+            boxShadow: "0 0 16px rgba(163,230,53,0.9)",
+          }
+        : {}),
+      ...(isOrigin
+        ? {
+            background: "#fbbf24",
+            border: "3px solid #fef3c7",
+            boxShadow: "0 0 16px rgba(251,191,36,0.9)",
+          }
+        : {}),
+    };
+  };
   const fromPosition = isVertical
     ? data.reversed
       ? Position.Bottom
@@ -244,6 +267,9 @@ export function SourceNode({ data, selected }: NodeProps<SourceFlowNode>) {
         tone.border,
         isVertical ? "h-[180px] w-[116px]" : "h-[104px] w-[180px]",
         selected && tone.selected,
+        data.connectionHint === "valid" &&
+          "border-lime-300 ring-2 ring-lime-300/70 shadow-[0_0_30px_rgba(163,230,53,0.25)]",
+        data.connectionHint === "invalid" && "opacity-40",
       )}
       aria-label={`${data.label}, ${data.value}`}
     >
@@ -251,7 +277,7 @@ export function SourceNode({ data, selected }: NodeProps<SourceFlowNode>) {
         id="from"
         type="source"
         position={fromPosition}
-        style={tone.handle}
+        style={guidedHandleStyle("from")}
       />
 
       {isVoltage ? (
@@ -285,7 +311,18 @@ export function SourceNode({ data, selected }: NodeProps<SourceFlowNode>) {
         {data.value}
       </span>
 
-      <Handle id="to" type="source" position={toPosition} style={tone.handle} />
+      {data.connectionHintMessage ? (
+        <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-3 w-max max-w-56 -translate-x-1/2 rounded-lg border border-amber-400/30 bg-slate-950/95 px-3 py-2 text-center text-[11px] leading-4 text-amber-100 shadow-xl">
+          {data.connectionHintMessage}
+        </span>
+      ) : null}
+
+      <Handle
+        id="to"
+        type="source"
+        position={toPosition}
+        style={guidedHandleStyle("to")}
+      />
     </div>
   );
 }

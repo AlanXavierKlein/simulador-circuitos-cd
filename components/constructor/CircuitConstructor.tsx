@@ -21,6 +21,8 @@ import type {
   IsValidConnection,
   NodeChange,
   NodeTypes,
+  OnConnectEnd,
+  OnConnectStart,
   OnSelectionChangeParams,
   XYPosition,
 } from "@xyflow/react";
@@ -58,6 +60,11 @@ import {
   componentOrientation,
   nextComponentRotation,
 } from "./constructor-types";
+import {
+  getConstructorProgress,
+  isConstructorConnectionAllowed,
+  normalizeConstructorConnection,
+} from "./constructor-guidance";
 
 const STORAGE_KEY = "circuitos-cc:constructor:v1";
 
@@ -97,8 +104,8 @@ function createConstructorNode(
   kind: ConstructorNodeKind,
   position: XYPosition,
   nodes: ConstructorFlowNode[],
+  id = `builder:${kind}:${crypto.randomUUID()}`,
 ): ConstructorFlowNode {
-  const id = `builder:${kind}:${crypto.randomUUID()}`;
   if (kind === "junction") {
     const isGround = !nodes.some(
       (node) => node.data.builderKind === "junction" && node.data.isGround,
@@ -224,46 +231,6 @@ function asEditableConnection(
   };
 }
 
-function normalizeConnection(
-  connection: Connection | ConstructorFlowEdge,
-  nodes: ConstructorFlowNode[],
-): Connection | null {
-  const sourceNode = nodes.find((node) => node.id === connection.source);
-  const targetNode = nodes.find((node) => node.id === connection.target);
-  if (!sourceNode || !targetNode) return null;
-
-  const sourceIsJunction = sourceNode.data.builderKind === "junction";
-  const targetIsJunction = targetNode.data.builderKind === "junction";
-  if (sourceIsJunction === targetIsJunction) return null;
-
-  const componentNode = sourceIsJunction ? targetNode : sourceNode;
-  const junctionNode = sourceIsJunction ? sourceNode : targetNode;
-  const componentHandle = sourceIsJunction
-    ? connection.targetHandle
-    : connection.sourceHandle;
-  const junctionHandle = sourceIsJunction
-    ? connection.sourceHandle
-    : connection.targetHandle;
-
-  if (componentHandle === "from") {
-    return {
-      source: junctionNode.id,
-      sourceHandle: junctionHandle ?? null,
-      target: componentNode.id,
-      targetHandle: "from",
-    };
-  }
-  if (componentHandle === "to") {
-    return {
-      source: componentNode.id,
-      sourceHandle: "to",
-      target: junctionNode.id,
-      targetHandle: junctionHandle ?? null,
-    };
-  }
-  return null;
-}
-
 function isSavedConstructorCircuit(
   value: unknown,
 ): value is SavedConstructorCircuit {
@@ -357,6 +324,10 @@ function ConstructorWorkspace() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [storageMessage, setStorageMessage] = useState<string | null>(null);
+  const [activeConnection, setActiveConnection] = useState<{
+    nodeId: string;
+    handleId: string;
+  } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const { fitView, screenToFlowPosition } = useReactFlow<
     ConstructorFlowNode,
@@ -427,15 +398,106 @@ function ConstructorWorkspace() {
     [calculation.result?.branchCurrents, edges, maximumCurrent, nodes],
   );
 
+  const displayedNodes = useMemo(() => {
+    if (!activeConnection) return nodes;
+    const originNode = nodes.find(
+      (node) => node.id === activeConnection.nodeId,
+    );
+    if (!originNode) return nodes;
+
+    const originIsJunction = originNode.data.builderKind === "junction";
+    const junctionHandles = ["top", "right", "bottom", "left"];
+    const componentHandles = ["from", "to"];
+
+    return nodes.map((node) => {
+      if (node.id === activeConnection.nodeId) {
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            connectionActive: true,
+            connectionHint: "origin" as const,
+            connectionOriginHandle: activeConnection.handleId,
+            connectionHintMessage: originIsJunction
+              ? "Conectá este nodo con un terminal libre resaltado."
+              : "Cada terminal se conecta a un nodo resaltado.",
+          },
+        } as ConstructorFlowNode;
+      }
+
+      let validTargetHandles: string[] = [];
+      if (originIsJunction && node.data.builderKind !== "junction") {
+        validTargetHandles = componentHandles.filter((handleId) =>
+          isConstructorConnectionAllowed(
+            {
+              source: originNode.id,
+              sourceHandle: activeConnection.handleId,
+              target: node.id,
+              targetHandle: handleId,
+            },
+            nodes,
+            edges,
+          ),
+        );
+      } else if (
+        !originIsJunction &&
+        node.data.builderKind === "junction"
+      ) {
+        validTargetHandles = junctionHandles.filter((handleId) =>
+          isConstructorConnectionAllowed(
+            {
+              source: originNode.id,
+              sourceHandle: activeConnection.handleId,
+              target: node.id,
+              targetHandle: handleId,
+            },
+            nodes,
+            edges,
+          ),
+        );
+      }
+
+      return {
+        ...node,
+        data: {
+          ...node.data,
+          connectionActive: true,
+          connectionHint:
+            validTargetHandles.length > 0
+              ? ("valid" as const)
+              : ("invalid" as const),
+          validTargetHandles,
+        },
+      } as ConstructorFlowNode;
+    });
+  }, [activeConnection, edges, nodes]);
+
+  const progress = useMemo(
+    () =>
+      getConstructorProgress(
+        nodes,
+        edges,
+        validation.circuit !== null,
+        calculation.result !== null,
+      ),
+    [calculation.result, edges, nodes, validation.circuit],
+  );
+
   const selectedNode = nodes.find((node) => node.id === selectedNodeId) ?? null;
   const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId) ?? null;
 
   const addNodeAt = useCallback(
     (kind: ConstructorNodeKind, position: XYPosition) => {
+      const nodeId = `builder:${kind}:${crypto.randomUUID()}`;
       setNodes((current) => [
-        ...current,
-        createConstructorNode(kind, position, current),
+        ...current.map((node) => ({ ...node, selected: false })),
+        {
+          ...createConstructorNode(kind, position, current, nodeId),
+          selected: true,
+        },
       ]);
+      setSelectedNodeId(nodeId);
+      setSelectedEdgeId(null);
       setStorageMessage(null);
     },
     [],
@@ -450,10 +512,19 @@ function ConstructorWorkspace() {
             y: bounds.top + bounds.height / 2,
           })
         : { x: 320, y: 240 };
+      const nodeId = `builder:${kind}:${crypto.randomUUID()}`;
       setNodes((current) => {
         const position = findNearbyPosition(kind, visibleCenter, current);
-        return [...current, createConstructorNode(kind, position, current)];
+        return [
+          ...current.map((node) => ({ ...node, selected: false })),
+          {
+            ...createConstructorNode(kind, position, current, nodeId),
+            selected: true,
+          },
+        ];
       });
+      setSelectedNodeId(nodeId);
+      setSelectedEdgeId(null);
       setStorageMessage(null);
     },
     [screenToFlowPosition],
@@ -515,31 +586,29 @@ function ConstructorWorkspace() {
   );
 
   const isValidConnection = useCallback<IsValidConnection<ConstructorFlowEdge>>(
-    (connection) => {
-      const normalized = normalizeConnection(connection, nodes);
-      if (!normalized) return false;
-      const componentId =
-        normalized.targetHandle === "from"
-          ? normalized.target
-          : normalized.source;
-      const componentHandle =
-        normalized.targetHandle === "from" ? "from" : "to";
-      return !edges.some((edge) => {
-        if (edge.source === componentId) {
-          return edge.sourceHandle === componentHandle;
-        }
-        if (edge.target === componentId) {
-          return edge.targetHandle === componentHandle;
-        }
-        return false;
-      });
-    },
+    (connection) =>
+      isConstructorConnectionAllowed(connection, nodes, edges),
     [edges, nodes],
   );
 
+  const onConnectStart = useCallback<OnConnectStart>((_event, params) => {
+    if (!params.nodeId || !params.handleId) {
+      setActiveConnection(null);
+      return;
+    }
+    setActiveConnection({
+      nodeId: params.nodeId,
+      handleId: params.handleId,
+    });
+  }, []);
+
+  const onConnectEnd = useCallback<OnConnectEnd>(() => {
+    setActiveConnection(null);
+  }, []);
+
   const onConnect = useCallback(
     (connection: Connection) => {
-      const normalized = normalizeConnection(connection, nodes);
+      const normalized = normalizeConstructorConnection(connection, nodes);
       if (!normalized || !isValidConnection(connection)) return;
       const componentNode = nodes.find(
         (node) =>
@@ -785,6 +854,22 @@ function ConstructorWorkspace() {
   const circuitKey = validation.circuit
     ? validation.circuit.nodes.map((node) => node.id).join("|")
     : "invalid";
+  const progressItems = [
+    {
+      label: "Agregar componentes y dos nodos",
+      complete: progress.basicsAdded,
+    },
+    {
+      label: "Conectar cada terminal a un nodo",
+      complete: progress.terminalsConnected,
+    },
+    {
+      label: "Cerrar la red y definir tierra",
+      complete: progress.networkClosed,
+    },
+    { label: "Resolver", complete: progress.solved },
+  ];
+  const nextProgressStep = progressItems.findIndex((item) => !item.complete);
   const sidebarProps = {
     selectedNode,
     selectedEdge,
@@ -817,13 +902,15 @@ function ConstructorWorkspace() {
           className="circuit-flow relative h-[min(760px,calc(100vh-10rem))] min-h-[620px] w-full overflow-hidden rounded-3xl border border-slate-800 bg-[#080d18] shadow-2xl shadow-black/30"
         >
           <ReactFlow<ConstructorFlowNode, ConstructorFlowEdge>
-            nodes={nodes}
+            nodes={displayedNodes}
             edges={displayedEdges}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
+            onConnectStart={onConnectStart}
+            onConnectEnd={onConnectEnd}
             onSelectionChange={onSelectionChange}
             isValidConnection={isValidConnection}
             connectionMode={ConnectionMode.Loose}
@@ -857,10 +944,58 @@ function ConstructorWorkspace() {
                 </p>
               </div>
             </Panel>
-            <Panel position="top-right" className="m-4! hidden sm:block">
-              <div className="flex items-center gap-2 rounded-xl border border-slate-700/80 bg-slate-950/85 px-3 py-2 text-[11px] text-slate-400 shadow-xl backdrop-blur-md">
-                <MousePointer2 className="size-3.5 text-cyan-300" />
-                Uní cada terminal con un nodo
+            <Panel
+              position="top-right"
+              className="m-4! hidden w-[min(17rem,calc(100%-2rem))] sm:block"
+            >
+              <div
+                className="rounded-2xl border border-slate-700/80 bg-slate-950/92 p-3.5 shadow-xl backdrop-blur-md"
+                aria-label="Progreso del armado"
+              >
+                <div className="flex items-start gap-2.5">
+                  <MousePointer2 className="mt-0.5 size-4 shrink-0 text-cyan-300" />
+                  <div>
+                    <p className="text-xs font-semibold text-slate-100">
+                      Armado del circuito
+                    </p>
+                    <p className="mt-0.5 text-[10px] leading-4 text-slate-500">
+                      Cada terminal se conecta a un nodo.
+                    </p>
+                  </div>
+                </div>
+                <ol className="mt-3 space-y-2">
+                  {progressItems.map((item, index) => {
+                    const isCurrent = index === nextProgressStep;
+                    return (
+                      <li
+                        key={item.label}
+                        className={`flex items-start gap-2 rounded-lg px-2 py-1.5 text-[10px] leading-4 ${
+                          item.complete
+                            ? "bg-lime-400/[0.07] text-lime-200"
+                            : isCurrent
+                              ? "bg-cyan-400/[0.08] text-cyan-100"
+                              : "text-slate-500"
+                        }`}
+                      >
+                        {item.complete ? (
+                          <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-lime-300" />
+                        ) : (
+                          <CircleDashed
+                            className={`mt-0.5 size-3.5 shrink-0 ${
+                              isCurrent ? "text-cyan-300" : "text-slate-600"
+                            }`}
+                          />
+                        )}
+                        <span>
+                          <span className="mr-1 font-mono text-[9px] opacity-70">
+                            {index + 1}.
+                          </span>
+                          {item.label}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ol>
               </div>
             </Panel>
           </ReactFlow>

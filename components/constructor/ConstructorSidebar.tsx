@@ -2,6 +2,7 @@
 
 import {
   BatteryCharging,
+  BookOpenCheck,
   CircleDot,
   FolderOpen,
   GitFork,
@@ -343,6 +344,61 @@ export function ConstructorSidebar({
             </button>
           </div>
         ) : null}
+        </section>
+      ) : null}
+
+      {section === "properties" ? (
+        <section
+          className="app-surface p-4"
+          aria-labelledby="connection-guide-title"
+        >
+          <div className="flex items-start gap-3">
+            <span className="app-icon size-10 text-cyan-200">
+              <BookOpenCheck className="size-5" />
+            </span>
+            <div>
+              <h2
+                id="connection-guide-title"
+                className="font-semibold text-slate-100"
+              >
+                Guía de conexión
+              </h2>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                Reglas rápidas para armar el circuito.
+              </p>
+            </div>
+          </div>
+
+          <ul className="mt-4 space-y-3 text-xs leading-5 text-slate-300">
+            <li className="flex gap-2.5">
+              <span className="mt-1.5 size-2 shrink-0 rounded-full bg-lime-300 shadow-[0_0_8px_rgba(190,242,100,0.7)]" />
+              <span>
+                <strong className="font-semibold text-lime-200">Verde</strong>:
+                podés soltar el cable en ese destino.
+              </span>
+            </li>
+            <li className="flex gap-2.5">
+              <span className="mt-1.5 size-2 shrink-0 rounded-full bg-amber-300 shadow-[0_0_8px_rgba(252,211,77,0.65)]" />
+              <span>
+                <strong className="font-semibold text-amber-200">Ámbar</strong>:
+                es el terminal desde donde empezaste.
+              </span>
+            </li>
+            <li className="flex gap-2.5">
+              <span className="mt-1.5 size-2 shrink-0 rounded-full bg-slate-600" />
+              <span>Los destinos atenuados no aceptan esa conexión.</span>
+            </li>
+          </ul>
+
+          <div className="my-4 h-px bg-slate-800" />
+
+          <ul className="space-y-2.5 text-xs leading-5 text-slate-400">
+            <li>Cada terminal debe conectarse a un nodo intermedio.</li>
+            <li>No conectes dos componentes directamente.</li>
+            <li>Cada terminal admite un solo cable.</li>
+            <li>Los dos terminales deben ir a nodos distintos.</li>
+            <li>Para resolver, cerrá una malla y mantené un nodo como tierra.</li>
+          </ul>
         </section>
       ) : null}
 

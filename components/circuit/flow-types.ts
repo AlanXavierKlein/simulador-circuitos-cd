@@ -3,26 +3,39 @@ import type { Edge, Node } from "@xyflow/react";
 export type ComponentOrientation = "horizontal" | "vertical";
 export type VoltagePolarity = "positive" | "negative" | "neutral";
 
-export type ResistorNodeData = Record<string, unknown> & {
+export type ConnectionHint = "origin" | "valid" | "invalid";
+
+type ConnectionGuidanceData = {
+  connectionActive?: boolean;
+  connectionHint?: ConnectionHint;
+  connectionHintMessage?: string;
+  connectionOriginHandle?: string;
+  validTargetHandles?: string[];
+};
+
+export type ResistorNodeData = Record<string, unknown> &
+  ConnectionGuidanceData & {
   label: string;
   value: string;
   orientation: ComponentOrientation;
   reversed: boolean;
 };
 
-export type SourceNodeData = Record<string, unknown> & {
+export type SourceNodeData = Record<string, unknown> &
+  ConnectionGuidanceData & {
   label: string;
   value: string;
   sourceType: "voltage" | "current";
   orientation: ComponentOrientation;
   reversed: boolean;
   voltagePolarity?: VoltagePolarity;
-};
+  };
 
-export type JunctionNodeData = Record<string, unknown> & {
+export type JunctionNodeData = Record<string, unknown> &
+  ConnectionGuidanceData & {
   label: string;
   isGround: boolean;
-};
+  };
 
 export type ResistorFlowNode = Node<ResistorNodeData, "resistor">;
 export type SourceFlowNode = Node<SourceNodeData, "source">;
