@@ -51,6 +51,7 @@ import { buildSolutionSteps } from "@/lib/engine/steps";
 
 import { ConstructorSidebar } from "./ConstructorSidebar";
 import { createSimpleConstructorExample } from "./constructor-example";
+import { getConstructorFeedback } from "./constructor-feedback";
 import type {
   ConstructorFlowEdge,
   ConstructorFlowNode,
@@ -406,18 +407,43 @@ function ConstructorWorkspace() {
     [calculation.result?.branchCurrents, edges, maximumCurrent, nodes],
   );
 
+  const feedback = useMemo(
+    () =>
+      getConstructorFeedback(
+        nodes,
+        edges,
+        validation.issues,
+        validation.circuit !== null,
+        calculation.error,
+      ),
+    [calculation.error, edges, nodes, validation.circuit, validation.issues],
+  );
+
   const displayedNodes = useMemo(() => {
-    if (!activeConnection) return nodes;
-    const originNode = nodes.find(
+    const feedbackNodeIds = new Set(feedback?.nodeIds ?? []);
+    const nodesWithFeedback = nodes.map((node) =>
+      feedbackNodeIds.has(node.id)
+        ? ({
+            ...node,
+            data: {
+              ...node.data,
+              validationHint: feedback?.kind,
+            },
+          } as ConstructorFlowNode)
+        : node,
+    );
+
+    if (!activeConnection) return nodesWithFeedback;
+    const originNode = nodesWithFeedback.find(
       (node) => node.id === activeConnection.nodeId,
     );
-    if (!originNode) return nodes;
+    if (!originNode) return nodesWithFeedback;
 
     const originIsJunction = originNode.data.builderKind === "junction";
     const junctionHandles = ["top", "right", "bottom", "left"];
     const componentHandles = ["from", "to"];
 
-    return nodes.map((node) => {
+    return nodesWithFeedback.map((node) => {
       if (node.id === activeConnection.nodeId) {
         return {
           ...node,
@@ -478,7 +504,7 @@ function ConstructorWorkspace() {
         },
       } as ConstructorFlowNode;
     });
-  }, [activeConnection, edges, nodes]);
+  }, [activeConnection, edges, feedback, nodes]);
 
   const progress = useMemo(
     () =>
@@ -1047,6 +1073,36 @@ function ConstructorWorkspace() {
                 </ol>
               </div>
             </Panel>
+            {feedback ? (
+              <Panel
+                position="bottom-left"
+                className="z-10! m-4! w-[min(34rem,calc(100%-2rem))] sm:ml-16! sm:w-[min(34rem,calc(100%-19rem))]"
+              >
+                <div
+                  role={feedback.kind === "unsolvable" ? "alert" : "status"}
+                  aria-live="polite"
+                  className={`flex items-start gap-3 rounded-2xl border p-3.5 shadow-2xl backdrop-blur-md ${
+                    feedback.kind === "unsolvable"
+                      ? "border-rose-400/35 bg-slate-950/95 text-rose-100 shadow-rose-950/30"
+                      : "border-amber-400/30 bg-slate-950/95 text-amber-100 shadow-amber-950/25"
+                  }`}
+                >
+                  <AlertTriangle
+                    className={`mt-0.5 size-5 shrink-0 ${
+                      feedback.kind === "unsolvable"
+                        ? "text-rose-300"
+                        : "text-amber-300"
+                    }`}
+                  />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold">{feedback.title}</p>
+                    <p className="mt-1 text-xs leading-5 text-current/75">
+                      {feedback.message}
+                    </p>
+                  </div>
+                </div>
+              </Panel>
+            ) : null}
           </ReactFlow>
         </div>
       </div>
@@ -1080,34 +1136,7 @@ function ConstructorWorkspace() {
               </p>
             </div>
           </div>
-        ) : calculation.error ? (
-          <div
-            role="alert"
-            className="flex items-start gap-3 rounded-2xl border border-rose-400/30 bg-rose-400/10 p-4 text-sm text-rose-100"
-          >
-            <AlertTriangle className="mt-0.5 size-5 shrink-0 text-rose-300" />
-            <div>
-              <p className="font-medium">No se puede resolver esta red.</p>
-              <p className="mt-1 leading-6 text-rose-100/85">
-                {calculation.error}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-start gap-3 rounded-2xl border border-amber-400/25 bg-amber-400/[0.06] p-4 text-sm text-amber-100">
-            <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-300" />
-            <div>
-              <p className="font-medium">
-                El circuito todavía está incompleto.
-              </p>
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-amber-100/70">
-                {validation.issues.slice(0, 5).map((issue) => (
-                  <li key={issue}>{issue}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        )}
+        ) : null}
 
         {calculation.result && validation.circuit ? (
           <>

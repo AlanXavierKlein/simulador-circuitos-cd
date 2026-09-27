@@ -11,6 +11,7 @@ type ConnectionGuidanceData = {
   connectionHintMessage?: string;
   connectionOriginHandle?: string;
   validTargetHandles?: string[];
+  validationHint?: "incomplete" | "unsolvable";
 };
 
 export type ResistorNodeData = Record<string, unknown> &

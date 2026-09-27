@@ -14,6 +14,10 @@ export function JunctionNode({ data, selected }: NodeProps<JunctionFlowNode>) {
   const isConstructorNode = "builderKind" in data;
   const isValidTarget = data.connectionHint === "valid";
   const isInvalidTarget = data.connectionHint === "invalid";
+  const isIncomplete =
+    !data.connectionActive && data.validationHint === "incomplete";
+  const isUnsolvable =
+    !data.connectionActive && data.validationHint === "unsolvable";
 
   return (
     <div
@@ -34,6 +38,19 @@ export function JunctionNode({ data, selected }: NodeProps<JunctionFlowNode>) {
           ? "border-lime-100 ring-4 ring-lime-300/75 ring-offset-2 ring-offset-slate-950 shadow-[0_0_30px_rgba(163,230,53,0.75)]"
           : ""
       } ${isInvalidTarget ? "opacity-35" : ""}`}
+      style={
+        isIncomplete
+          ? {
+              borderColor: "#fcd34d",
+              boxShadow: "0 0 26px rgba(251,191,36,0.72)",
+            }
+          : isUnsolvable
+            ? {
+                borderColor: "#fda4af",
+                boxShadow: "0 0 26px rgba(251,113,133,0.75)",
+              }
+            : undefined
+      }
       aria-label={data.isGround ? "Nodo 0, tierra" : `Nodo ${data.label}`}
     >
       {positions.map(([id, position]) => (

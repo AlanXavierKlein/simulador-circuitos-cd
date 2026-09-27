@@ -58,6 +58,12 @@ export function ResistorNode({ data, selected }: NodeProps<ResistorFlowNode>) {
         "relative grid place-items-center rounded-2xl border border-slate-700/80 bg-slate-950/92 shadow-xl shadow-black/30 transition-[border-color,box-shadow]",
         isVertical ? "h-[180px] w-[116px]" : "h-[104px] w-[180px]",
         selected && "border-cyan-300 shadow-[0_0_28px_rgba(34,211,238,0.22)]",
+        !data.connectionActive &&
+          data.validationHint === "incomplete" &&
+          "border-amber-300 ring-2 ring-amber-300/70 shadow-[0_0_30px_rgba(251,191,36,0.28)]",
+        !data.connectionActive &&
+          data.validationHint === "unsolvable" &&
+          "border-rose-300 ring-2 ring-rose-300/75 shadow-[0_0_30px_rgba(251,113,133,0.3)]",
         data.connectionHint === "valid" &&
           "border-lime-300 ring-2 ring-lime-300/70 shadow-[0_0_30px_rgba(163,230,53,0.25)]",
         data.connectionHint === "invalid" && "opacity-40",
