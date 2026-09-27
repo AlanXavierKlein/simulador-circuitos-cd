@@ -3,6 +3,7 @@
 import {
   BatteryCharging,
   BookOpenCheck,
+  ChevronDown,
   CircleDot,
   FolderOpen,
   GitFork,
@@ -16,7 +17,7 @@ import {
   Waves,
   Zap,
 } from "lucide-react";
-import type { DragEvent, ReactNode } from "react";
+import { useState, type DragEvent, type ReactNode } from "react";
 
 import type {
   ConstructorFlowEdge,
@@ -142,6 +143,7 @@ export function ConstructorSidebar({
   onLoad: () => void;
   onClear: () => void;
 }) {
+  const [showBasicInstructions, setShowBasicInstructions] = useState(true);
   const selectedKind = selectedNode?.data.builderKind;
   const selectedComponent =
     selectedNode && isComponentNode(selectedNode) ? selectedNode : null;
@@ -367,11 +369,76 @@ export function ConstructorSidebar({
                 Guía de conexión
               </h2>
               <p className="mt-1 text-xs leading-5 text-slate-500">
-                Reglas rápidas para armar el circuito.
+                Acciones y reglas rápidas para armar el circuito.
               </p>
             </div>
           </div>
 
+          <div className="mt-4 overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/45">
+            <button
+              type="button"
+              aria-expanded={showBasicInstructions}
+              aria-controls="constructor-basic-instructions"
+              onClick={() => setShowBasicInstructions((current) => !current)}
+              className="flex w-full items-center justify-between gap-3 px-3.5 py-3 text-left text-xs font-semibold text-slate-200 transition hover:bg-slate-800/55"
+            >
+              <span>Cómo usar el constructor</span>
+              <ChevronDown
+                className={`size-4 shrink-0 text-cyan-300 transition-transform ${
+                  showBasicInstructions ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            {showBasicInstructions ? (
+              <ol
+                id="constructor-basic-instructions"
+                className="space-y-3 border-t border-slate-800 px-3.5 py-3 text-xs leading-5 text-slate-400"
+              >
+                {[
+                  {
+                    title: "Agregá.",
+                    text: "Hacé clic en un elemento de la paleta o arrastralo hasta el canvas.",
+                  },
+                  {
+                    title: "Seleccioná y editá.",
+                    text: "Hacé clic en un componente para cambiar su etiqueta, valor o rotación en Propiedades. También podés rotarlo con la tecla R.",
+                  },
+                  {
+                    title: "Conectá.",
+                    text: "Arrastrá desde cada terminal del componente hasta un nodo intermedio. Los dos terminales deben quedar conectados.",
+                  },
+                  {
+                    title: "Acomodá la vista.",
+                    text: "Arrastrá los elementos para moverlos. Arrastrá el fondo para recorrer el canvas y usá la rueda o los controles para cambiar el zoom.",
+                  },
+                  {
+                    title: "Borrá.",
+                    text: "Seleccioná un componente, nodo o cable y presioná Supr/Delete o Retroceso/Backspace. También podés usar el botón rojo de Propiedades.",
+                  },
+                  {
+                    title: "Elegí tierra.",
+                    text: "El primer nodo se toma como tierra. Para cambiarlo, seleccioná otro nodo y elegí “Usar como tierra”.",
+                  },
+                ].map((instruction, index) => (
+                  <li key={instruction.title} className="flex gap-2.5">
+                    <span className="grid size-5 shrink-0 place-items-center rounded-full border border-cyan-400/25 bg-cyan-400/[0.07] font-mono text-[10px] font-semibold text-cyan-200">
+                      {index + 1}
+                    </span>
+                    <span>
+                      <strong className="font-semibold text-slate-200">
+                        {instruction.title}
+                      </strong>{" "}
+                      {instruction.text}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            ) : null}
+          </div>
+
+          <h3 className="mt-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+            Señales al conectar
+          </h3>
           <ul className="mt-4 space-y-3 text-xs leading-5 text-slate-300">
             <li className="flex gap-2.5">
               <span className="mt-1.5 size-2 shrink-0 rounded-full bg-lime-300 shadow-[0_0_8px_rgba(190,242,100,0.7)]" />
@@ -395,6 +462,9 @@ export function ConstructorSidebar({
 
           <div className="my-4 h-px bg-slate-800" />
 
+          <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+            Reglas del circuito
+          </h3>
           <ul className="space-y-2.5 text-xs leading-5 text-slate-400">
             <li>Cada terminal debe conectarse a un nodo intermedio.</li>
             <li>No conectes dos componentes directamente.</li>
