@@ -6,6 +6,7 @@ import {
   CircleDot,
   FolderOpen,
   GitFork,
+  LayoutTemplate,
   Minus,
   Plus,
   RefreshCw,
@@ -121,6 +122,7 @@ export function ConstructorSidebar({
   onSetGround,
   onRotate,
   onDeleteSelection,
+  onLoadExample,
   onSave,
   onLoad,
   onClear,
@@ -135,6 +137,7 @@ export function ConstructorSidebar({
   onSetGround: () => void;
   onRotate: () => void;
   onDeleteSelection: () => void;
+  onLoadExample: () => void;
   onSave: () => void;
   onLoad: () => void;
   onClear: () => void;
@@ -399,6 +402,34 @@ export function ConstructorSidebar({
             <li>Los dos terminales deben ir a nodos distintos.</li>
             <li>Para resolver, cerrá una malla y mantené un nodo como tierra.</li>
           </ul>
+        </section>
+      ) : null}
+
+      {section === "palette" ? (
+        <section className="app-surface p-4">
+          <div className="flex items-start gap-3">
+            <span className="app-icon size-10 text-lime-200">
+              <LayoutTemplate className="size-5" />
+            </span>
+            <div>
+              <h2 className="font-semibold text-slate-100">
+                Circuito de ejemplo
+              </h2>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                Una fuente de 9 V y una resistencia de 10 Ω, listas para editar.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onLoadExample}
+            className="mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-lime-400/25 bg-lime-400/[0.06] px-3 text-xs font-semibold text-lime-200 transition hover:bg-lime-400/10"
+          >
+            <LayoutTemplate className="size-4" /> Cargar ejemplo
+          </button>
+          <p className="mt-2 text-[11px] leading-4 text-slate-500">
+            Podés moverlo, cambiar sus valores o reconectarlo.
+          </p>
         </section>
       ) : null}
 

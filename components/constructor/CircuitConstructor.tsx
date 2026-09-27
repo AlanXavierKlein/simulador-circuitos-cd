@@ -50,6 +50,7 @@ import { solveCircuit } from "@/lib/engine/kirchhoff";
 import { buildSolutionSteps } from "@/lib/engine/steps";
 
 import { ConstructorSidebar } from "./ConstructorSidebar";
+import { createSimpleConstructorExample } from "./constructor-example";
 import type {
   ConstructorFlowEdge,
   ConstructorFlowNode,
@@ -67,6 +68,11 @@ import {
 } from "./constructor-guidance";
 
 const STORAGE_KEY = "circuitos-cc:constructor:v1";
+
+type ExampleLoadConfirmation = {
+  hasCanvasCircuit: boolean;
+  hasSavedCircuit: boolean;
+};
 
 const nodeTypes = {
   resistor: ResistorNode,
@@ -324,6 +330,8 @@ function ConstructorWorkspace() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [storageMessage, setStorageMessage] = useState<string | null>(null);
+  const [exampleLoadConfirmation, setExampleLoadConfirmation] =
+    useState<ExampleLoadConfirmation | null>(null);
   const [activeConnection, setActiveConnection] = useState<{
     nodeId: string;
     handleId: string;
@@ -842,6 +850,46 @@ function ConstructorWorkspace() {
     }
   }, [fitView]);
 
+  const applyExample = useCallback(() => {
+    const example = createSimpleConstructorExample();
+    setNodes(example.nodes);
+    setEdges(example.edges);
+    setSelectedNodeId(null);
+    setSelectedEdgeId(null);
+    setActiveConnection(null);
+    setExampleLoadConfirmation(null);
+    setStorageMessage(
+      "Ejemplo cargado. El circuito guardado sigue disponible sin cambios.",
+    );
+    requestAnimationFrame(() =>
+      fitView({ padding: 0.18, maxZoom: 1.15, duration: 300 }),
+    );
+  }, [fitView]);
+
+  const requestExample = useCallback(() => {
+    let hasSavedCircuit = false;
+    try {
+      hasSavedCircuit = localStorage.getItem(STORAGE_KEY) !== null;
+    } catch {
+      // Si el almacenamiento no está disponible, el ejemplo sigue siendo usable.
+    }
+    const hasCanvasCircuit = nodes.length > 0 || edges.length > 0;
+    if (!hasCanvasCircuit && !hasSavedCircuit) {
+      applyExample();
+      return;
+    }
+    setExampleLoadConfirmation({ hasCanvasCircuit, hasSavedCircuit });
+  }, [applyExample, edges.length, nodes.length]);
+
+  useEffect(() => {
+    if (!exampleLoadConfirmation) return;
+    const closeWithEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setExampleLoadConfirmation(null);
+    };
+    window.addEventListener("keydown", closeWithEscape);
+    return () => window.removeEventListener("keydown", closeWithEscape);
+  }, [exampleLoadConfirmation]);
+
   const clearCanvas = useCallback(() => {
     setNodes([]);
     setEdges([]);
@@ -880,6 +928,7 @@ function ConstructorWorkspace() {
     onSetGround: setSelectedAsGround,
     onRotate: rotateSelected,
     onDeleteSelection: deleteSelection,
+    onLoadExample: requestExample,
     onSave: saveCircuit,
     onLoad: loadCircuit,
     onClear: clearCanvas,
@@ -1071,6 +1120,68 @@ function ConstructorWorkspace() {
           </>
         ) : null}
       </div>
+
+      {exampleLoadConfirmation ? (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-slate-950/80 p-4 backdrop-blur-sm"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setExampleLoadConfirmation(null);
+            }
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="example-confirmation-title"
+            aria-describedby="example-confirmation-description"
+            className="app-surface w-full max-w-md border-amber-400/25 p-5 shadow-2xl shadow-black/50"
+          >
+            <div className="flex items-start gap-3">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-amber-400/25 bg-amber-400/[0.08] text-amber-300">
+                <AlertTriangle className="size-5" />
+              </span>
+              <div>
+                <h2
+                  id="example-confirmation-title"
+                  className="font-semibold text-slate-100"
+                >
+                  ¿Cargar el circuito de ejemplo?
+                </h2>
+                <p
+                  id="example-confirmation-description"
+                  className="mt-1 text-sm leading-6 text-slate-400"
+                >
+                  {exampleLoadConfirmation.hasCanvasCircuit
+                    ? "El ejemplo reemplazará el circuito que está en pantalla."
+                    : "El ejemplo se cargará en el canvas."} {" "}
+                  {exampleLoadConfirmation.hasSavedCircuit
+                    ? "Tu circuito guardado seguirá disponible y no se modificará."
+                    : "Esta acción no crea ni modifica un circuito guardado."}
+                </p>
+              </div>
+            </div>
+            <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                autoFocus
+                onClick={() => setExampleLoadConfirmation(null)}
+                className="app-button-secondary h-10 px-4 text-xs"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={applyExample}
+                className="inline-flex h-10 items-center justify-center rounded-xl border border-lime-400/25 bg-lime-400/[0.08] px-4 text-xs font-semibold text-lime-200 transition hover:bg-lime-400/15"
+              >
+                Reemplazar y cargar ejemplo
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </div>
   );
 }
