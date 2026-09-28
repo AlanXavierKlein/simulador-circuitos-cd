@@ -44,7 +44,7 @@ export function SimulatorWorkspace({
   nodePositions,
   componentPositions,
   currentLabelPlacements,
-  title = "Red de tres mallas",
+  title = "Red de tres ramas",
   guide,
 }: SimulatorWorkspaceProps) {
   const [originalCircuit] = useState<Circuit>(() => cloneCircuit(initialCircuit));

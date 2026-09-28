@@ -427,7 +427,7 @@ export const guideNetworkProblems: Record<
   p9: {
     id: "p9",
     eyebrow: "Problema 9 · Kirchhoff",
-    title: "Red de tres mallas",
+    title: "Red de tres ramas",
     description:
       "En el circuito de la figura 6, determinar las corrientes y la diferencia de potencial Vb − Va. Los valores de las resistencias, en Ω, son R1 = 25, R2 = 20, R3 = 10, R4 = 15, R5 = 30. Los valores de las fuentes son E1 = 10 V, E2 = 15 V y E3 = 10 V.",
     image: "/problemas/p9.png",

@@ -4,6 +4,7 @@ import {
   problem9CurrentLabelPlacements,
   problem9Positions,
 } from "@/components/circuit/example-layouts";
+import { HowToUseDialog } from "@/components/help/HowToUseDialog";
 import { SimulatorWorkspace } from "@/components/simulator/SimulatorWorkspace";
 import { problem9 } from "@/lib/problems/phase1-validation";
 
@@ -26,10 +27,13 @@ export default function SimulatorPage() {
             Circuito de ejemplo
           </h1>
         </div>
-        <p className="max-w-xl text-sm leading-6 text-slate-400 lg:text-right">
-          Explorá la red con zoom y desplazamiento. Los componentes se generan
-          directamente desde la netlist utilizada por el motor de Kirchhoff.
-        </p>
+        <div className="flex max-w-xl flex-col items-start gap-3 lg:items-end">
+          <p className="text-sm leading-6 text-slate-400 lg:text-right">
+            Explorá la red con zoom y desplazamiento. Los componentes se generan
+            directamente desde la netlist utilizada por el motor de Kirchhoff.
+          </p>
+          <HowToUseDialog experience="simulator" />
+        </div>
       </div>
 
       <SimulatorWorkspace

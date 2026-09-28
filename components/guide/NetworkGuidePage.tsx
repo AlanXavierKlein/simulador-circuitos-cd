@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { guideCircuitLayouts } from "@/components/circuit/example-layouts";
+import { HowToUseDialog } from "@/components/help/HowToUseDialog";
 import { SimulatorWorkspace } from "@/components/simulator/SimulatorWorkspace";
 import type { GuideNetworkProblem } from "@/lib/problems/guia04";
 
@@ -33,8 +34,12 @@ export function NetworkGuidePage({
           <p className="mt-4 max-w-3xl text-base leading-7 text-slate-400">
             {problem.description}
           </p>
-          <div className="mt-5">
+          <div className="mt-5 flex flex-wrap gap-3">
             <TheorySummaryDialog theory={problem.theory} />
+            <HowToUseDialog
+              experience="network-guide"
+              showP9Concepts={problem.id === "p9"}
+            />
           </div>
         </div>
         <div className="relative min-h-56 overflow-hidden rounded-3xl border border-slate-700 bg-white shadow-2xl shadow-black/20">

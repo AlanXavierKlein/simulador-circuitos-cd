@@ -143,7 +143,7 @@ export function ConstructorSidebar({
   onLoad: () => void;
   onClear: () => void;
 }) {
-  const [showBasicInstructions, setShowBasicInstructions] = useState(true);
+  const [showBasicInstructions, setShowBasicInstructions] = useState(false);
   const selectedKind = selectedNode?.data.builderKind;
   const selectedComponent =
     selectedNode && isComponentNode(selectedNode) ? selectedNode : null;
@@ -382,7 +382,7 @@ export function ConstructorSidebar({
               onClick={() => setShowBasicInstructions((current) => !current)}
               className="flex w-full items-center justify-between gap-3 px-3.5 py-3 text-left text-xs font-semibold text-slate-200 transition hover:bg-slate-800/55"
             >
-              <span>Cómo usar el constructor</span>
+              <span>Instrucciones paso a paso</span>
               <ChevronDown
                 className={`size-4 shrink-0 text-cyan-300 transition-transform ${
                   showBasicInstructions ? "rotate-180" : ""
