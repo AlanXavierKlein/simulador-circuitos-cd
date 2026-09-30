@@ -112,6 +112,71 @@ function componentUnit(node: ConstructorComponentNode): string {
   return node.data.builderKind === "voltageSource" ? "V" : "A";
 }
 
+function ConstructorDraftValueInput({
+  component,
+  minimumValue,
+  maximumValue,
+  step,
+  onCommit,
+}: {
+  component: ConstructorComponentNode;
+  minimumValue: number;
+  maximumValue: number;
+  step: number;
+  onCommit: (value: number) => void;
+}) {
+  const [draftValue, setDraftValue] = useState(() =>
+    String(component.data.numericValue),
+  );
+  const [isEditing, setIsEditing] = useState(false);
+  const displayedValue = isEditing
+    ? draftValue
+    : String(component.data.numericValue);
+  const fallbackValue =
+    component.data.builderKind === "resistor" ? minimumValue : 0;
+
+  const commitDraft = (value: string) => {
+    if (value.trim() === "") {
+      onCommit(fallbackValue);
+      return;
+    }
+
+    const parsedValue = Number(value);
+    onCommit(Number.isFinite(parsedValue) ? parsedValue : fallbackValue);
+  };
+
+  return (
+    <input
+      aria-label={`Valor de ${component.data.label}`}
+      type="number"
+      min={minimumValue}
+      max={maximumValue}
+      step={step}
+      value={displayedValue}
+      onFocus={() => {
+        setDraftValue(String(component.data.numericValue));
+        setIsEditing(true);
+      }}
+      onChange={(event) => {
+        const nextValue = event.currentTarget.value;
+        setDraftValue(nextValue);
+        if (nextValue !== "") {
+          const parsedValue = Number(nextValue);
+          if (Number.isFinite(parsedValue)) onCommit(parsedValue);
+        }
+      }}
+      onBlur={(event) => {
+        setIsEditing(false);
+        commitDraft(event.currentTarget.value);
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") event.currentTarget.blur();
+      }}
+      className="h-10 min-w-0 flex-1 bg-transparent px-2 text-center font-mono text-sm text-slate-100 outline-none"
+    />
+  );
+}
+
 export function ConstructorSidebar({
   section,
   selectedNode,
@@ -238,18 +303,13 @@ export function ConstructorSidebar({
                       >
                         <Minus className="size-4" />
                       </button>
-                      <input
-                        aria-label={`Valor de ${selectedComponent.data.label}`}
-                        type="number"
-                        min={minimumValue}
-                        max={maximumValue}
+                      <ConstructorDraftValueInput
+                        key={selectedComponent.id}
+                        component={selectedComponent}
+                        minimumValue={minimumValue}
+                        maximumValue={maximumValue}
                         step={valueStep}
-                        value={selectedComponent.data.numericValue}
-                        onChange={(event) => {
-                          const value = Number(event.currentTarget.value);
-                          updateBoundedValue(value);
-                        }}
-                        className="h-10 min-w-0 flex-1 bg-transparent px-2 text-center font-mono text-sm text-slate-100 outline-none"
+                        onCommit={updateBoundedValue}
                       />
                       <span className="grid h-10 min-w-8 place-items-center border-l border-slate-700 px-1.5 font-mono text-xs text-cyan-200">
                         {componentUnit(selectedComponent)}

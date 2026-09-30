@@ -196,6 +196,20 @@ function NumberField({
   step: number;
   onChange: (value: number) => void;
 }) {
+  const [draftValue, setDraftValue] = useState(() => String(value));
+  const [isEditing, setIsEditing] = useState(false);
+  const displayedValue = isEditing ? draftValue : String(value);
+
+  const commitDraft = (nextValue: string) => {
+    if (nextValue.trim() === "") {
+      onChange(step);
+      return;
+    }
+
+    const parsedValue = Number(nextValue);
+    onChange(Number.isFinite(parsedValue) ? parsedValue : step);
+  };
+
   return (
     <label className="block rounded-2xl border border-slate-800 bg-slate-900/65 p-3.5">
       <span className="font-mono text-xs font-semibold text-cyan-100">
@@ -208,10 +222,24 @@ function NumberField({
           type="number"
           min={step}
           step={step}
-          value={value}
+          value={displayedValue}
+          onFocus={() => {
+            setDraftValue(String(value));
+            setIsEditing(true);
+          }}
           onChange={(event) => {
             const next = Number(event.currentTarget.value);
-            if (Number.isFinite(next)) onChange(next);
+            setDraftValue(event.currentTarget.value);
+            if (Number.isFinite(next) && event.currentTarget.value !== "") {
+              onChange(next);
+            }
+          }}
+          onBlur={(event) => {
+            setIsEditing(false);
+            commitDraft(event.currentTarget.value);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") event.currentTarget.blur();
           }}
           className="h-10 min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 font-mono text-sm text-slate-100 outline-none transition focus:border-cyan-400"
         />

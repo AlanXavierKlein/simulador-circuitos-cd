@@ -1,6 +1,7 @@
 "use client";
 
 import { RotateCcw, SlidersHorizontal } from "lucide-react";
+import { useState } from "react";
 
 import type { Circuit, Component } from "@/lib/engine/model";
 
@@ -187,20 +188,11 @@ export function ComponentControls({
               />
 
               <div className="mt-3 flex items-center gap-2">
-                <input
-                  suppressHydrationWarning
-                  id={inputId}
-                  aria-label={`Valor de ${component.label}`}
-                  type="number"
-                  min={range.min}
-                  max={range.max}
-                  step={range.step}
-                  value={range.value}
-                  onChange={(event) => {
-                    if (event.currentTarget.value === "") return;
-                    updateValue(Number(event.currentTarget.value));
-                  }}
-                  className="app-input h-9 min-w-0 flex-1 px-2.5 font-mono text-sm"
+                <DraftNumberInput
+                  component={component}
+                  inputId={inputId}
+                  range={range}
+                  onCommit={updateValue}
                 />
                 <span className="w-5 font-mono text-xs text-slate-400">
                   {range.unit}
@@ -211,5 +203,70 @@ export function ComponentControls({
         })}
       </div>
     </aside>
+  );
+}
+
+function DraftNumberInput({
+  component,
+  inputId,
+  range,
+  onCommit,
+}: {
+  component: Component;
+  inputId: string;
+  range: ControlRange;
+  onCommit: (value: number) => void;
+}) {
+  const [draftValue, setDraftValue] = useState(() => String(range.value));
+  const [isEditing, setIsEditing] = useState(false);
+  const fallbackValue = component.type === "resistor" ? range.min : 0;
+  const displayedValue = isEditing ? draftValue : String(range.value);
+
+  const commitDraft = (value: string) => {
+    if (value.trim() === "") {
+      onCommit(fallbackValue);
+      return;
+    }
+
+    const parsedValue = Number(value);
+    if (Number.isFinite(parsedValue)) {
+      onCommit(parsedValue);
+      return;
+    }
+
+    onCommit(fallbackValue);
+  };
+
+  return (
+    <input
+      suppressHydrationWarning
+      id={inputId}
+      aria-label={`Valor de ${component.label}`}
+      type="number"
+      min={range.min}
+      max={range.max}
+      step={range.step}
+      value={displayedValue}
+      onFocus={() => {
+        setDraftValue(String(range.value));
+        setIsEditing(true);
+      }}
+      onChange={(event) => {
+        const nextValue = event.currentTarget.value;
+        setDraftValue(nextValue);
+        if (nextValue !== "") {
+          const parsedValue = Number(nextValue);
+          if (Number.isFinite(parsedValue)) onCommit(parsedValue);
+        }
+      }}
+      onBlur={(event) => {
+        setIsEditing(false);
+        commitDraft(event.currentTarget.value);
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") event.currentTarget.blur();
+      }}
+      className="app-input h-9 min-w-0 flex-1 px-2.5 font-mono text-sm"
+    />
   );
 }
