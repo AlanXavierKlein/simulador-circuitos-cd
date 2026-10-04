@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="940" viewBox="0 0 1680 940">
+<defs>
+  <pattern id="grid" width="56" height="56" patternUnits="userSpaceOnUse"><path d="M56 0H0V56" fill="none" stroke="#12304a" stroke-width="1.5"/></pattern>
+  <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <style>
+    .wire{fill:none;stroke:#00e6f2;stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
+    .res{fill:none;stroke:#ffc928;stroke-width:7;stroke-linecap:round;stroke-linejoin:round;filter:url(#glow)}
+    .node{fill:#00e6f2}
+    .label{font:600 26px 'Segoe UI',Arial,sans-serif;fill:#f4f7ff;text-anchor:middle}
+    .panel{font:700 54px 'Segoe UI',Arial,sans-serif;fill:#f4f7ff}
+    .term{font:600 31px 'Segoe UI',Arial,sans-serif;fill:#f4f7ff;text-anchor:middle}
+  </style>
+</defs>
+<rect width="1680" height="940" fill="#06172b"/><rect width="1680" height="940" fill="url(#grid)"/>
+<line x1="840" y1="145" x2="840" y2="795" stroke="#0b5a7d" stroke-width="2"/>
+<!-- Circuit (a): R2 and R6 in series with a parallel network: R3 and R1-R4-R5. -->
+<text class="panel" x="56" y="112">(a)</text>
+<text class="term" x="72" y="340">a</text><circle class="node" cx="112" cy="330" r="8"/>
+<path class="wire" d="M120 330H172"/><path class="res" d="M172 330l12-18 12 36 12-36 12 36 12-36 12 36 12-18"/><path class="wire" d="M244 330H300"/>
+<text class="label" x="208" y="278">R2 · 10 Ω</text>
+<circle class="node" cx="300" cy="330" r="9"/>
+<!-- parallel network upper path -->
+<path class="wire" d="M300 330H340"/><path class="res" d="M340 330l12-18 12 36 12-36 12 36 12-36 12 36 12-18"/><path class="wire" d="M412 330H620"/>
+<text class="label" x="376" y="278">R1 · 10 Ω</text>
+<!-- lower parallel branch through R3 -->
+<path class="wire" d="M300 330V370"/><path class="res" d="M300 370l-18 12 36 12-36 12 36 12-36 12 36 12-18 12"/><path class="wire" d="M300 454V490"/>
+<text class="label" x="224" y="418">R3 · 10 Ω</text>
+<!-- The other branch continues down through R4, then back through R5. -->
+<circle class="node" cx="620" cy="330" r="9"/>
+<path class="wire" d="M620 330V370"/><path class="res" d="M620 370l-18 12 36 12-36 12 36 12-36 12 36 12-18 12"/><path class="wire" d="M620 454V490H560"/>
+<text class="label" x="700" y="418">R4 · 10 Ω</text>
+<path class="res" d="M560 490l-12-18-12 36-12-36-12 36-12-36-12 36-12-18"/><path class="wire" d="M488 490H300"/>
+<text class="label" x="524" y="558">R5 · 10 Ω</text>
+<circle class="node" cx="300" cy="490" r="9"/>
+<!-- R6 in series from lower junction to b -->
+<path class="wire" d="M300 490H250"/><path class="res" d="M250 490l-12-18-12 36-12-36-12 36-12-36-12 36-12-18"/><path class="wire" d="M178 490H112"/><circle class="node" cx="112" cy="490" r="8"/>
+<text class="label" x="214" y="558">R6 · 10 Ω</text><text class="term" x="72" y="500">b</text>
+<!-- Circuit (b): R1, parallel R2/R3, then R4 and R5 in series. -->
+<text class="panel" x="884" y="112">(b)</text>
+<text class="term" x="900" y="340">a</text><circle class="node" cx="940" cy="330" r="8"/>
+<path class="wire" d="M948 330H1000"/><path class="res" d="M1000 330l12-18 12 36 12-36 12 36 12-36 12 36 12-18"/><path class="wire" d="M1072 330H1120"/>
+<text class="label" x="1036" y="278">R1 · 10 Ω</text><circle class="node" cx="1120" cy="330" r="9"/>
+<!-- parallel R2 upper -->
+<path class="wire" d="M1120 330V250H1170"/><path class="res" d="M1170 250l12-18 12 36 12-36 12 36 12-36 12 36 12-18"/><path class="wire" d="M1242 250H1300V330"/>
+<text class="label" x="1206" y="198">R2 · 10 Ω</text>
+<!-- parallel R3 lower -->
+<path class="wire" d="M1120 330V490H1170"/><path class="res" d="M1170 490l12-18 12 36 12-36 12 36 12-36 12 36 12-18"/><path class="wire" d="M1242 490H1300V330"/>
+<text class="label" x="1206" y="558">R3 · 10 Ω</text><circle class="node" cx="1300" cy="330" r="9"/>
+<!-- series path down through R4, then back through R5 -->
+<path class="wire" d="M1300 330H1500V470"/>
+<path class="res" d="M1500 470l-18 12 36 12-36 12 36 12-36 12 36 12-18 12"/><path class="wire" d="M1500 554V650H1200"/>
+<text class="label" x="1580" y="518">R4 · 10 Ω</text>
+<path class="res" d="M1200 650l-12-18-12 36-12-36-12 36-12-36-12 36-12-18"/><path class="wire" d="M1128 650H940"/>
+<text class="label" x="1164" y="718">R5 · 10 Ω</text>
+<circle class="node" cx="940" cy="650" r="8"/><text class="term" x="900" y="660">b</text>
+</svg>

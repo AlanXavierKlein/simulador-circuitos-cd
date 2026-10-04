@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="940" viewBox="0 0 1680 940">
+<defs>
+  <pattern id="grid" width="56" height="56" patternUnits="userSpaceOnUse"><path d="M56 0H0V56" fill="none" stroke="#12304a" stroke-width="1.5"/></pattern>
+  <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <marker id="arrow" markerWidth="18" markerHeight="22" refX="16" refY="11" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0L18 11L0 22Z" fill="#f4f7ff"/></marker>
+  <style>
+    .wire{fill:none;stroke:#00e6f2;stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
+    .res{fill:none;stroke:#ffc928;stroke-width:7;stroke-linecap:round;stroke-linejoin:round;filter:url(#glow)}
+    .battery{stroke:#9a8bff;stroke-width:8;stroke-linecap:round;filter:url(#glow)}
+    .node{fill:#00e6f2}
+    .label{font:600 28px 'Segoe UI',Arial,sans-serif;fill:#f4f7ff;text-anchor:middle}
+    .source{font:600 29px 'Segoe UI',Arial,sans-serif;fill:#f4f7ff;text-anchor:middle}
+    .point{font:600 30px 'Segoe UI',Arial,sans-serif;fill:#f4f7ff;text-anchor:middle}
+    .nodeLabel{font:700 34px 'Segoe UI',Arial,sans-serif;fill:#f4f7ff;text-anchor:middle}
+  </style>
+</defs>
+<rect width="1680" height="940" fill="#06172b"/><rect width="1680" height="940" fill="url(#grid)"/>
+<!-- Upper branch: terminal a, R1, node A, R2, then E3. -->
+<circle class="node" cx="180" cy="290" r="9"/><text class="point" x="132" y="300">a</text>
+<path class="wire" d="M189 290H300"/><path class="res" d="M300 290l14-20 14 40 14-40 14 40 14-40 14 40 14-20"/><path class="wire" d="M398 290H610"/>
+<text class="label" x="349" y="230">R1</text>
+<circle class="node" cx="610" cy="290" r="11"/><text class="nodeLabel" x="610" y="222">A</text>
+<path class="wire" d="M610 290H790"/><path class="res" d="M790 290l14-20 14 40 14-40 14 40 14-40 14 40 14-20"/><path class="wire" d="M888 290H1080V520"/>
+<text class="label" x="839" y="230">R2</text>
+<!-- Current direction arrows shown in the source on the lead into A and down the R3 branch. -->
+<path d="M465 290H530" fill="none" stroke="#f4f7ff" stroke-width="5" marker-end="url(#arrow)"/>
+<text class="point" x="500" y="342">I₀</text>
+<!-- Central branch: R3 and E2. -->
+<path class="wire" d="M610 301V430"/><path class="res" d="M610 430l-20 14 40 14-40 14 40 14-40 14 40 14-20 14"/><path class="wire" d="M610 514V535"/>
+<path d="M585 410V315" fill="none" stroke="#f4f7ff" stroke-width="5" marker-end="url(#arrow)"/>
+<path d="M670 290H750" fill="none" stroke="#f4f7ff" stroke-width="5" marker-end="url(#arrow)"/>
+<text class="point" x="548" y="378">I₁</text><text class="point" x="710" y="342">I₂</text><text class="label" x="700" y="490">R3</text>
+<path class="wire" d="M610 515V535"/><path class="battery" d="M565 545H655M580 585H640"/><path class="wire" d="M610 585V690"/>
+<text class="source" x="535" y="570">E2</text>
+<!-- Left branch: terminal a to E1, then R4 to the shared lower node. -->
+<path class="wire" d="M180 299V520"/><path class="battery" d="M135 530H225M150 570H210"/><path class="wire" d="M180 570V690H300"/>
+<text class="source" x="260" y="560">E1</text>
+<path class="res" d="M300 690l14-20 14 40 14-40 14 40 14-40 14 40 14-20"/><path class="wire" d="M398 690H610"/>
+<text class="label" x="349" y="770">R4</text>
+<!-- Shared lower node to E3 return through R5. -->
+<circle class="node" cx="610" cy="690" r="11"/>
+<path class="wire" d="M610 690H790"/><path class="res" d="M790 690l14-20 14 40 14-40 14 40 14-40 14 40 14-20"/><path class="wire" d="M888 690H1080V590"/>
+<text class="label" x="839" y="770">R5</text>
+<!-- E3 has opposite plate orientation as in the source drawing. -->
+<path class="battery" d="M1060 530H1100M1035 570H1125"/>
+<circle class="node" cx="1080" cy="690" r="9"/><text class="point" x="1130" y="702">b</text>
+<text class="source" x="1170" y="560">E3</text>
+</svg>

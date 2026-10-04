@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="940" viewBox="0 0 1680 940">
+<defs>
+  <pattern id="grid" width="56" height="56" patternUnits="userSpaceOnUse"><path d="M56 0H0V56" fill="none" stroke="#12304a" stroke-width="1.5"/></pattern>
+  <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <style>
+    .wire{fill:none;stroke:#00e6f2;stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
+    .res{fill:none;stroke:#ffc928;stroke-width:7;stroke-linecap:round;stroke-linejoin:round;filter:url(#glow)}
+    .node{fill:#00e6f2}
+    .label{font:600 29px 'Segoe UI',Arial,sans-serif;fill:#f4f7ff;text-anchor:middle}
+    .range{font:600 31px 'Segoe UI',Arial,sans-serif;fill:#f4f7ff;text-anchor:middle}
+    .symbol{font:700 42px 'Segoe UI',Arial,sans-serif;fill:#f4f7ff;text-anchor:middle}
+  </style>
+</defs>
+<rect width="1680" height="940" fill="#06172b"/><rect width="1680" height="940" fill="url(#grid)"/>
+<!-- Series range resistors and voltage taps. -->
+<path class="wire" d="M350 250H440"/><path class="res" d="M440 250l14-20 14 40 14-40 14 40 14-40 14 40 14-20"/><path class="wire" d="M538 250H700"/>
+<text class="label" x="489" y="330">R1</text>
+<path class="wire" d="M700 250H780"/><path class="res" d="M780 250l14-20 14 40 14-40 14 40 14-40 14 40 14-20"/><path class="wire" d="M878 250H1040"/>
+<text class="label" x="829" y="330">R2</text>
+<path class="wire" d="M1040 250H1120"/><path class="res" d="M1120 250l14-20 14 40 14-40 14 40 14-40 14 40 14-20"/><path class="wire" d="M1218 250H1360"/>
+<text class="label" x="1169" y="330">R3</text>
+<!-- Tap terminals with voltage ranges. -->
+<path class="wire" d="M700 250V315M1040 250V315M1360 250V315"/>
+<circle class="node" cx="700" cy="315" r="10"/><circle class="node" cx="1040" cy="315" r="10"/><circle class="node" cx="1360" cy="315" r="10"/>
+<text class="range" x="700" y="385">3 V</text><text class="range" x="1040" y="385">15 V</text><text class="range" x="1360" y="385">150 V</text>
+<!-- Galvanometer path and internal resistance on the left side. -->
+<path class="wire" d="M350 250V355"/><path class="res" d="M350 355l-18 14 36 14-36 14 36 14-36 14 36 14-18 14"/><path class="wire" d="M350 453V500"/>
+<text class="label" x="425" y="420">r<tspan baseline-shift="sub" font-size="21">g</tspan></text>
+<circle cx="350" cy="585" r="64" fill="#06172b" stroke="#00e6f2" stroke-width="6"/><text class="symbol" x="350" y="600">G</text>
+<path class="wire" d="M350 649V700H650"/><circle class="node" cx="650" cy="700" r="10"/>
+<!-- Ground symbol on the common galvanometer terminal. -->
+<path class="wire" d="M350 700V748M305 748H395M319 765H381M334 782H366"/>
+</svg>

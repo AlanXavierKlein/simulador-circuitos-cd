@@ -42,7 +42,7 @@ export function NetworkGuidePage({
             />
           </div>
         </div>
-        <div className="relative min-h-56 overflow-hidden rounded-3xl border border-slate-700 bg-white shadow-2xl shadow-black/20">
+        <div className="relative min-h-56 overflow-hidden rounded-3xl border border-slate-700 bg-slate-950 shadow-2xl shadow-black/20">
           <Image
             src={problem.image}
             alt={`Enunciado oficial del ${problem.eyebrow}`}
