@@ -101,7 +101,7 @@ body {
 }
 
 .circuit-flow .react-flow__edge-path {
-  filter: drop-shadow(0 0 3px rgb(100 116 139 / 0.2));
+  filter: drop-shadow(0 0 2px rgb(100 116 139 / 0.14));
 }
 
 @keyframes circuit-current-flow {

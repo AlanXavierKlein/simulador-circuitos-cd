@@ -1,6 +1,7 @@
 "use client";
 
 import { RotateCcw, SlidersHorizontal } from "lucide-react";
+import { useState } from "react";
 
 import type { Circuit, Component } from "@/lib/engine/model";
 
@@ -8,7 +9,7 @@ type ComponentControlsProps = {
   circuit: Circuit;
   onValueChange: (label: string, value: number) => void;
   onReset?: () => void;
-  compact?: boolean;
+  allowZeroResistance?: boolean;
 };
 
 type ControlRange = {
@@ -26,12 +27,15 @@ const MAX_RESISTANCE_OHMS = 1000;
 const MAX_VOLTAGE_VOLTS = 1000;
 const MAX_SLIDER_VALUE = 500;
 
-function controlRange(component: Component): ControlRange {
+function controlRange(
+  component: Component,
+  allowZeroResistance: boolean,
+): ControlRange {
   if (component.type === "resistor") {
     return {
-      min: 0.1,
+      min: allowZeroResistance ? 0 : 0.1,
       max: MAX_RESISTANCE_OHMS,
-      sliderMin: 0.1,
+      sliderMin: allowZeroResistance ? 0 : 0.1,
       sliderMax: MAX_SLIDER_VALUE,
       step: 0.1,
       unit: "Ω",
@@ -95,35 +99,34 @@ export function ComponentControls({
   circuit,
   onValueChange,
   onReset,
-  compact = false,
+  allowZeroResistance = false,
 }: ComponentControlsProps) {
   const orderedComponents = [...circuit.components].sort(componentOrder);
 
   return (
-    <aside
-      className={`app-surface min-w-0 max-w-full p-5 ${
-        compact
-          ? ""
-          : "xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto"
-      }`}
-    >
-      <div className="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+    <aside className="app-surface min-w-0 max-w-full p-5 xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto">
+      <div className="mb-5 flex flex-col gap-4">
         <div className="flex items-start gap-3">
           <span className="app-icon size-10">
             <SlidersHorizontal className="size-5" />
           </span>
           <div>
             <h2 className="font-semibold text-slate-100">Parámetros</h2>
-            <p className="mt-1 text-xs leading-5 text-slate-500">
+            <p className="mt-1 text-xs leading-5 text-slate-400">
               Cambiá un valor: el circuito se resuelve al instante.
             </p>
+            {allowZeroResistance ? (
+              <p className="mt-1 text-xs leading-5 text-amber-200/85">
+                En este ejercicio, 0 Ω representa un cable ideal.
+              </p>
+            ) : null}
           </div>
         </div>
         {onReset ? (
           <button
             type="button"
             onClick={onReset}
-            className="app-button-secondary inline-flex h-10 w-fit items-center justify-center gap-2 px-4 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+            className="app-button-secondary inline-flex h-10 w-full items-center justify-center gap-2 px-4 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
           >
             <RotateCcw className="size-4" />
             Restablecer valores
@@ -131,13 +134,9 @@ export function ComponentControls({
         ) : null}
       </div>
 
-      <div
-        className={
-          compact ? "grid gap-3 md:grid-cols-2 2xl:grid-cols-3" : "space-y-3"
-        }
-      >
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,8.5rem),1fr))] gap-3">
         {orderedComponents.map((component) => {
-          const range = controlRange(component);
+          const range = controlRange(component, allowZeroResistance);
           const inputId = `component-${component.label}`;
           const sliderValue = Math.min(
             range.sliderMax,
@@ -153,7 +152,10 @@ export function ComponentControls({
           };
 
           return (
-            <div key={component.label} className="app-surface-inset p-3.5">
+            <div
+              key={component.label}
+              className="app-surface-inset min-w-0 p-3.5"
+            >
               <div className="mb-3 flex items-baseline justify-between gap-3">
                 <div>
                   <label
@@ -166,7 +168,7 @@ export function ComponentControls({
                     {range.kind}
                   </p>
                 </div>
-                <span className="font-mono text-sm text-cyan-300">
+                <span className="shrink-0 whitespace-nowrap font-mono text-sm text-cyan-300">
                   {formatValue(range.value)} {range.unit}
                 </span>
               </div>
@@ -186,20 +188,11 @@ export function ComponentControls({
               />
 
               <div className="mt-3 flex items-center gap-2">
-                <input
-                  suppressHydrationWarning
-                  id={inputId}
-                  aria-label={`Valor de ${component.label}`}
-                  type="number"
-                  min={range.min}
-                  max={range.max}
-                  step={range.step}
-                  value={range.value}
-                  onChange={(event) => {
-                    if (event.currentTarget.value === "") return;
-                    updateValue(Number(event.currentTarget.value));
-                  }}
-                  className="app-input h-9 min-w-0 flex-1 px-2.5 font-mono text-sm"
+                <DraftNumberInput
+                  component={component}
+                  inputId={inputId}
+                  range={range}
+                  onCommit={updateValue}
                 />
                 <span className="w-5 font-mono text-xs text-slate-400">
                   {range.unit}
@@ -210,5 +203,70 @@ export function ComponentControls({
         })}
       </div>
     </aside>
+  );
+}
+
+function DraftNumberInput({
+  component,
+  inputId,
+  range,
+  onCommit,
+}: {
+  component: Component;
+  inputId: string;
+  range: ControlRange;
+  onCommit: (value: number) => void;
+}) {
+  const [draftValue, setDraftValue] = useState(() => String(range.value));
+  const [isEditing, setIsEditing] = useState(false);
+  const fallbackValue = component.type === "resistor" ? range.min : 0;
+  const displayedValue = isEditing ? draftValue : String(range.value);
+
+  const commitDraft = (value: string) => {
+    if (value.trim() === "") {
+      onCommit(fallbackValue);
+      return;
+    }
+
+    const parsedValue = Number(value);
+    if (Number.isFinite(parsedValue)) {
+      onCommit(parsedValue);
+      return;
+    }
+
+    onCommit(fallbackValue);
+  };
+
+  return (
+    <input
+      suppressHydrationWarning
+      id={inputId}
+      aria-label={`Valor de ${component.label}`}
+      type="number"
+      min={range.min}
+      max={range.max}
+      step={range.step}
+      value={displayedValue}
+      onFocus={() => {
+        setDraftValue(String(range.value));
+        setIsEditing(true);
+      }}
+      onChange={(event) => {
+        const nextValue = event.currentTarget.value;
+        setDraftValue(nextValue);
+        if (nextValue !== "") {
+          const parsedValue = Number(nextValue);
+          if (Number.isFinite(parsedValue)) onCommit(parsedValue);
+        }
+      }}
+      onBlur={(event) => {
+        setIsEditing(false);
+        commitDraft(event.currentTarget.value);
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") event.currentTarget.blur();
+      }}
+      className="app-input h-9 min-w-0 flex-1 px-2.5 font-mono text-sm"
+    />
   );
 }

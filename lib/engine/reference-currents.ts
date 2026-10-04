@@ -41,6 +41,19 @@ export function buildReferenceCurrentLayout(
   const visitedBranches = new Set<number>();
   const groups: ReferenceCurrentGroup[] = [];
   let unknownReferenceIndex = 0;
+  const reservedLabels = new Set(
+    circuit.components
+      .filter((component) => component.type === "currentSource")
+      .map((component) => component.label),
+  );
+  const usedLabels = new Set<string>();
+  const nextUnknownLabel = (): string => {
+    let candidate: string;
+    do {
+      candidate = `I${unknownReferenceIndex++}`;
+    } while (reservedLabels.has(candidate) || usedLabels.has(candidate));
+    return candidate;
+  };
 
   for (const seed of graph.branches) {
     if (visitedBranches.has(seed.index)) continue;
@@ -91,7 +104,8 @@ export function buildReferenceCurrentLayout(
         ),
       )
       .find((component) => component?.type === "currentSource");
-    const label = knownCurrentSource?.label ?? `I${unknownReferenceIndex++}`;
+    const label = knownCurrentSource?.label ?? nextUnknownLabel();
+    usedLabels.add(label);
 
     groups.push({
       label,

@@ -93,15 +93,15 @@ export function ResultsPanel({ circuit, result }: ResultsPanelProps) {
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan-300">
-            Resultados en vivo
+            Resultado actual
           </p>
           <h2 className="mt-1 text-2xl font-semibold tracking-tight text-white">
-            Lecturas del circuito
+            Lecturas con los valores cargados
           </h2>
         </div>
 
         <div className="app-surface-inset border-amber-400/25 bg-amber-400/[0.055] px-4 py-3">
-          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-amber-300">
+          <p className="text-xs font-medium uppercase tracking-[0.12em] text-amber-300">
             Diferencia de potencial
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -118,7 +118,7 @@ export function ResultsPanel({ circuit, result }: ResultsPanelProps) {
                 </option>
               ))}
             </select>
-            <span className="font-mono text-sm text-slate-500">− V</span>
+            <span className="font-mono text-sm text-slate-400">− V</span>
             <select
               suppressHydrationWarning
               aria-label="Nodo B para diferencia de potencial"
@@ -132,7 +132,7 @@ export function ResultsPanel({ circuit, result }: ResultsPanelProps) {
                 </option>
               ))}
             </select>
-            <span className="font-mono text-sm text-slate-500">=</span>
+            <span className="font-mono text-sm text-slate-400">=</span>
             <span className="font-mono text-lg font-semibold text-amber-200">
               <AnimatedNumber value={difference} /> V
             </span>
@@ -155,7 +155,9 @@ export function ResultsPanel({ circuit, result }: ResultsPanelProps) {
               const current = group.current;
               return (
                 <ResultCard
-                  key={group.label}
+                  key={JSON.stringify(
+                    group.segments.map((segment) => segment.componentLabel),
+                  )}
                   label={group.label}
                   value={current}
                   unit="A"

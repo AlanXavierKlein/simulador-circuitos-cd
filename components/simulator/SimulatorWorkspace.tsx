@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertTriangle } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { CircuitCanvas } from "@/components/circuit/CircuitCanvas";
 import type {
@@ -17,6 +17,7 @@ import { solveCircuit } from "@/lib/engine/kirchhoff";
 import type { Circuit } from "@/lib/engine/model";
 import {
   cloneCircuit,
+  hasOriginalCircuitValues,
   updateCircuitComponentValue,
 } from "@/lib/engine/circuit-state";
 import { buildSolutionSteps } from "@/lib/engine/steps";
@@ -26,6 +27,7 @@ type GuideWorkspaceOptions = {
   stepExplanations: Record<string, string>;
   stepContentOverrides?: Record<string, string>;
   resolution: GuideResolution;
+  allowZeroResistance?: boolean;
 };
 
 type SimulatorWorkspaceProps = {
@@ -42,14 +44,21 @@ export function SimulatorWorkspace({
   nodePositions,
   componentPositions,
   currentLabelPlacements,
-  title = "Red de tres mallas",
+  title = "Red de tres ramas",
   guide,
 }: SimulatorWorkspaceProps) {
-  const originalCircuitRef = useRef<Circuit>(cloneCircuit(initialCircuit));
+  const [originalCircuit] = useState<Circuit>(() => cloneCircuit(initialCircuit));
   const [circuit, setCircuit] = useState(() => cloneCircuit(initialCircuit));
+  const allowZeroResistance = guide?.allowZeroResistance ?? false;
+  const hasOriginalValues = hasOriginalCircuitValues(
+    circuit,
+    originalCircuit,
+  );
   const calculation = useMemo(() => {
     try {
-      const result = solveCircuit(circuit);
+      const result = solveCircuit(circuit, {
+        allowZeroResistance,
+      });
       return {
         result,
         steps: buildSolutionSteps(circuit, result),
@@ -65,20 +74,22 @@ export function SimulatorWorkspace({
             : "No se pudo resolver el circuito.",
       };
     }
-  }, [circuit]);
+  }, [allowZeroResistance, circuit]);
 
   const controls = (
     <ComponentControls
       circuit={circuit}
-      compact={Boolean(guide)}
+      allowZeroResistance={allowZeroResistance}
       onReset={
         guide
-          ? () => setCircuit(cloneCircuit(originalCircuitRef.current))
+          ? () => setCircuit(cloneCircuit(originalCircuit))
           : undefined
       }
       onValueChange={(label, value) =>
         setCircuit((currentCircuit) =>
-          updateCircuitComponentValue(currentCircuit, label, value),
+          updateCircuitComponentValue(currentCircuit, label, value, {
+            allowZeroResistance,
+          }),
         )
       }
     />
@@ -97,19 +108,10 @@ export function SimulatorWorkspace({
 
   return (
     <>
-      {guide ? (
-        <div className="min-w-0 space-y-6">
-          {canvas}
-          <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6">
-            {controls}
-          </div>
-        </div>
-      ) : (
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start">
-          {canvas}
-          {controls}
-        </div>
-      )}
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start">
+        {canvas}
+        {controls}
+      </div>
 
       {calculation.result ? (
         <>
@@ -118,12 +120,14 @@ export function SimulatorWorkspace({
               {guide.resolution.mode === "prepend-analysis" ? (
                 <GuideExplanation
                   explanation={guide.resolution.explanation}
+                  hasOriginalValues={hasOriginalValues}
                   className="mt-6"
                 />
               ) : null}
               {guide.resolution.mode === "replace-kirchhoff" ? (
                 <GuideExplanation
                   explanation={guide.resolution.explanation}
+                  hasOriginalValues={hasOriginalValues}
                   className="mt-6"
                 />
               ) : (

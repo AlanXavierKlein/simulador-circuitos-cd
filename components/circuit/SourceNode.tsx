@@ -3,7 +3,7 @@ import type { NodeProps } from "@xyflow/react";
 
 import { cn } from "@/lib/utils";
 
-import type { SourceFlowNode } from "./flow-types";
+import type { SourceFlowNode, VoltagePolarity } from "./flow-types";
 
 const voltageHandleStyle = {
   width: 13,
@@ -20,10 +20,16 @@ const currentHandleStyle = {
 function VoltageSymbol({
   vertical,
   reversed,
+  polarity,
 }: {
   vertical: boolean;
   reversed: boolean;
+  polarity: VoltagePolarity;
 }) {
+  const showsPolarity = polarity !== "neutral";
+  const effectiveReversed =
+    polarity === "negative" ? !reversed : reversed;
+
   return vertical ? (
     <svg
       viewBox="0 0 116 180"
@@ -37,12 +43,18 @@ function VoltageSymbol({
         strokeLinecap="round"
       />
       <path
-        d={reversed ? "M39 68 H77 M27 91 H89" : "M27 68 H89 M39 91 H77"}
+        d={
+          showsPolarity
+            ? effectiveReversed
+              ? "M39 68 H77 M27 91 H89"
+              : "M27 68 H89 M39 91 H77"
+            : "M31 68 H85 M31 91 H85"
+        }
         stroke="#fbbf24"
         strokeWidth="5"
         strokeLinecap="round"
       />
-      {reversed ? (
+      {showsPolarity && effectiveReversed ? (
         <>
           <text x="91" y="72" fill="#94a3b8" fontSize="20" fontWeight="700">
             −
@@ -51,7 +63,7 @@ function VoltageSymbol({
             +
           </text>
         </>
-      ) : (
+      ) : showsPolarity ? (
         <>
           <text x="94" y="72" fill="#fbbf24" fontSize="18" fontWeight="700">
             +
@@ -60,7 +72,7 @@ function VoltageSymbol({
             −
           </text>
         </>
-      )}
+      ) : null}
     </svg>
   ) : (
     <svg
@@ -75,12 +87,18 @@ function VoltageSymbol({
         strokeLinecap="round"
       />
       <path
-        d={reversed ? "M68 33 V71 M91 21 V83" : "M68 21 V83 M91 33 V71"}
+        d={
+          showsPolarity
+            ? effectiveReversed
+              ? "M68 33 V71 M91 21 V83"
+              : "M68 21 V83 M91 33 V71"
+            : "M68 28 V76 M91 28 V76"
+        }
         stroke="#fbbf24"
         strokeWidth="5"
         strokeLinecap="round"
       />
-      {reversed ? (
+      {showsPolarity && effectiveReversed ? (
         <>
           <text x="62" y="28" fill="#94a3b8" fontSize="20" fontWeight="700">
             −
@@ -89,7 +107,7 @@ function VoltageSymbol({
             +
           </text>
         </>
-      ) : (
+      ) : showsPolarity ? (
         <>
           <text x="57" y="20" fill="#fbbf24" fontSize="18" fontWeight="700">
             +
@@ -98,7 +116,7 @@ function VoltageSymbol({
             −
           </text>
         </>
-      )}
+      ) : null}
     </svg>
   );
 }
@@ -182,6 +200,13 @@ function CurrentSymbol({
 export function SourceNode({ data, selected }: NodeProps<SourceFlowNode>) {
   const isVertical = data.orientation === "vertical";
   const isVoltage = data.sourceType === "voltage";
+  const voltagePolarity =
+    data.voltagePolarity ??
+    (data.value.startsWith("-")
+      ? "negative"
+      : data.value.startsWith("0")
+        ? "neutral"
+        : "positive");
   const tone = isVoltage
     ? {
         border: "border-amber-400/35",
@@ -197,6 +222,29 @@ export function SourceNode({ data, selected }: NodeProps<SourceFlowNode>) {
         value: "text-cyan-300",
         handle: currentHandleStyle,
       };
+  const guidedHandleStyle = (handleId: "from" | "to") => {
+    const isValidTarget = data.validTargetHandles?.includes(handleId);
+    const isOrigin = data.connectionOriginHandle === handleId;
+    return {
+      ...tone.handle,
+      opacity:
+        data.connectionActive && !isValidTarget && !isOrigin ? 0.28 : 1,
+      ...(isValidTarget
+        ? {
+            background: "#a3e635",
+            border: "3px solid #f8fafc",
+            boxShadow: "0 0 16px rgba(163,230,53,0.9)",
+          }
+        : {}),
+      ...(isOrigin
+        ? {
+            background: "#fbbf24",
+            border: "3px solid #fef3c7",
+            boxShadow: "0 0 16px rgba(251,191,36,0.9)",
+          }
+        : {}),
+    };
+  };
   const fromPosition = isVertical
     ? data.reversed
       ? Position.Bottom
@@ -219,6 +267,15 @@ export function SourceNode({ data, selected }: NodeProps<SourceFlowNode>) {
         tone.border,
         isVertical ? "h-[180px] w-[116px]" : "h-[104px] w-[180px]",
         selected && tone.selected,
+        !data.connectionActive &&
+          data.validationHint === "incomplete" &&
+          "border-amber-300 ring-2 ring-amber-300/70 shadow-[0_0_30px_rgba(251,191,36,0.28)]",
+        !data.connectionActive &&
+          data.validationHint === "unsolvable" &&
+          "border-rose-300 ring-2 ring-rose-300/75 shadow-[0_0_30px_rgba(251,113,133,0.3)]",
+        data.connectionHint === "valid" &&
+          "border-lime-300 ring-2 ring-lime-300/70 shadow-[0_0_30px_rgba(163,230,53,0.25)]",
+        data.connectionHint === "invalid" && "opacity-40",
       )}
       aria-label={`${data.label}, ${data.value}`}
     >
@@ -226,11 +283,15 @@ export function SourceNode({ data, selected }: NodeProps<SourceFlowNode>) {
         id="from"
         type="source"
         position={fromPosition}
-        style={tone.handle}
+        style={guidedHandleStyle("from")}
       />
 
       {isVoltage ? (
-        <VoltageSymbol vertical={isVertical} reversed={data.reversed} />
+        <VoltageSymbol
+          vertical={isVertical}
+          reversed={data.reversed}
+          polarity={voltagePolarity}
+        />
       ) : (
         <CurrentSymbol vertical={isVertical} reversed={data.reversed} />
       )}
@@ -246,7 +307,7 @@ export function SourceNode({ data, selected }: NodeProps<SourceFlowNode>) {
       </span>
       <span
         className={cn(
-          "absolute rounded-md bg-slate-900/95 px-2 py-1 font-mono text-[11px]",
+          "absolute rounded-md bg-slate-900/95 px-2 py-1 font-mono text-xs font-semibold",
           tone.value,
           isVertical
             ? "bottom-5 right-2"
@@ -256,7 +317,18 @@ export function SourceNode({ data, selected }: NodeProps<SourceFlowNode>) {
         {data.value}
       </span>
 
-      <Handle id="to" type="source" position={toPosition} style={tone.handle} />
+      {data.connectionHintMessage ? (
+        <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-3 w-max max-w-56 -translate-x-1/2 rounded-lg border border-amber-400/30 bg-slate-950/95 px-3 py-2 text-center text-xs leading-5 text-amber-100 shadow-xl">
+          {data.connectionHintMessage}
+        </span>
+      ) : null}
+
+      <Handle
+        id="to"
+        type="source"
+        position={toPosition}
+        style={guidedHandleStyle("to")}
+      />
     </div>
   );
 }

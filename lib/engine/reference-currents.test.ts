@@ -47,4 +47,21 @@ describe("referencias de corriente por rama física", () => {
     expect(layout.byComponent.R1.label).toBe("I1");
     expect(layout.byComponent.R2.label).toBe("I2");
   });
+
+  it("evita repetir una etiqueta reservada por una fuente de corriente", () => {
+    const circuit = {
+      ...problem11,
+      components: problem11.components.map((component) =>
+        component.label === "Ie" ? { ...component, label: "I1" } : component,
+      ),
+    };
+    const result = solveCircuit(circuit);
+    const labels = buildReferenceCurrentLayout(
+      circuit,
+      result.branchCurrents,
+    ).groups.map((group) => group.label);
+
+    expect(labels).toEqual(["I0", "I2", "I3", "I1", "Is"]);
+    expect(new Set(labels).size).toBe(labels.length);
+  });
 });

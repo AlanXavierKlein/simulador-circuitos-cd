@@ -1,6 +1,7 @@
 import { ArrowLeft, Gauge, Network } from "lucide-react";
 import Link from "next/link";
 
+import { HowToUseDialog } from "@/components/help/HowToUseDialog";
 import { guideTheories } from "@/lib/problems/guia04";
 
 import { InstrumentDesigner } from "./InstrumentDesigner";
@@ -44,10 +45,11 @@ export function InstrumentGuidePage({
               ? "Calculá las tres resistencias de derivación que protegen al galvanómetro y producen el fondo de escala para 0,1 A, 1 A y 10 A."
               : "Calculá las resistencias multiplicadoras acumuladas que permiten medir 3 V, 15 V y 150 V con el mismo galvanómetro."}
           </p>
-          <div className="mt-5">
+          <div className="mt-5 flex flex-wrap gap-3">
             <TheorySummaryDialog
               theory={guideTheories[isAmmeter ? "p12" : "p13"]}
             />
+            <HowToUseDialog experience="instrument" />
           </div>
         </div>
       </header>

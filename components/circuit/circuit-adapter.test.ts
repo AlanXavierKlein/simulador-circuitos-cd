@@ -22,6 +22,11 @@ describe("adaptador Circuit -> React Flow", () => {
       5,
     );
     expect(flow.nodes.filter((node) => node.type === "source")).toHaveLength(3);
+    expect(
+      flow.nodes.every(
+        (node) => node.initialWidth !== undefined && node.initialHeight !== undefined,
+      ),
+    ).toBe(true);
   });
 
   it("expone valores y lleva la corriente resuelta a los cables animados", () => {
@@ -39,6 +44,7 @@ describe("adaptador Circuit -> React Flow", () => {
       label: "E2",
       value: "15 V",
       sourceType: "voltage",
+      voltagePolarity: "positive",
     });
     expect(
       flow.nodes.find((node) => node.id === "component:E3")?.data,
@@ -88,6 +94,33 @@ describe("adaptador Circuit -> React Flow", () => {
       referenceLabelTangentOffset: 75,
       referenceLabelNormalOffset: 95,
     });
+  });
+
+  it("expone la polaridad visual según el signo de la fuente de tensión", () => {
+    const circuit: Circuit = {
+      nodes: [{ id: "a" }, { id: "b" }, { id: "c" }, { id: "d" }],
+      components: [
+        { type: "voltageSource", label: "E+", nFrom: "a", nTo: "b", volts: 9 },
+        { type: "voltageSource", label: "E-", nFrom: "b", nTo: "c", volts: -9 },
+        { type: "voltageSource", label: "E0", nFrom: "c", nTo: "d", volts: 0 },
+      ],
+    };
+
+    const flow = circuitToFlow(circuit, {
+      nodePositions: {
+        a: { x: 0, y: 0 },
+        b: { x: 200, y: 0 },
+        c: { x: 400, y: 0 },
+        d: { x: 600, y: 0 },
+      },
+    });
+
+    expect(flow.nodes.find((node) => node.id === "component:E+")?.data)
+      .toMatchObject({ voltagePolarity: "positive" });
+    expect(flow.nodes.find((node) => node.id === "component:E-")?.data)
+      .toMatchObject({ voltagePolarity: "negative" });
+    expect(flow.nodes.find((node) => node.id === "component:E0")?.data)
+      .toMatchObject({ voltagePolarity: "neutral" });
   });
 
   it("adapta fuentes de corriente y conserva el sentido de su flecha", () => {

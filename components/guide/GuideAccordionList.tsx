@@ -80,13 +80,7 @@ export function GuideAccordionList({ items }: { items: GuideListItem[] }) {
                   transition={{ duration: 0.28, ease: "easeInOut" }}
                 >
                   <div className="border-t border-slate-800 px-5 pb-6 pt-5 sm:px-6">
-                    <div
-                      className={`grid gap-6 ${
-                        item.image
-                          ? "lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.85fr)] lg:items-center"
-                          : ""
-                      }`}
-                    >
+                    <div className="grid gap-6">
                       <div>
                         <p className="max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
                           {item.description}
@@ -102,12 +96,12 @@ export function GuideAccordionList({ items }: { items: GuideListItem[] }) {
                       </div>
 
                       {item.image ? (
-                        <div className="relative min-h-64 overflow-hidden rounded-2xl border border-slate-700 bg-white p-3 shadow-inner sm:min-h-80">
+                        <div className="relative aspect-[16/9] w-full min-w-0 max-w-full overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 p-3 shadow-inner">
                           <Image
                             src={item.image}
                             alt={`Enunciado oficial del problema ${item.number}`}
                             fill
-                            sizes="(min-width: 1024px) 38vw, 90vw"
+                          sizes="(min-width: 1024px) 80vw, 90vw"
                             className="object-contain p-3"
                           />
                         </div>
