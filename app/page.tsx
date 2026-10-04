@@ -27,17 +27,17 @@ export default function HomePage() {
 
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
-              href="/simulador"
+              href="/guia"
               className={buttonVariants({
                 size: "lg",
                 className:
                   "min-w-36 bg-cyan-300 text-slate-950 hover:bg-cyan-200",
               })}
             >
-              Explorar
+              Explorar guía
             </Link>
             <Link
-              href="/guia"
+              href="/constructor"
               className={buttonVariants({
                 size: "lg",
                 variant: "outline",
@@ -45,7 +45,7 @@ export default function HomePage() {
                   "min-w-36 border-slate-700 bg-slate-950/40 hover:bg-slate-800",
               })}
             >
-              Modo guía
+              Constructor
             </Link>
           </div>
         </div>
