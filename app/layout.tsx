@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     template: "%s | Circuitos CC",
   },
   description:
-    "Simulador interactivo de circuitos resistivos de corriente directa.",
+    "Guía interactiva y constructor de circuitos resistivos de corriente directa.",
 };
 
 export const viewport: Viewport = {

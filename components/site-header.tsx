@@ -9,7 +9,6 @@ import { ViewCounter } from "@/components/home/ViewCounter";
 
 const navigation = [
   { href: "/", label: "Home" },
-  { href: "/simulador", label: "Simulador" },
   { href: "/guia", label: "Modo guía" },
   { href: "/constructor", label: "Constructor" },
   { href: "/teoria", label: "Teoría" },
