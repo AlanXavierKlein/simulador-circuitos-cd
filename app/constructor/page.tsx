@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cable, CircuitBoard, MonitorSmartphone, Sparkles } from "lucide-react";
 
 import { CircuitConstructor } from "@/components/constructor/CircuitConstructor";
+import { HowToUseDialog } from "@/components/help/HowToUseDialog";
 
 export const metadata: Metadata = { title: "Constructor" };
 
@@ -32,6 +33,9 @@ export default function ConstructorPage() {
             <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-800 bg-slate-950/70 px-3 py-1.5">
               <Sparkles className="size-3.5 text-lime-300" /> Resolución en vivo
             </span>
+          </div>
+          <div className="mt-5">
+            <HowToUseDialog experience="constructor" />
           </div>
         </div>
       </header>

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="940" viewBox="0 0 1680 940">
+<defs>
+  <pattern id="grid" width="56" height="56" patternUnits="userSpaceOnUse"><path d="M56 0H0V56" fill="none" stroke="#12304a" stroke-width="1.5"/></pattern>
+  <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <style>
+    .wire{fill:none;stroke:#00e6f2;stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
+    .res{fill:none;stroke:#ffc928;stroke-width:7;stroke-linecap:round;stroke-linejoin:round;filter:url(#glow)}
+    .meter{fill:#06172b;stroke:#00e6f2;stroke-width:6}
+    .dash{fill:none;stroke:#5b8ba2;stroke-width:3;stroke-dasharray:13 12;stroke-linecap:round}
+    .node{fill:#00e6f2}
+    .label{font:600 29px 'Segoe UI',Arial,sans-serif;fill:#f4f7ff;text-anchor:middle}
+    .reading{font:600 31px 'Segoe UI',Arial,sans-serif;fill:#f4f7ff;text-anchor:middle}
+    .symbol{font:700 43px 'Segoe UI',Arial,sans-serif;fill:#f4f7ff;text-anchor:middle}
+    .polarity{font:700 36px 'Segoe UI',Arial,sans-serif;fill:#f4f7ff;text-anchor:middle}
+  </style>
+</defs>
+<rect width="1680" height="940" fill="#06172b"/><rect width="1680" height="940" fill="url(#grid)"/>
+<!-- Main loop: R1, R2, R3 in series above the galvanometer branch. -->
+<path class="wire" d="M250 280V670H560"/>
+<path class="wire" d="M250 280H340"/><path class="res" d="M340 280l14-20 14 40 14-40 14 40 14-40 14 40 14-20"/><path class="wire" d="M438 280H650"/>
+<text class="label" x="389" y="365">R1</text>
+<path class="wire" d="M650 280H760"/><path class="res" d="M760 280l14-20 14 40 14-40 14 40 14-40 14 40 14-20"/><path class="wire" d="M858 280H1030"/>
+<text class="label" x="809" y="365">R2</text>
+<path class="wire" d="M1030 280H1140"/><path class="res" d="M1140 280l14-20 14 40 14-40 14 40 14-40 14 40 14-20"/><path class="wire" d="M1238 280H1360V670H1050"/>
+<text class="label" x="1189" y="365">R3</text>
+<!-- Current sampling points with their values. -->
+<path class="wire" d="M650 280V205M1030 280V205M1360 280V205"/>
+<circle class="node" cx="650" cy="205" r="11"/><circle class="node" cx="1030" cy="205" r="11"/><circle class="node" cx="1360" cy="205" r="11"/>
+<text class="reading" x="650" y="150">10 A</text><text class="reading" x="1030" y="150">1 A</text><text class="reading" x="1360" y="150">0.1 A</text>
+<!-- Polarity marks on the left rail. -->
+<path class="wire" d="M250 280V230H190"/><text class="polarity" x="215" y="218">+</text>
+<!-- Galvanometer and its internal resistance in the dashed enclosure. -->
+<rect class="dash" x="520" y="435" width="600" height="385" rx="4"/>
+<path class="wire" d="M560 670H610"/><circle class="meter" cx="680" cy="670" r="68"/><text class="symbol" x="680" y="685">G</text>
+<path class="wire" d="M748 670H790"/><path class="res" d="M790 670l14-20 14 40 14-40 14 40 14-40 14 40 14-20"/><path class="wire" d="M888 670H1050"/>
+<text class="label" x="839" y="755">r<tspan baseline-shift="sub" font-size="21">g</tspan> = 10 Ω</text>
+</svg>

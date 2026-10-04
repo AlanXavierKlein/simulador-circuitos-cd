@@ -1,13 +1,19 @@
-import { BookOpenCheck } from "lucide-react";
+import { BookOpenCheck, CircleAlert } from "lucide-react";
 
 import type { GuideExplanation as GuideExplanationContent } from "@/lib/problems/guide-explanations";
 
 export function GuideExplanation({
   explanation,
   className,
+  hasOriginalValues = true,
+  showOriginalValuesNotice = false,
 }: {
   explanation: GuideExplanationContent;
   className?: string;
+  /** Las cifras de la guía solo son comparables con los valores originales. */
+  hasOriginalValues?: boolean;
+  /** Se usa cuando el bloque contiene resultados fijos del ejemplo original. */
+  showOriginalValuesNotice?: boolean;
 }) {
   return (
     <section className={`app-surface overflow-hidden ${className ?? ""}`}>
@@ -17,7 +23,9 @@ export function GuideExplanation({
         </span>
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.18em] text-lime-300">
-            Resolución de cátedra
+            {hasOriginalValues
+              ? "Ejemplo resuelto de la guía"
+              : "Método de resolución de cátedra"}
           </p>
           <h2 className="mt-1 text-xl font-semibold text-white sm:text-2xl">
             {explanation.heading}
@@ -26,6 +34,16 @@ export function GuideExplanation({
       </header>
 
       <div className="border-t border-slate-800 px-5 py-6 sm:px-6">
+        {!hasOriginalValues && showOriginalValuesNotice ? (
+          <div className="mb-6 flex items-start gap-3 rounded-2xl border border-amber-400/25 bg-amber-400/[0.07] p-4 text-sm text-amber-100">
+            <CircleAlert className="mt-0.5 size-5 shrink-0 text-amber-300" />
+            <p className="leading-6">
+              Editaste los valores. Las cifras de este desarrollo pertenecen al
+              ejemplo original de la guía y no se comparan con el resultado
+              actual. Restablecé los valores para volver a compararlos.
+            </p>
+          </div>
+        ) : null}
         {explanation.analysis ? (
           <section className="max-w-4xl">
             <h3 className="font-medium text-cyan-100">Análisis</h3>
@@ -94,7 +112,9 @@ export function GuideExplanation({
 
         {explanation.result ? (
           <section className="mt-6 rounded-2xl border border-lime-400/20 bg-lime-400/5 p-4">
-            <h3 className="font-medium text-lime-200">Resultado</h3>
+            <h3 className="font-medium text-lime-200">
+              Resultado del ejemplo original
+            </h3>
             <p className="mt-2 text-sm leading-6 text-slate-200">
               {explanation.result}
             </p>

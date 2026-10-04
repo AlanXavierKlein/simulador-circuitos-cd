@@ -14,6 +14,29 @@ const handleStyle = {
 
 export function ResistorNode({ data, selected }: NodeProps<ResistorFlowNode>) {
   const isVertical = data.orientation === "vertical";
+  const guidedHandleStyle = (handleId: "from" | "to") => {
+    const isValidTarget = data.validTargetHandles?.includes(handleId);
+    const isOrigin = data.connectionOriginHandle === handleId;
+    return {
+      ...handleStyle,
+      opacity:
+        data.connectionActive && !isValidTarget && !isOrigin ? 0.28 : 1,
+      ...(isValidTarget
+        ? {
+            background: "#a3e635",
+            border: "3px solid #f8fafc",
+            boxShadow: "0 0 16px rgba(163,230,53,0.9)",
+          }
+        : {}),
+      ...(isOrigin
+        ? {
+            background: "#fbbf24",
+            border: "3px solid #fef3c7",
+            boxShadow: "0 0 16px rgba(251,191,36,0.9)",
+          }
+        : {}),
+    };
+  };
   const fromPosition = isVertical
     ? data.reversed
       ? Position.Bottom
@@ -35,6 +58,15 @@ export function ResistorNode({ data, selected }: NodeProps<ResistorFlowNode>) {
         "relative grid place-items-center rounded-2xl border border-slate-700/80 bg-slate-950/92 shadow-xl shadow-black/30 transition-[border-color,box-shadow]",
         isVertical ? "h-[180px] w-[116px]" : "h-[104px] w-[180px]",
         selected && "border-cyan-300 shadow-[0_0_28px_rgba(34,211,238,0.22)]",
+        !data.connectionActive &&
+          data.validationHint === "incomplete" &&
+          "border-amber-300 ring-2 ring-amber-300/70 shadow-[0_0_30px_rgba(251,191,36,0.28)]",
+        !data.connectionActive &&
+          data.validationHint === "unsolvable" &&
+          "border-rose-300 ring-2 ring-rose-300/75 shadow-[0_0_30px_rgba(251,113,133,0.3)]",
+        data.connectionHint === "valid" &&
+          "border-lime-300 ring-2 ring-lime-300/70 shadow-[0_0_30px_rgba(163,230,53,0.25)]",
+        data.connectionHint === "invalid" && "opacity-40",
       )}
       aria-label={`${data.label}, ${data.value}`}
     >
@@ -42,7 +74,7 @@ export function ResistorNode({ data, selected }: NodeProps<ResistorFlowNode>) {
         id="from"
         type="source"
         position={fromPosition}
-        style={handleStyle}
+        style={guidedHandleStyle("from")}
       />
 
       {isVertical ? (
@@ -87,7 +119,7 @@ export function ResistorNode({ data, selected }: NodeProps<ResistorFlowNode>) {
       </span>
       <span
         className={cn(
-          "absolute rounded-md bg-slate-900/95 px-2 py-1 font-mono text-[11px] text-lime-300",
+          "absolute rounded-md bg-slate-900/95 px-2 py-1 font-mono text-xs font-semibold text-lime-300",
           isVertical
             ? "bottom-6 right-2"
             : "bottom-2 left-1/2 -translate-x-1/2",
@@ -96,7 +128,18 @@ export function ResistorNode({ data, selected }: NodeProps<ResistorFlowNode>) {
         {data.value}
       </span>
 
-      <Handle id="to" type="source" position={toPosition} style={handleStyle} />
+      {data.connectionHintMessage ? (
+        <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-3 w-max max-w-56 -translate-x-1/2 rounded-lg border border-amber-400/30 bg-slate-950/95 px-3 py-2 text-center text-xs leading-5 text-amber-100 shadow-xl">
+          {data.connectionHintMessage}
+        </span>
+      ) : null}
+
+      <Handle
+        id="to"
+        type="source"
+        position={toPosition}
+        style={guidedHandleStyle("to")}
+      />
     </div>
   );
 }

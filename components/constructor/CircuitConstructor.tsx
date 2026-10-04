@@ -8,7 +8,6 @@ import {
   BackgroundVariant,
   ConnectionMode,
   Controls,
-  MiniMap,
   Panel,
   ReactFlow,
   ReactFlowProvider,
@@ -22,6 +21,8 @@ import type {
   IsValidConnection,
   NodeChange,
   NodeTypes,
+  OnConnectEnd,
+  OnConnectStart,
   OnSelectionChangeParams,
   XYPosition,
 } from "@xyflow/react";
@@ -34,6 +35,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { AnimatedWire } from "@/components/circuit/AnimatedWire";
+import { CircuitMiniMap } from "@/components/circuit/CircuitMiniMap";
 import { JunctionNode } from "@/components/circuit/JunctionNode";
 import { ResistorNode } from "@/components/circuit/ResistorNode";
 import { SourceNode } from "@/components/circuit/SourceNode";
@@ -48,6 +50,8 @@ import { solveCircuit } from "@/lib/engine/kirchhoff";
 import { buildSolutionSteps } from "@/lib/engine/steps";
 
 import { ConstructorSidebar } from "./ConstructorSidebar";
+import { createSimpleConstructorExample } from "./constructor-example";
+import { getConstructorFeedback } from "./constructor-feedback";
 import type {
   ConstructorFlowEdge,
   ConstructorFlowNode,
@@ -58,8 +62,18 @@ import {
   componentOrientation,
   nextComponentRotation,
 } from "./constructor-types";
+import {
+  getConstructorProgress,
+  isConstructorConnectionAllowed,
+  normalizeConstructorConnection,
+} from "./constructor-guidance";
 
 const STORAGE_KEY = "circuitos-cc:constructor:v1";
+
+type ExampleLoadConfirmation = {
+  hasCanvasCircuit: boolean;
+  hasSavedCircuit: boolean;
+};
 
 const nodeTypes = {
   resistor: ResistorNode,
@@ -97,8 +111,8 @@ function createConstructorNode(
   kind: ConstructorNodeKind,
   position: XYPosition,
   nodes: ConstructorFlowNode[],
+  id = `builder:${kind}:${crypto.randomUUID()}`,
 ): ConstructorFlowNode {
-  const id = `builder:${kind}:${crypto.randomUUID()}`;
   if (kind === "junction") {
     const isGround = !nodes.some(
       (node) => node.data.builderKind === "junction" && node.data.isGround,
@@ -112,6 +126,8 @@ function createConstructorNode(
         label: isGround ? "0" : nextLabel(nodes, "N"),
         isGround,
       },
+      initialWidth: 44,
+      initialHeight: 44,
       zIndex: 3,
     };
   }
@@ -129,6 +145,8 @@ function createConstructorNode(
         orientation: componentOrientation,
         reversed: false,
       },
+      initialWidth: 180,
+      initialHeight: 104,
       zIndex: 2,
     };
   }
@@ -147,7 +165,10 @@ function createConstructorNode(
       sourceType: isVoltage ? "voltage" : "current",
       orientation: componentOrientation,
       reversed: false,
+      ...(isVoltage ? { voltagePolarity: "positive" as const } : {}),
     },
+    initialWidth: 180,
+    initialHeight: 104,
     zIndex: 2,
   };
 }
@@ -215,46 +236,6 @@ function asEditableConnection(
     sourceHandle: edge.sourceHandle,
     targetHandle: edge.targetHandle,
   };
-}
-
-function normalizeConnection(
-  connection: Connection | ConstructorFlowEdge,
-  nodes: ConstructorFlowNode[],
-): Connection | null {
-  const sourceNode = nodes.find((node) => node.id === connection.source);
-  const targetNode = nodes.find((node) => node.id === connection.target);
-  if (!sourceNode || !targetNode) return null;
-
-  const sourceIsJunction = sourceNode.data.builderKind === "junction";
-  const targetIsJunction = targetNode.data.builderKind === "junction";
-  if (sourceIsJunction === targetIsJunction) return null;
-
-  const componentNode = sourceIsJunction ? targetNode : sourceNode;
-  const junctionNode = sourceIsJunction ? sourceNode : targetNode;
-  const componentHandle = sourceIsJunction
-    ? connection.targetHandle
-    : connection.sourceHandle;
-  const junctionHandle = sourceIsJunction
-    ? connection.sourceHandle
-    : connection.targetHandle;
-
-  if (componentHandle === "from") {
-    return {
-      source: junctionNode.id,
-      sourceHandle: junctionHandle ?? null,
-      target: componentNode.id,
-      targetHandle: "from",
-    };
-  }
-  if (componentHandle === "to") {
-    return {
-      source: componentNode.id,
-      sourceHandle: "to",
-      target: junctionNode.id,
-      targetHandle: junctionHandle ?? null,
-    };
-  }
-  return null;
 }
 
 function isSavedConstructorCircuit(
@@ -350,6 +331,12 @@ function ConstructorWorkspace() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [storageMessage, setStorageMessage] = useState<string | null>(null);
+  const [exampleLoadConfirmation, setExampleLoadConfirmation] =
+    useState<ExampleLoadConfirmation | null>(null);
+  const [activeConnection, setActiveConnection] = useState<{
+    nodeId: string;
+    handleId: string;
+  } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const { fitView, screenToFlowPosition } = useReactFlow<
     ConstructorFlowNode,
@@ -420,15 +407,131 @@ function ConstructorWorkspace() {
     [calculation.result?.branchCurrents, edges, maximumCurrent, nodes],
   );
 
+  const feedback = useMemo(
+    () =>
+      getConstructorFeedback(
+        nodes,
+        edges,
+        validation.issues,
+        validation.circuit !== null,
+        calculation.error,
+      ),
+    [calculation.error, edges, nodes, validation.circuit, validation.issues],
+  );
+
+  const displayedNodes = useMemo(() => {
+    const feedbackNodeIds = new Set(feedback?.nodeIds ?? []);
+    const nodesWithFeedback = nodes.map((node) =>
+      feedbackNodeIds.has(node.id)
+        ? ({
+            ...node,
+            data: {
+              ...node.data,
+              validationHint: feedback?.kind,
+            },
+          } as ConstructorFlowNode)
+        : node,
+    );
+
+    if (!activeConnection) return nodesWithFeedback;
+    const originNode = nodesWithFeedback.find(
+      (node) => node.id === activeConnection.nodeId,
+    );
+    if (!originNode) return nodesWithFeedback;
+
+    const originIsJunction = originNode.data.builderKind === "junction";
+    const junctionHandles = ["top", "right", "bottom", "left"];
+    const componentHandles = ["from", "to"];
+
+    return nodesWithFeedback.map((node) => {
+      if (node.id === activeConnection.nodeId) {
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            connectionActive: true,
+            connectionHint: "origin" as const,
+            connectionOriginHandle: activeConnection.handleId,
+            connectionHintMessage: originIsJunction
+              ? "Conectá este nodo con un terminal libre resaltado."
+              : "Cada terminal se conecta a un nodo resaltado.",
+          },
+        } as ConstructorFlowNode;
+      }
+
+      let validTargetHandles: string[] = [];
+      if (originIsJunction && node.data.builderKind !== "junction") {
+        validTargetHandles = componentHandles.filter((handleId) =>
+          isConstructorConnectionAllowed(
+            {
+              source: originNode.id,
+              sourceHandle: activeConnection.handleId,
+              target: node.id,
+              targetHandle: handleId,
+            },
+            nodes,
+            edges,
+          ),
+        );
+      } else if (
+        !originIsJunction &&
+        node.data.builderKind === "junction"
+      ) {
+        validTargetHandles = junctionHandles.filter((handleId) =>
+          isConstructorConnectionAllowed(
+            {
+              source: originNode.id,
+              sourceHandle: activeConnection.handleId,
+              target: node.id,
+              targetHandle: handleId,
+            },
+            nodes,
+            edges,
+          ),
+        );
+      }
+
+      return {
+        ...node,
+        data: {
+          ...node.data,
+          connectionActive: true,
+          connectionHint:
+            validTargetHandles.length > 0
+              ? ("valid" as const)
+              : ("invalid" as const),
+          validTargetHandles,
+        },
+      } as ConstructorFlowNode;
+    });
+  }, [activeConnection, edges, feedback, nodes]);
+
+  const progress = useMemo(
+    () =>
+      getConstructorProgress(
+        nodes,
+        edges,
+        validation.circuit !== null,
+        calculation.result !== null,
+      ),
+    [calculation.result, edges, nodes, validation.circuit],
+  );
+
   const selectedNode = nodes.find((node) => node.id === selectedNodeId) ?? null;
   const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId) ?? null;
 
   const addNodeAt = useCallback(
     (kind: ConstructorNodeKind, position: XYPosition) => {
+      const nodeId = `builder:${kind}:${crypto.randomUUID()}`;
       setNodes((current) => [
-        ...current,
-        createConstructorNode(kind, position, current),
+        ...current.map((node) => ({ ...node, selected: false })),
+        {
+          ...createConstructorNode(kind, position, current, nodeId),
+          selected: true,
+        },
       ]);
+      setSelectedNodeId(nodeId);
+      setSelectedEdgeId(null);
       setStorageMessage(null);
     },
     [],
@@ -443,10 +546,19 @@ function ConstructorWorkspace() {
             y: bounds.top + bounds.height / 2,
           })
         : { x: 320, y: 240 };
+      const nodeId = `builder:${kind}:${crypto.randomUUID()}`;
       setNodes((current) => {
         const position = findNearbyPosition(kind, visibleCenter, current);
-        return [...current, createConstructorNode(kind, position, current)];
+        return [
+          ...current.map((node) => ({ ...node, selected: false })),
+          {
+            ...createConstructorNode(kind, position, current, nodeId),
+            selected: true,
+          },
+        ];
       });
+      setSelectedNodeId(nodeId);
+      setSelectedEdgeId(null);
       setStorageMessage(null);
     },
     [screenToFlowPosition],
@@ -508,31 +620,29 @@ function ConstructorWorkspace() {
   );
 
   const isValidConnection = useCallback<IsValidConnection<ConstructorFlowEdge>>(
-    (connection) => {
-      const normalized = normalizeConnection(connection, nodes);
-      if (!normalized) return false;
-      const componentId =
-        normalized.targetHandle === "from"
-          ? normalized.target
-          : normalized.source;
-      const componentHandle =
-        normalized.targetHandle === "from" ? "from" : "to";
-      return !edges.some((edge) => {
-        if (edge.source === componentId) {
-          return edge.sourceHandle === componentHandle;
-        }
-        if (edge.target === componentId) {
-          return edge.targetHandle === componentHandle;
-        }
-        return false;
-      });
-    },
+    (connection) =>
+      isConstructorConnectionAllowed(connection, nodes, edges),
     [edges, nodes],
   );
 
+  const onConnectStart = useCallback<OnConnectStart>((_event, params) => {
+    if (!params.nodeId || !params.handleId) {
+      setActiveConnection(null);
+      return;
+    }
+    setActiveConnection({
+      nodeId: params.nodeId,
+      handleId: params.handleId,
+    });
+  }, []);
+
+  const onConnectEnd = useCallback<OnConnectEnd>(() => {
+    setActiveConnection(null);
+  }, []);
+
   const onConnect = useCallback(
     (connection: Connection) => {
-      const normalized = normalizeConnection(connection, nodes);
+      const normalized = normalizeConstructorConnection(connection, nodes);
       if (!normalized || !isValidConnection(connection)) return;
       const componentNode = nodes.find(
         (node) =>
@@ -609,6 +719,16 @@ function ConstructorWorkspace() {
               ...node.data,
               numericValue: boundedValue,
               value: formatValue(boundedValue, unit),
+              ...(node.data.builderKind === "voltageSource"
+                ? {
+                    voltagePolarity:
+                      boundedValue > 0
+                        ? ("positive" as const)
+                        : boundedValue < 0
+                          ? ("negative" as const)
+                          : ("neutral" as const),
+                  }
+                : {}),
             },
           } as ConstructorFlowNode;
         }),
@@ -756,6 +876,46 @@ function ConstructorWorkspace() {
     }
   }, [fitView]);
 
+  const applyExample = useCallback(() => {
+    const example = createSimpleConstructorExample();
+    setNodes(example.nodes);
+    setEdges(example.edges);
+    setSelectedNodeId(null);
+    setSelectedEdgeId(null);
+    setActiveConnection(null);
+    setExampleLoadConfirmation(null);
+    setStorageMessage(
+      "Ejemplo cargado. El circuito guardado sigue disponible sin cambios.",
+    );
+    requestAnimationFrame(() =>
+      fitView({ padding: 0.18, maxZoom: 1.15, duration: 300 }),
+    );
+  }, [fitView]);
+
+  const requestExample = useCallback(() => {
+    let hasSavedCircuit = false;
+    try {
+      hasSavedCircuit = localStorage.getItem(STORAGE_KEY) !== null;
+    } catch {
+      // Si el almacenamiento no está disponible, el ejemplo sigue siendo usable.
+    }
+    const hasCanvasCircuit = nodes.length > 0 || edges.length > 0;
+    if (!hasCanvasCircuit && !hasSavedCircuit) {
+      applyExample();
+      return;
+    }
+    setExampleLoadConfirmation({ hasCanvasCircuit, hasSavedCircuit });
+  }, [applyExample, edges.length, nodes.length]);
+
+  useEffect(() => {
+    if (!exampleLoadConfirmation) return;
+    const closeWithEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setExampleLoadConfirmation(null);
+    };
+    window.addEventListener("keydown", closeWithEscape);
+    return () => window.removeEventListener("keydown", closeWithEscape);
+  }, [exampleLoadConfirmation]);
+
   const clearCanvas = useCallback(() => {
     setNodes([]);
     setEdges([]);
@@ -768,25 +928,45 @@ function ConstructorWorkspace() {
   const circuitKey = validation.circuit
     ? validation.circuit.nodes.map((node) => node.id).join("|")
     : "invalid";
+  const progressItems = [
+    {
+      label: "Agregar componentes y dos nodos",
+      complete: progress.basicsAdded,
+    },
+    {
+      label: "Conectar cada terminal a un nodo",
+      complete: progress.terminalsConnected,
+    },
+    {
+      label: "Cerrar la red y definir tierra",
+      complete: progress.networkClosed,
+    },
+    { label: "Resolver", complete: progress.solved },
+  ];
+  const nextProgressStep = progressItems.findIndex((item) => !item.complete);
+  const sidebarProps = {
+    selectedNode,
+    selectedEdge,
+    storageMessage,
+    onAdd: addFromPalette,
+    onUpdateLabel: updateSelectedLabel,
+    onUpdateValue: updateSelectedValue,
+    onSetGround: setSelectedAsGround,
+    onRotate: rotateSelected,
+    onDeleteSelection: deleteSelection,
+    onLoadExample: requestExample,
+    onSave: saveCircuit,
+    onLoad: loadCircuit,
+    onClear: clearCanvas,
+  };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[18rem_minmax(0,1fr)] lg:items-start">
-      <ConstructorSidebar
-        selectedNode={selectedNode}
-        selectedEdge={selectedEdge}
-        storageMessage={storageMessage}
-        onAdd={addFromPalette}
-        onUpdateLabel={updateSelectedLabel}
-        onUpdateValue={updateSelectedValue}
-        onSetGround={setSelectedAsGround}
-        onRotate={rotateSelected}
-        onDeleteSelection={deleteSelection}
-        onSave={saveCircuit}
-        onLoad={loadCircuit}
-        onClear={clearCanvas}
-      />
+    <div className="grid min-w-0 gap-6 xl:grid-cols-[18rem_minmax(0,1fr)_22rem] xl:items-start">
+      <div className="order-2 min-w-0 xl:order-1">
+        <ConstructorSidebar {...sidebarProps} section="palette" />
+      </div>
 
-      <div className="min-w-0">
+      <div className="order-1 min-w-0 xl:order-2">
         <div
           ref={canvasRef}
           onDrop={onDrop}
@@ -797,13 +977,15 @@ function ConstructorWorkspace() {
           className="circuit-flow relative h-[min(760px,calc(100vh-10rem))] min-h-[620px] w-full overflow-hidden rounded-3xl border border-slate-800 bg-[#080d18] shadow-2xl shadow-black/30"
         >
           <ReactFlow<ConstructorFlowNode, ConstructorFlowEdge>
-            nodes={nodes}
+            nodes={displayedNodes}
             edges={displayedEdges}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
+            onConnectStart={onConnectStart}
+            onConnectEnd={onConnectEnd}
             onSelectionChange={onSelectionChange}
             isValidConnection={isValidConnection}
             connectionMode={ConnectionMode.Loose}
@@ -825,43 +1007,113 @@ function ConstructorWorkspace() {
               size={1.35}
               color="#263449"
             />
-            <MiniMap
-              pannable
-              zoomable
-              nodeColor={(node) =>
-                node.type === "source"
-                  ? "#fbbf24"
-                  : node.type === "resistor"
-                    ? "#22d3ee"
-                    : "#c4b5fd"
-              }
-              nodeStrokeColor="#020617"
-              nodeBorderRadius={10}
-              maskColor="rgba(2, 6, 23, 0.72)"
-              bgColor="#0f172a"
-            />
+            <CircuitMiniMap />
             <Controls position="bottom-left" showInteractive={false} />
             <Panel position="top-left" className="m-4!">
               <div className="rounded-xl border border-slate-700/80 bg-slate-950/85 px-4 py-3 shadow-xl backdrop-blur-md">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
                   Circuito propio
                 </p>
-                <p className="mt-1 font-mono text-[11px] text-slate-500">
+                <p className="mt-1 font-mono text-xs text-slate-400">
                   {nodes.length} elementos · {edges.length} cables
                 </p>
               </div>
             </Panel>
-            <Panel position="top-right" className="m-4! hidden sm:block">
-              <div className="flex items-center gap-2 rounded-xl border border-slate-700/80 bg-slate-950/85 px-3 py-2 text-[11px] text-slate-400 shadow-xl backdrop-blur-md">
-                <MousePointer2 className="size-3.5 text-cyan-300" />
-                Uní cada terminal con un nodo
+            <Panel
+              position="top-right"
+              className="m-4! hidden w-[min(17rem,calc(100%-2rem))] sm:block"
+            >
+              <div
+                className="rounded-2xl border border-slate-700/80 bg-slate-950/92 p-3.5 shadow-xl backdrop-blur-md"
+                aria-label="Progreso del armado"
+              >
+                <div className="flex items-start gap-2.5">
+                  <MousePointer2 className="mt-0.5 size-4 shrink-0 text-cyan-300" />
+                  <div>
+                    <p className="text-xs font-semibold text-slate-100">
+                      Armado del circuito
+                    </p>
+                    <p className="mt-0.5 text-[11px] leading-4 text-slate-400">
+                      Cada terminal se conecta a un nodo.
+                    </p>
+                  </div>
+                </div>
+                <ol className="mt-3 space-y-2">
+                  {progressItems.map((item, index) => {
+                    const isCurrent = index === nextProgressStep;
+                    return (
+                      <li
+                        key={item.label}
+                        className={`flex items-start gap-2 rounded-lg px-2 py-1.5 text-[11px] leading-4 ${
+                          item.complete
+                            ? "bg-lime-400/[0.07] text-lime-200"
+                            : isCurrent
+                              ? "bg-cyan-400/[0.08] text-cyan-100"
+                              : "text-slate-500"
+                        }`}
+                      >
+                        {item.complete ? (
+                          <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-lime-300" />
+                        ) : (
+                          <CircleDashed
+                            className={`mt-0.5 size-3.5 shrink-0 ${
+                              isCurrent ? "text-cyan-300" : "text-slate-600"
+                            }`}
+                          />
+                        )}
+                        <span>
+                          <span className="mr-1 font-mono text-[10px] opacity-75">
+                            {index + 1}.
+                          </span>
+                          {item.label}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ol>
               </div>
             </Panel>
+            {feedback ? (
+              <Panel
+                position="bottom-left"
+                className="z-10! m-4! w-[min(34rem,calc(100%-2rem))] sm:ml-16! sm:w-[min(34rem,calc(100%-19rem))]"
+              >
+                <div
+                  role={feedback.kind === "unsolvable" ? "alert" : "status"}
+                  aria-live="polite"
+                  className={`flex items-start gap-3 rounded-2xl border p-3.5 shadow-2xl backdrop-blur-md ${
+                    feedback.kind === "unsolvable"
+                      ? "border-rose-400/35 bg-slate-950/95 text-rose-100 shadow-rose-950/30"
+                      : "border-amber-400/30 bg-slate-950/95 text-amber-100 shadow-amber-950/25"
+                  }`}
+                >
+                  <AlertTriangle
+                    className={`mt-0.5 size-5 shrink-0 ${
+                      feedback.kind === "unsolvable"
+                        ? "text-rose-300"
+                        : "text-amber-300"
+                    }`}
+                  />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold">{feedback.title}</p>
+                    <p className="mt-1 text-xs leading-5 text-current/75">
+                      {feedback.message}
+                    </p>
+                  </div>
+                </div>
+              </Panel>
+            ) : null}
           </ReactFlow>
         </div>
+      </div>
 
+      <div className="order-3 min-w-0">
+        <ConstructorSidebar {...sidebarProps} section="properties" />
+      </div>
+
+      <div className="order-4 min-w-0 xl:col-span-3">
         {calculation.result && validation.circuit ? (
-          <div className="mt-5 flex items-start gap-3 rounded-2xl border border-lime-400/25 bg-lime-400/[0.06] p-4 text-sm text-lime-100">
+          <div className="flex items-start gap-3 rounded-2xl border border-lime-400/25 bg-lime-400/[0.06] p-4 text-sm text-lime-100">
             <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-lime-300" />
             <div>
               <p className="font-medium">Circuito válido y resuelto.</p>
@@ -873,7 +1125,7 @@ function ConstructorWorkspace() {
         ) : isEmptyCircuit ? (
           <div
             role="status"
-            className="mt-5 flex items-start gap-3 rounded-2xl border border-slate-700 bg-slate-900/65 p-4 text-sm text-slate-200"
+            className="flex items-start gap-3 rounded-2xl border border-slate-700 bg-slate-900/65 p-4 text-sm text-slate-200"
           >
             <CircleDashed className="mt-0.5 size-5 shrink-0 text-cyan-300" />
             <div>
@@ -884,34 +1136,7 @@ function ConstructorWorkspace() {
               </p>
             </div>
           </div>
-        ) : calculation.error ? (
-          <div
-            role="alert"
-            className="mt-5 flex items-start gap-3 rounded-2xl border border-rose-400/30 bg-rose-400/10 p-4 text-sm text-rose-100"
-          >
-            <AlertTriangle className="mt-0.5 size-5 shrink-0 text-rose-300" />
-            <div>
-              <p className="font-medium">No se puede resolver esta red.</p>
-              <p className="mt-1 leading-6 text-rose-100/85">
-                {calculation.error}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="mt-5 flex items-start gap-3 rounded-2xl border border-amber-400/25 bg-amber-400/[0.06] p-4 text-sm text-amber-100">
-            <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-300" />
-            <div>
-              <p className="font-medium">
-                El circuito todavía está incompleto.
-              </p>
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-amber-100/70">
-                {validation.issues.slice(0, 5).map((issue) => (
-                  <li key={issue}>{issue}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        )}
+        ) : null}
 
         {calculation.result && validation.circuit ? (
           <>
@@ -924,6 +1149,68 @@ function ConstructorWorkspace() {
           </>
         ) : null}
       </div>
+
+      {exampleLoadConfirmation ? (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-slate-950/80 p-4 backdrop-blur-sm"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setExampleLoadConfirmation(null);
+            }
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="example-confirmation-title"
+            aria-describedby="example-confirmation-description"
+            className="app-surface w-full max-w-md border-amber-400/25 p-5 shadow-2xl shadow-black/50"
+          >
+            <div className="flex items-start gap-3">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-amber-400/25 bg-amber-400/[0.08] text-amber-300">
+                <AlertTriangle className="size-5" />
+              </span>
+              <div>
+                <h2
+                  id="example-confirmation-title"
+                  className="font-semibold text-slate-100"
+                >
+                  ¿Cargar el circuito de ejemplo?
+                </h2>
+                <p
+                  id="example-confirmation-description"
+                  className="mt-1 text-sm leading-6 text-slate-400"
+                >
+                  {exampleLoadConfirmation.hasCanvasCircuit
+                    ? "El ejemplo reemplazará el circuito que está en pantalla."
+                    : "El ejemplo se cargará en el canvas."} {" "}
+                  {exampleLoadConfirmation.hasSavedCircuit
+                    ? "Tu circuito guardado seguirá disponible y no se modificará."
+                    : "Esta acción no crea ni modifica un circuito guardado."}
+                </p>
+              </div>
+            </div>
+            <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                autoFocus
+                onClick={() => setExampleLoadConfirmation(null)}
+                className="app-button-secondary h-10 px-4 text-xs"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={applyExample}
+                className="inline-flex h-10 items-center justify-center rounded-xl border border-lime-400/25 bg-lime-400/[0.08] px-4 text-xs font-semibold text-lime-200 transition hover:bg-lime-400/15"
+              >
+                Reemplazar y cargar ejemplo
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </div>
   );
 }

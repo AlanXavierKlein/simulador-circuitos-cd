@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { guideCircuitLayouts } from "@/components/circuit/example-layouts";
+import { HowToUseDialog } from "@/components/help/HowToUseDialog";
 import { SimulatorWorkspace } from "@/components/simulator/SimulatorWorkspace";
 import type { GuideNetworkProblem } from "@/lib/problems/guia04";
 
@@ -33,11 +34,15 @@ export function NetworkGuidePage({
           <p className="mt-4 max-w-3xl text-base leading-7 text-slate-400">
             {problem.description}
           </p>
-          <div className="mt-5">
+          <div className="mt-5 flex flex-wrap gap-3">
             <TheorySummaryDialog theory={problem.theory} />
+            <HowToUseDialog
+              experience="network-guide"
+              showP9Concepts={problem.id === "p9"}
+            />
           </div>
         </div>
-        <div className="relative min-h-56 overflow-hidden rounded-3xl border border-slate-700 bg-white shadow-2xl shadow-black/20">
+        <div className="relative min-h-56 overflow-hidden rounded-3xl border border-slate-700 bg-slate-950 shadow-2xl shadow-black/20">
           <Image
             src={problem.image}
             alt={`Enunciado oficial del ${problem.eyebrow}`}
@@ -63,7 +68,7 @@ export function NetworkGuidePage({
                 <div>
                   <div className="flex items-center gap-2 text-lime-300">
                     <BookOpenText className="size-4" />
-                    <p className="font-mono text-[11px] uppercase tracking-[0.16em]">
+                    <p className="font-mono text-xs uppercase tracking-[0.16em]">
                       Caso de estudio
                     </p>
                   </div>
@@ -86,6 +91,7 @@ export function NetworkGuidePage({
                   stepExplanations: problemCase.stepExplanations,
                   stepContentOverrides: problemCase.stepContentOverrides,
                   resolution: problemCase.resolution,
+                  allowZeroResistance: problemCase.allowZeroResistance,
                 }}
               />
             </article>

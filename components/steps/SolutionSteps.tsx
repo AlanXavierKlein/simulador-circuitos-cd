@@ -21,9 +21,9 @@ export function SolutionSteps({
           <span className="app-icon size-11 border-lime-400/20 bg-lime-400/10 text-lime-300">
             <BookOpenCheck className="size-5" />
           </span>
-          <span>
+            <span>
             <span className="block font-mono text-xs uppercase tracking-[0.18em] text-lime-300">
-              Resolución de cátedra
+              Desarrollo del resultado actual
             </span>
             <span className="mt-1 block text-xl font-semibold text-white">
               Paso a paso de Kirchhoff
@@ -38,8 +38,8 @@ export function SolutionSteps({
 
       <div className="border-t border-slate-800 px-5 py-6 sm:px-6">
         <p className="mb-5 max-w-3xl text-sm leading-6 text-slate-400">
-          Se muestran las ecuaciones que usa el motor, sin aritmética intermedia
-          ni desarrollo matricial.
+          Se muestran las ecuaciones que usa el motor con los valores cargados,
+          sin aritmética intermedia ni desarrollo matricial.
         </p>
         <div className="grid gap-4 lg:grid-cols-2">
           {steps.map((step) => (

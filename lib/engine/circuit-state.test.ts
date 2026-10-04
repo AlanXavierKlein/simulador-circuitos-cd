@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import { problem9 } from "../problems/phase1-validation";
 import { solveCircuit } from "./kirchhoff";
-import { cloneCircuit, updateCircuitComponentValue } from "./circuit-state";
+import {
+  cloneCircuit,
+  hasOriginalCircuitValues,
+  updateCircuitComponentValue,
+} from "./circuit-state";
 
 describe("estado editable del circuito", () => {
   it("actualiza una rama sin mutar la netlist de origen", () => {
@@ -38,5 +42,25 @@ describe("estado editable del circuito", () => {
     expect(
       originalSnapshot.components.find((component) => component.label === "R1"),
     ).toMatchObject({ ohms: 25 });
+  });
+
+  it("solo acepta 0 Ω cuando el caso lo habilita explícitamente", () => {
+    expect(() => updateCircuitComponentValue(problem9, "R1", 0)).toThrow(
+      "mayor que cero",
+    );
+
+    const modified = updateCircuitComponentValue(problem9, "R1", 0, {
+      allowZeroResistance: true,
+    });
+    expect(modified.components.find((component) => component.label === "R1"))
+      .toMatchObject({ ohms: 0 });
+  });
+
+  it("reconoce si el circuito conserva los valores originales", () => {
+    const original = cloneCircuit(problem9);
+    expect(hasOriginalCircuitValues(cloneCircuit(problem9), original)).toBe(true);
+
+    const modified = updateCircuitComponentValue(problem9, "E1", 12);
+    expect(hasOriginalCircuitValues(modified, original)).toBe(false);
   });
 });

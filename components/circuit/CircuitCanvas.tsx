@@ -5,17 +5,17 @@ import {
   BackgroundVariant,
   ConnectionMode,
   Controls,
-  MiniMap,
   Panel,
   ReactFlow,
 } from "@xyflow/react";
 import type { EdgeTypes, NodeTypes, ReactFlowInstance } from "@xyflow/react";
-import { Maximize2, MousePointer2, Move3d } from "lucide-react";
+import { Maximize2, Move3d } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import type { Circuit } from "@/lib/engine/model";
 
 import { AnimatedWire } from "./AnimatedWire";
+import { CircuitMiniMap } from "./CircuitMiniMap";
 import { circuitToFlow } from "./circuit-adapter";
 import type {
   ComponentPositionMap,
@@ -122,23 +122,7 @@ export function CircuitCanvas({
           size={1.35}
           color="#263449"
         />
-        <MiniMap
-          pannable
-          zoomable
-          className="hidden sm:block"
-          position="bottom-right"
-          nodeColor={(node) =>
-            node.type === "source"
-              ? "#fbbf24"
-              : node.type === "resistor"
-                ? "#22d3ee"
-                : "#c4b5fd"
-          }
-          nodeStrokeColor="#020617"
-          nodeBorderRadius={10}
-          maskColor="rgba(2, 6, 23, 0.72)"
-          bgColor="#0f172a"
-        />
+        <CircuitMiniMap />
         <Controls position="bottom-left" showInteractive={false} />
 
         <Panel position="top-left" className="m-4!">
@@ -146,24 +130,20 @@ export function CircuitCanvas({
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
               {title}
             </p>
-            <p className="mt-1 font-mono text-[11px] text-slate-500">
+            <p className="mt-1 font-mono text-xs text-slate-400">
               {circuit.nodes.length} nodos · {circuit.components.length} ramas
             </p>
           </div>
         </Panel>
 
         <Panel position="top-right" className="m-4! hidden sm:block">
-          <div className="flex items-center gap-3 rounded-xl border border-slate-700/80 bg-slate-950/85 px-3 py-2 text-[11px] text-slate-400 shadow-xl backdrop-blur-md">
+          <div className="flex items-center gap-3 rounded-xl border border-slate-700/80 bg-slate-950/85 px-3 py-2 text-xs text-slate-300 shadow-xl backdrop-blur-md">
             <span className="flex items-center gap-1.5">
-              <Move3d className="size-3.5 text-cyan-300" /> mover
+              <Move3d className="size-3.5 text-cyan-300" /> desplazar
             </span>
             <span className="h-3 w-px bg-slate-700" />
             <span className="flex items-center gap-1.5">
               <Maximize2 className="size-3.5 text-cyan-300" /> zoom
-            </span>
-            <span className="h-3 w-px bg-slate-700" />
-            <span className="flex items-center gap-1.5">
-              <MousePointer2 className="size-3.5 text-cyan-300" /> seleccionar
             </span>
           </div>
         </Panel>

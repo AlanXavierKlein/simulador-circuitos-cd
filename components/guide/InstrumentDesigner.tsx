@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertTriangle, RotateCcw, SlidersHorizontal } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { GuideExplanation } from "@/components/guide/GuideExplanation";
 import { guideInstrumentExplanations } from "@/lib/problems/guide-explanations";
@@ -20,11 +20,11 @@ type InstrumentKind = "ammeter" | "voltmeter";
 export function InstrumentDesigner({ kind }: { kind: InstrumentKind }) {
   const defaults =
     kind === "ammeter" ? defaultAmmeterInput : defaultVoltmeterInput;
-  const originalValuesRef = useRef({
+  const [originalValues] = useState(() => ({
     rg: defaults.rg,
     galvanometerCurrent: defaults.galvanometerCurrent,
     scales: [...defaults.scales] as [number, number, number],
-  });
+  }));
   const [rg, setRg] = useState(defaults.rg);
   const [ig, setIg] = useState(defaults.galvanometerCurrent);
   const [scales, setScales] = useState<[number, number, number]>(() => [
@@ -45,26 +45,32 @@ export function InstrumentDesigner({ kind }: { kind: InstrumentKind }) {
       };
     }
   }, [ig, kind, rg, scales]);
+  const hasOriginalValues =
+    rg === originalValues.rg &&
+    ig === originalValues.galvanometerCurrent &&
+    scales.every(
+      (scale, index) => scale === originalValues.scales[index],
+    );
 
   const reset = () => {
-    setRg(originalValuesRef.current.rg);
-    setIg(originalValuesRef.current.galvanometerCurrent);
-    setScales([...originalValuesRef.current.scales]);
+    setRg(originalValues.rg);
+    setIg(originalValues.galvanometerCurrent);
+    setScales([...originalValues.scales]);
   };
 
   return (
     <div className="min-w-0 space-y-6">
-      <InstrumentDiagram kind={kind} scales={scales} />
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start">
+        <InstrumentDiagram kind={kind} scales={scales} />
 
-      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-[22rem_minmax(0,1fr)] xl:items-start">
-        <aside className="min-w-0 max-w-full rounded-3xl border border-slate-800 bg-slate-950/70 p-5 shadow-xl shadow-black/20">
+        <aside className="app-surface min-w-0 max-w-full p-5 xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto">
           <div className="flex items-start gap-3">
             <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-cyan-400/20 bg-cyan-400/10 text-cyan-300">
               <SlidersHorizontal className="size-5" />
             </span>
             <div>
               <h2 className="font-semibold text-slate-100">Datos</h2>
-              <p className="mt-1 text-xs leading-5 text-slate-500">
+              <p className="mt-1 text-xs leading-5 text-slate-400">
                 El cálculo se actualiza al instante.
               </p>
             </div>
@@ -78,7 +84,7 @@ export function InstrumentDesigner({ kind }: { kind: InstrumentKind }) {
             Restablecer valores
           </button>
 
-          <div className="mt-5 space-y-4">
+          <div className="mt-5 grid grid-cols-[repeat(auto-fit,minmax(min(100%,9rem),1fr))] gap-3">
             <NumberField
               label="rg"
               value={rg}
@@ -112,26 +118,68 @@ export function InstrumentDesigner({ kind }: { kind: InstrumentKind }) {
           </div>
         </aside>
 
-        {!calculation.result ? (
-          <div
-            role="alert"
-            className="flex items-start gap-3 rounded-3xl border border-amber-400/30 bg-amber-400/10 p-5 text-sm text-amber-100"
-          >
-            <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-300" />
-            <div>
-              <p className="font-medium">Revisá los datos ingresados.</p>
-              <p className="mt-1 leading-6 text-amber-100/85">
-                {calculation.error}
-              </p>
-            </div>
-          </div>
-        ) : null}
       </div>
 
+      {!calculation.result ? (
+        <div
+          role="alert"
+          className="flex items-start gap-3 rounded-3xl border border-amber-400/30 bg-amber-400/10 p-5 text-sm text-amber-100"
+        >
+          <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-300" />
+          <div>
+            <p className="font-medium">Revisá los datos ingresados.</p>
+            <p className="mt-1 leading-6 text-amber-100/85">
+              {calculation.error}
+            </p>
+          </div>
+        </div>
+      ) : null}
+
       {calculation.result ? (
-        <GuideExplanation explanation={guideInstrumentExplanations[kind]} />
+        <>
+          <InstrumentCurrentResult result={calculation.result} />
+          <GuideExplanation
+            explanation={guideInstrumentExplanations[kind]}
+            hasOriginalValues={hasOriginalValues}
+            showOriginalValuesNotice
+          />
+        </>
       ) : null}
     </div>
+  );
+}
+
+function formatResistance(value: number): string {
+  return new Intl.NumberFormat("es-AR", {
+    maximumFractionDigits: 4,
+  }).format(value);
+}
+
+function InstrumentCurrentResult({
+  result,
+}: {
+  result: { R1: number; R2: number; R3: number };
+}) {
+  return (
+    <section className="app-surface p-5 sm:p-6">
+      <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan-300">
+        Resultado actual
+      </p>
+      <h2 className="mt-1 text-2xl font-semibold tracking-tight text-white">
+        Resistencias calculadas con los valores cargados
+      </h2>
+      <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        {(["R1", "R2", "R3"] as const).map((label) => (
+          <article key={label} className="app-surface-inset p-4">
+            <p className="font-mono text-xs text-slate-400">{label}</p>
+            <p className="mt-2 font-mono text-xl font-semibold text-cyan-100">
+              {formatResistance(result[label])}{" "}
+              <span className="text-sm font-medium text-slate-400">Ω</span>
+            </p>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -148,6 +196,20 @@ function NumberField({
   step: number;
   onChange: (value: number) => void;
 }) {
+  const [draftValue, setDraftValue] = useState(() => String(value));
+  const [isEditing, setIsEditing] = useState(false);
+  const displayedValue = isEditing ? draftValue : String(value);
+
+  const commitDraft = (nextValue: string) => {
+    if (nextValue.trim() === "") {
+      onChange(step);
+      return;
+    }
+
+    const parsedValue = Number(nextValue);
+    onChange(Number.isFinite(parsedValue) ? parsedValue : step);
+  };
+
   return (
     <label className="block rounded-2xl border border-slate-800 bg-slate-900/65 p-3.5">
       <span className="font-mono text-xs font-semibold text-cyan-100">
@@ -160,14 +222,28 @@ function NumberField({
           type="number"
           min={step}
           step={step}
-          value={value}
+          value={displayedValue}
+          onFocus={() => {
+            setDraftValue(String(value));
+            setIsEditing(true);
+          }}
           onChange={(event) => {
             const next = Number(event.currentTarget.value);
-            if (Number.isFinite(next)) onChange(next);
+            setDraftValue(event.currentTarget.value);
+            if (Number.isFinite(next) && event.currentTarget.value !== "") {
+              onChange(next);
+            }
+          }}
+          onBlur={(event) => {
+            setIsEditing(false);
+            commitDraft(event.currentTarget.value);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") event.currentTarget.blur();
           }}
           className="h-10 min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 font-mono text-sm text-slate-100 outline-none transition focus:border-cyan-400"
         />
-        <span className="w-6 font-mono text-xs text-slate-500">{unit}</span>
+        <span className="w-6 font-mono text-xs text-slate-400">{unit}</span>
       </span>
     </label>
   );

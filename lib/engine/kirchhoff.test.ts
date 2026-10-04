@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { problem8a, problem9, problem11 } from "../problems/phase1-validation";
+import { problem8a, problem8b, problem9, problem11 } from "../problems/guia04";
 import {
   calculatePotentialDifference,
   solveCircuit,
@@ -68,5 +68,52 @@ describe("motor de Kirchhoff por corrientes de rama", () => {
         ],
       }),
     ).toThrow("conectado");
+  });
+
+  it("resuelve P8 con una resistencia ideal de 0 Ω cuando el caso lo permite", () => {
+    const circuit = {
+      ...problem8a,
+      components: problem8a.components.map((component) =>
+        component.label === "R1" && component.type === "resistor"
+          ? { ...component, ohms: 0 }
+          : component,
+      ),
+    };
+
+    expect(() => solveCircuit(circuit)).toThrow("positiva");
+
+    const result = solveCircuit(circuit, { allowZeroResistance: true });
+    expect(result.branchVoltages.R1).toBe(0);
+    expect(result.powers.R1).toBe(0);
+    expect(Number.isFinite(result.branchCurrents.R1)).toBe(true);
+  });
+
+  it("explica cuándo un cortocircuito ideal no tiene corriente única", () => {
+    const circuit = {
+      ...problem8b,
+      components: problem8b.components.map((component) =>
+        (component.label === "R2" || component.label === "R3") &&
+        component.type === "resistor"
+          ? { ...component, ohms: 0 }
+          : component,
+      ),
+    };
+
+    expect(() =>
+      solveCircuit(circuit, { allowZeroResistance: true }),
+    ).toThrow("distribución de corrientes es indeterminada");
+  });
+
+  it("explica cuándo un cable ideal cortocircuita una fuente", () => {
+    const circuit = {
+      ...problem8b,
+      components: problem8b.components.map((component) =>
+        component.type === "resistor" ? { ...component, ohms: 0 } : component,
+      ),
+    };
+
+    expect(() =>
+      solveCircuit(circuit, { allowZeroResistance: true }),
+    ).toThrow("conecta ambos bornes de V");
   });
 });

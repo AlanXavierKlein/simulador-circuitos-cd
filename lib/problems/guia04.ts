@@ -185,6 +185,8 @@ export type GuideCircuitCase = {
   stepContentOverrides?: Record<string, string>;
   resolution: GuideResolution;
   validations: GuideValidationDefinition[];
+  /** Habilita 0 Ω exclusivamente en los casos de la guía que lo permiten. */
+  allowZeroResistance?: boolean;
 };
 
 export type GuideNetworkProblem = {
@@ -316,7 +318,7 @@ export const guideNetworkProblems: Record<
     title: "Resistencia equivalente y corrientes",
     description:
       "Determine el valor de la resistencia equivalente de los circuitos de la figura 5. Si en el caso (a) se conecta una batería de 9 voltios, calcular la corriente que circula por cada resistencia.",
-    image: "/problemas/p8.png",
+    image: "/problemas/p8-neon.svg",
     theory: guideTheories.p8,
     cases: [
       {
@@ -333,6 +335,7 @@ export const guideNetworkProblems: Record<
             "La corriente total atraviesa R2 y R6. En el paralelo se divide entre R3 y la rama formada por R1, R4 y R5.",
         },
         resolution: guideNetworkResolutions.p8a,
+        allowZeroResistance: true,
         validations: [
           {
             id: "req",
@@ -383,6 +386,7 @@ export const guideNetworkProblems: Record<
             "La corriente total atraviesa R1, R4 y R5. Como R2 y R3 son iguales, la corriente se divide por partes iguales en el paralelo.",
         },
         resolution: guideNetworkResolutions.p8b,
+        allowZeroResistance: true,
         validations: [
           {
             id: "req",
@@ -423,10 +427,10 @@ export const guideNetworkProblems: Record<
   p9: {
     id: "p9",
     eyebrow: "Problema 9 · Kirchhoff",
-    title: "Red de tres mallas",
+    title: "Red de tres ramas",
     description:
       "En el circuito de la figura 6, determinar las corrientes y la diferencia de potencial Vb − Va. Los valores de las resistencias, en Ω, son R1 = 25, R2 = 20, R3 = 10, R4 = 15, R5 = 30. Los valores de las fuentes son E1 = 10 V, E2 = 15 V y E3 = 10 V.",
-    image: "/problemas/p9.png",
+    image: "/problemas/p9-neon.svg",
     theory: guideTheories.p9,
     cases: [
       {
@@ -480,7 +484,7 @@ export const guideNetworkProblems: Record<
     title: "Distribución de una corriente entrante",
     description:
       "Determine las corrientes en cada resistencia, para el circuito de la figura 8.",
-    image: "/problemas/p11.png",
+    image: "/problemas/p11-neon.svg",
     theory: guideTheories.p11,
     cases: [
       {
@@ -570,7 +574,7 @@ export const guideItems: GuideListItem[] = [
     type: "Diseño de instrumento",
     description:
       "Un circuito básico de un amperímetro está mostrado en la figura 9. El galvanómetro de bobina móvil empleado tiene una resistencia rg = 10 Ω y para una corriente de 0,01 A se desvía a fondo de escala. Hallar los valores de resistencias necesarias para que se desvíe a fondo de escala con una corriente de 10 A, 1 A y 0,1 A.",
-    image: "/problemas/p12.png",
+    image: "/problemas/p12-neon.svg",
     href: "/guia/p12",
   },
   {
@@ -580,7 +584,7 @@ export const guideItems: GuideListItem[] = [
     type: "Diseño de instrumento",
     description:
       "La figura 10 muestra un circuito típico de un voltímetro de tres escalas cuyas entradas podrán medir hasta 3 V, 15 V y 150 V. El galvanómetro de bobina móvil empleado tiene una resistencia de 10 Ω y para una corriente de 0,001 A se desvía a fondo de escala. Hallar los valores de las resistencias indicadas para que, en cada caso, se desvíe a fondo de la escala.",
-    image: "/problemas/p13.png",
+    image: "/problemas/p13-neon.svg",
     href: "/guia/p13",
   },
   {

@@ -47,6 +47,11 @@ export type SolveResult = {
   equations: EquationSystem;
 };
 
+export type SolveCircuitOptions = {
+  /** Permite 0 Ω únicamente en los ejercicios que lo declaran explícitamente. */
+  allowZeroResistance?: boolean;
+};
+
 function currentVariable(label: string): string {
   return `I(${label})`;
 }
@@ -63,7 +68,10 @@ function addCoefficient(
   coefficients[variable] = (coefficients[variable] ?? 0) + value;
 }
 
-function validateCircuit(circuit: Circuit): void {
+function validateCircuit(
+  circuit: Circuit,
+  options: SolveCircuitOptions,
+): void {
   if (circuit.nodes.length === 0) {
     throw new Error("El circuito debe contener al menos un nodo.");
   }
@@ -94,7 +102,11 @@ function validateCircuit(circuit: Circuit): void {
     if (!Number.isFinite(value)) {
       throw new Error(`El valor de ${component.label} debe ser finito.`);
     }
-    if (isResistor(component) && component.ohms <= 0) {
+    if (
+      isResistor(component) &&
+      (component.ohms < 0 ||
+        (component.ohms === 0 && !options.allowZeroResistance))
+    ) {
       throw new Error(`La resistencia ${component.label} debe ser positiva.`);
     }
   }
@@ -112,6 +124,60 @@ function validateCircuit(circuit: Circuit): void {
   }
   if (visited.size !== graph.nodeIds.length) {
     throw new Error("El circuito debe formar un grafo conectado.");
+  }
+
+  validateIdealShorts(circuit);
+}
+
+/**
+ * Un resistor de 0 Ω une eléctricamente sus dos nodos. Una fuente de tensión
+ * dentro de esa misma unión es incompatible; un ciclo hecho solo de cables
+ * ideales deja indeterminada la distribución de corriente.
+ */
+function validateIdealShorts(circuit: Circuit): void {
+  const idealShorts = circuit.components.filter(
+    (component) => isResistor(component) && component.ohms === 0,
+  );
+  if (idealShorts.length === 0) return;
+
+  const parent = new Map(circuit.nodes.map((node) => [node.id, node.id]));
+  const find = (nodeId: NodeId): NodeId => {
+    const currentParent = parent.get(nodeId);
+    if (currentParent === undefined || currentParent === nodeId) return nodeId;
+    const root = find(currentParent);
+    parent.set(nodeId, root);
+    return root;
+  };
+  const union = (left: NodeId, right: NodeId): boolean => {
+    const leftRoot = find(left);
+    const rightRoot = find(right);
+    if (leftRoot === rightRoot) return false;
+    parent.set(leftRoot, rightRoot);
+    return true;
+  };
+
+  let hasIdealShortLoop = false;
+  for (const short of idealShorts) {
+    if (!union(short.nFrom, short.nTo)) hasIdealShortLoop = true;
+  }
+
+  const shortedVoltageSource = circuit.components.find(
+    (component) =>
+      isVoltageSource(component) &&
+      component.volts !== 0 &&
+      find(component.nFrom) === find(component.nTo),
+  );
+  if (shortedVoltageSource) {
+    throw new Error(
+      `El cortocircuito ideal conecta ambos bornes de ${shortedVoltageSource.label}. ` +
+        "Una fuente ideal no puede sostener tensión a través de un cable de 0 Ω.",
+    );
+  }
+
+  if (hasIdealShortLoop) {
+    throw new Error(
+      "Hay más de un camino de 0 Ω entre los mismos nodos; la distribución de corrientes es indeterminada.",
+    );
   }
 }
 
@@ -288,8 +354,11 @@ function buildNodePotentials(
  * Resuelve un circuito por corrientes de rama: n-1 ecuaciones KCL y una KVL
  * por malla fundamental. mathjs se usa únicamente para A·x=b.
  */
-export function solveCircuit(circuit: Circuit): SolveResult {
-  validateCircuit(circuit);
+export function solveCircuit(
+  circuit: Circuit,
+  options: SolveCircuitOptions = {},
+): SolveResult {
+  validateCircuit(circuit, options);
 
   const variables = buildVariables(circuit);
   const kcl = buildKclEquations(circuit);
@@ -306,7 +375,20 @@ export function solveCircuit(circuit: Circuit): SolveResult {
     );
   }
 
-  const solution = solveLinearSystem(matrix, rhs);
+  let solution: number[];
+  try {
+    solution = solveLinearSystem(matrix, rhs);
+  } catch (error) {
+    const hasIdealShort = circuit.components.some(
+      (component) => isResistor(component) && component.ohms === 0,
+    );
+    if (hasIdealShort) {
+      throw new Error(
+        "No se puede determinar una solución única con estos cortocircuitos ideales. Dejá al menos una resistencia distinta de 0 Ω en cada camino paralelo.",
+      );
+    }
+    throw error;
+  }
   const solutionByVariable = Object.fromEntries(
     variables.map((variable, index) => [variable, solution[index]]),
   );
