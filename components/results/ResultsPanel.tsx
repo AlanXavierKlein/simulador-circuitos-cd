@@ -66,14 +66,11 @@ function SectionTitle({
   );
 }
 
-function defaultNode(
-  nodeIds: NodeId[],
-  preferred: NodeId,
-  fallbackIndex: number,
-): NodeId {
-  return nodeIds.includes(preferred)
-    ? preferred
-    : (nodeIds[fallbackIndex] ?? nodeIds[0] ?? "0");
+function defaultNodePair(nodeIds: NodeId[]): [NodeId, NodeId] {
+  const referenceNode = nodeIds.includes("0") ? "0" : (nodeIds[0] ?? "0");
+  const measuredNode = nodeIds.find((nodeId) => nodeId !== referenceNode);
+
+  return [referenceNode, measuredNode ?? referenceNode];
 }
 
 export function ResultsPanel({ circuit, result }: ResultsPanelProps) {
@@ -82,8 +79,9 @@ export function ResultsPanel({ circuit, result }: ResultsPanelProps) {
     circuit,
     result.branchCurrents,
   );
-  const [nodeA, setNodeA] = useState(() => defaultNode(nodeIds, "a", 0));
-  const [nodeB, setNodeB] = useState(() => defaultNode(nodeIds, "b", 1));
+  const [defaultNodeA, defaultNodeB] = defaultNodePair(nodeIds);
+  const [nodeA, setNodeA] = useState(defaultNodeA);
+  const [nodeB, setNodeB] = useState(defaultNodeB);
 
   const difference =
     (result.nodePotentials[nodeB] ?? 0) - (result.nodePotentials[nodeA] ?? 0);
