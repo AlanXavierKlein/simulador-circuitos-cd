@@ -11,6 +11,12 @@ function currentColor(intensity: number): string {
   return `hsl(${hue} 88% ${lightness}%)`;
 }
 
+function formatCurrent(value: number): string {
+  return new Intl.NumberFormat("es-AR", {
+    maximumFractionDigits: 3,
+  }).format(value);
+}
+
 function AnimatedWireComponent({
   id,
   sourceX,
@@ -46,6 +52,10 @@ function AnimatedWireComponent({
     labelX + tangentX * tangentOffset - tangentY * labelOffset;
   const currentLabelY =
     labelY + tangentY * tangentOffset + tangentX * labelOffset;
+  const currentDescription =
+    data?.showReferenceValue && data.referenceCurrent !== undefined
+      ? `, ${formatCurrent(data.referenceCurrent)} amperios`
+      : "";
 
   return (
     <>
@@ -81,7 +91,7 @@ function AnimatedWireComponent({
         <EdgeLabelRenderer>
           <div
             role="note"
-            aria-label={`${data.referenceLabel}, sentido de referencia${data.referenceIsOpposite ? ", sentido real opuesto" : ""}`}
+            aria-label={`${data.referenceLabel}${currentDescription}, sentido de referencia${data.referenceIsOpposite ? ", sentido real opuesto" : ""}`}
             data-reference-label={data.referenceLabel}
             data-reference-current={data.referenceCurrent}
             data-reference-opposite={
@@ -106,6 +116,11 @@ function AnimatedWireComponent({
                 style={{ transform: `rotate(${arrowAngle}deg)` }}
               />
             </span>
+            {data.showReferenceValue && data.referenceCurrent !== undefined ? (
+              <span className="font-mono text-[11px] font-semibold tabular-nums">
+                {formatCurrent(data.referenceCurrent)} A
+              </span>
+            ) : null}
             {data.referenceIsOpposite ? (
               <span className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-wide text-rose-200">
                 real: opuesto

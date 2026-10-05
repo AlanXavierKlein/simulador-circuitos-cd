@@ -52,6 +52,7 @@ export type AnimatedWireData = Record<string, unknown> & {
   referenceDirection?: 1 | -1;
   referenceCurrent?: number;
   referenceIsOpposite?: boolean;
+  showReferenceValue?: boolean;
   referenceLabelTangentOffset?: number;
   referenceLabelNormalOffset?: number;
 };

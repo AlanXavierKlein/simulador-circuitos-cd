@@ -47,6 +47,7 @@ import {
   type EditableCircuitNode,
 } from "@/lib/engine/graph";
 import { solveCircuit } from "@/lib/engine/kirchhoff";
+import { buildReferenceCurrentLayout } from "@/lib/engine/reference-currents";
 import { buildSolutionSteps } from "@/lib/engine/steps";
 
 import { ConstructorSidebar } from "./ConstructorSidebar";
@@ -382,6 +383,13 @@ function ConstructorWorkspace() {
       Math.abs(current),
     ),
   );
+  const referenceCurrentLayout = useMemo(() => {
+    if (!validation.circuit || !calculation.result) return null;
+    return buildReferenceCurrentLayout(
+      validation.circuit,
+      calculation.result.branchCurrents,
+    );
+  }, [calculation.result, validation.circuit]);
   const displayedEdges = useMemo(
     () =>
       edges.map((edge) => {
@@ -392,6 +400,12 @@ function ConstructorWorkspace() {
         );
         const branchLabel = componentNode?.data.label ?? "Rama";
         const current = calculation.result?.branchCurrents[branchLabel] ?? 0;
+        const reference =
+          referenceCurrentLayout?.byComponent[branchLabel];
+        const isFromTerminal =
+          edge.sourceHandle === "from" || edge.targetHandle === "from";
+        const showReferenceValue =
+          Boolean(reference?.isLabelHost) && isFromTerminal;
         return {
           ...edge,
           type: "animatedWire" as const,
@@ -401,10 +415,21 @@ function ConstructorWorkspace() {
             current,
             normalizedMagnitude:
               maximumCurrent > 0 ? Math.abs(current) / maximumCurrent : 0,
+            referenceLabel: showReferenceValue ? reference?.label : undefined,
+            referenceDirection: reference?.direction,
+            referenceCurrent: reference?.current,
+            referenceIsOpposite: reference?.isOppositeToReference,
+            showReferenceValue,
           },
         };
       }),
-    [calculation.result?.branchCurrents, edges, maximumCurrent, nodes],
+    [
+      calculation.result?.branchCurrents,
+      edges,
+      maximumCurrent,
+      nodes,
+      referenceCurrentLayout,
+    ],
   );
 
   const feedback = useMemo(
