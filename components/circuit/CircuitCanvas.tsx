@@ -125,12 +125,12 @@ export function CircuitCanvas({
         <CircuitMiniMap />
         <Controls position="bottom-left" showInteractive={false} />
 
-        <Panel position="top-left" className="m-4!">
-          <div className="rounded-xl border border-slate-700/80 bg-slate-950/85 px-4 py-3 shadow-xl backdrop-blur-md">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
+        <Panel position="top-left" className="m-2! sm:m-4!">
+          <div className="max-w-[70vw] rounded-xl border border-slate-700/80 bg-slate-950/85 px-2.5 py-2 shadow-xl backdrop-blur-md sm:max-w-none sm:px-4 sm:py-3">
+            <p className="max-w-full truncate text-[9px] font-semibold uppercase leading-tight tracking-[0.08em] text-cyan-300 sm:text-xs sm:tracking-[0.18em]">
               {title}
             </p>
-            <p className="mt-1 font-mono text-xs text-slate-400">
+            <p className="mt-0.5 font-mono text-[10px] text-slate-400 sm:mt-1 sm:text-xs">
               {circuit.nodes.length} nodos · {circuit.components.length} ramas
             </p>
           </div>
