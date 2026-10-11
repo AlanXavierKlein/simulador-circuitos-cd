@@ -23,12 +23,19 @@ type ControlRange = {
   kind: string;
 };
 
+export type ComponentValueControlItem = {
+  id: string;
+  label: string;
+  type: Component["type"];
+  value: number;
+};
+
 const MAX_RESISTANCE_OHMS = 1000;
 const MAX_VOLTAGE_VOLTS = 1000;
 const MAX_SLIDER_VALUE = 500;
 
 function controlRange(
-  component: Component,
+  component: ComponentValueControlItem,
   allowZeroResistance: boolean,
 ): ControlRange {
   if (component.type === "resistor") {
@@ -39,13 +46,12 @@ function controlRange(
       sliderMax: MAX_SLIDER_VALUE,
       step: 0.1,
       unit: "Ω",
-      value: component.ohms,
+      value: component.value,
       kind: "Resistencia",
     };
   }
 
-  const value =
-    component.type === "voltageSource" ? component.volts : component.amps;
+  const value = component.value;
   const unit = component.type === "voltageSource" ? "V" : "A";
   if (component.type === "voltageSource") {
     return {
@@ -79,7 +85,10 @@ function formatValue(value: number): string {
   }).format(value);
 }
 
-function componentOrder(left: Component, right: Component): number {
+function componentOrder(
+  left: ComponentValueControlItem,
+  right: ComponentValueControlItem,
+): number {
   const typePriority = {
     resistor: 0,
     voltageSource: 1,
@@ -101,7 +110,19 @@ export function ComponentControls({
   onReset,
   allowZeroResistance = false,
 }: ComponentControlsProps) {
-  const orderedComponents = [...circuit.components].sort(componentOrder);
+  const components: ComponentValueControlItem[] = circuit.components.map(
+    (component) => ({
+      id: component.label,
+      label: component.label,
+      type: component.type,
+      value:
+        component.type === "resistor"
+          ? component.ohms
+          : component.type === "voltageSource"
+            ? component.volts
+            : component.amps,
+    }),
+  );
 
   return (
     <aside className="app-surface min-w-0 max-w-full p-5 xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)] xl:overflow-y-auto">
@@ -134,75 +155,89 @@ export function ComponentControls({
         ) : null}
       </div>
 
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,8.5rem),1fr))] gap-3">
-        {orderedComponents.map((component) => {
-          const range = controlRange(component, allowZeroResistance);
-          const inputId = `component-${component.label}`;
-          const sliderValue = Math.min(
-            range.sliderMax,
-            Math.max(range.sliderMin, range.value),
-          );
-          const updateValue = (value: number) => {
-            if (!Number.isFinite(value)) return;
-            const limitedValue = Math.min(
-              range.max,
-              Math.max(range.min, value),
-            );
-            onValueChange(component.label, Number(limitedValue.toFixed(3)));
-          };
-
-          return (
-            <div
-              key={component.label}
-              className="app-surface-inset min-w-0 p-3.5"
-            >
-              <div className="mb-3 flex items-baseline justify-between gap-3">
-                <div>
-                  <label
-                    htmlFor={inputId}
-                    className="font-mono text-sm font-semibold text-cyan-100"
-                  >
-                    {component.label}
-                  </label>
-                  <p className="mt-0.5 text-[11px] text-slate-400">
-                    {range.kind}
-                  </p>
-                </div>
-                <span className="shrink-0 whitespace-nowrap font-mono text-sm text-cyan-300">
-                  {formatValue(range.value)} {range.unit}
-                </span>
-              </div>
-
-              <input
-                suppressHydrationWarning
-                aria-label={`Control deslizante de ${component.label}`}
-                type="range"
-                min={range.sliderMin}
-                max={range.sliderMax}
-                step={range.step}
-                value={sliderValue}
-                onChange={(event) =>
-                  updateValue(Number(event.currentTarget.value))
-                }
-                className="h-8 w-full cursor-pointer accent-cyan-400"
-              />
-
-              <div className="mt-3 flex items-center gap-2">
-                <DraftNumberInput
-                  component={component}
-                  inputId={inputId}
-                  range={range}
-                  onCommit={updateValue}
-                />
-                <span className="w-5 font-mono text-xs text-slate-400">
-                  {range.unit}
-                </span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <ComponentValueControlGrid
+        components={components}
+        onValueChange={(id, value) => onValueChange(id, value)}
+        allowZeroResistance={allowZeroResistance}
+      />
     </aside>
+  );
+}
+
+export function ComponentValueControlGrid({
+  components,
+  onValueChange,
+  allowZeroResistance = false,
+}: {
+  components: ComponentValueControlItem[];
+  onValueChange: (id: string, value: number) => void;
+  allowZeroResistance?: boolean;
+}) {
+  const orderedComponents = [...components].sort(componentOrder);
+
+  return (
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,8.5rem),1fr))] gap-3">
+      {orderedComponents.map((component) => {
+        const range = controlRange(component, allowZeroResistance);
+        const inputId = `component-value-${component.id}`;
+        const sliderValue = Math.min(
+          range.sliderMax,
+          Math.max(range.sliderMin, range.value),
+        );
+        const updateValue = (value: number) => {
+          if (!Number.isFinite(value)) return;
+          const limitedValue = Math.min(range.max, Math.max(range.min, value));
+          onValueChange(component.id, Number(limitedValue.toFixed(3)));
+        };
+
+        return (
+          <div key={component.id} className="app-surface-inset min-w-0 p-3.5">
+            <div className="mb-3 flex items-baseline justify-between gap-3">
+              <div>
+                <label
+                  htmlFor={inputId}
+                  className="font-mono text-sm font-semibold text-cyan-100"
+                >
+                  {component.label}
+                </label>
+                <p className="mt-0.5 text-[11px] text-slate-400">
+                  {range.kind}
+                </p>
+              </div>
+              <span className="shrink-0 whitespace-nowrap font-mono text-sm text-cyan-300">
+                {formatValue(range.value)} {range.unit}
+              </span>
+            </div>
+
+            <input
+              suppressHydrationWarning
+              aria-label={`Control deslizante de ${component.label}`}
+              type="range"
+              min={range.sliderMin}
+              max={range.sliderMax}
+              step={range.step}
+              value={sliderValue}
+              onChange={(event) =>
+                updateValue(Number(event.currentTarget.value))
+              }
+              className="h-8 w-full cursor-pointer accent-cyan-400"
+            />
+
+            <div className="mt-3 flex items-center gap-2">
+              <DraftNumberInput
+                component={component}
+                inputId={inputId}
+                range={range}
+                onCommit={updateValue}
+              />
+              <span className="w-5 font-mono text-xs text-slate-400">
+                {range.unit}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -212,7 +247,7 @@ function DraftNumberInput({
   range,
   onCommit,
 }: {
-  component: Component;
+  component: ComponentValueControlItem;
   inputId: string;
   range: ControlRange;
   onCommit: (value: number) => void;
