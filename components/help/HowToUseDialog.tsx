@@ -12,7 +12,7 @@ import {
   SlidersHorizontal,
   X,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 type HelpExperience =
   | "simulator"
@@ -30,6 +30,13 @@ const commonResultItems = [
   "Las flechas I0, I1, I2… muestran el sentido de referencia usado por el cálculo.",
   "Si una corriente es negativa, circula en el sentido opuesto a la flecha dibujada.",
   "Resultados resume los valores actuales y Paso a paso muestra cómo se plantearon las ecuaciones.",
+];
+
+const constructorVideos = [
+  { title: "Agregar y unir elementos", id: "uWoFNcATxWQ" },
+  { title: "Editar elementos", id: "n0A-bu1AwtI" },
+  { title: "Cargar ejemplo y limpiar gráfico", id: "Yup7IdEuzz8" },
+  { title: "Construcción completa", id: "R2FhPCKuZMY" },
 ];
 
 function sectionsFor(experience: HelpExperience): HelpSection[] {
@@ -149,6 +156,8 @@ export function HowToUseDialog({
   showP9Concepts?: boolean;
 }) {
   const sections = sectionsFor(experience);
+  const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
+  const selectedVideo = constructorVideos[selectedVideoIndex];
   const title =
     experience === "constructor"
       ? "Cómo usar el constructor"
@@ -269,27 +278,81 @@ export function HowToUseDialog({
               ) : null}
 
               {experience === "constructor" ? (
-                <section className="rounded-2xl border border-dashed border-slate-700 bg-slate-900/35 p-4 sm:p-5">
-                  <div className="flex items-start gap-3">
-                    <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-slate-700 bg-slate-900 text-slate-300">
-                      <PlaySquare className="size-5" />
-                    </span>
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-semibold text-slate-100">
+                <section className="overflow-hidden rounded-2xl border border-cyan-400/30 bg-gradient-to-br from-cyan-400/[0.08] via-slate-900/80 to-slate-950 p-4 shadow-lg shadow-cyan-950/20 sm:p-5">
+                  <div className="mb-4 flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-cyan-300/30 bg-cyan-300/10 text-cyan-200">
+                        <PlaySquare className="size-5" />
+                      </span>
+                      <div>
+                        <h3 className="font-semibold text-white">
                           Videos de construcción
                         </h3>
-                        <span className="rounded-full border border-slate-700 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-slate-400">
-                          Próximamente
-                        </span>
+                        <p className="mt-1 text-xs text-slate-400">
+                          Elegí un tema para reproducirlo acá.
+                        </p>
                       </div>
-                      <p className="mt-1 text-sm leading-6 text-slate-400">
-                        Este espacio queda preparado para recorridos de los
-                        ejercicios de la guía cuando estén disponibles los
-                        videos definitivos.
-                      </p>
+                    </div>
+                    <span className="shrink-0 rounded-full border border-cyan-300/25 bg-cyan-300/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-cyan-100">
+                      4 videos
+                    </span>
+                  </div>
+
+                  <div className="overflow-hidden rounded-xl border border-slate-700 bg-black shadow-xl shadow-black/30">
+                    <div className="relative aspect-video">
+                      <iframe
+                        key={selectedVideo.id}
+                        className="absolute inset-0 size-full"
+                        src={`https://www.youtube-nocookie.com/embed/${selectedVideo.id}?rel=0`}
+                        title={selectedVideo.title}
+                        loading="lazy"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerPolicy="strict-origin-when-cross-origin"
+                        allowFullScreen
+                      />
                     </div>
                   </div>
+
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                    <p className="font-medium text-cyan-50">
+                      {selectedVideo.title}
+                    </p>
+                    <a
+                      href={`https://youtu.be/${selectedVideo.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-medium text-cyan-300 underline decoration-cyan-300/40 underline-offset-4 hover:text-cyan-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-300"
+                    >
+                      Abrir en YouTube
+                    </a>
+                  </div>
+
+                  <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+                    {constructorVideos.map((video, index) => {
+                      const isSelected = index === selectedVideoIndex;
+
+                      return (
+                        <li key={video.id}>
+                          <button
+                            type="button"
+                            aria-label={`Reproducir video: ${video.title}`}
+                            aria-pressed={isSelected}
+                            onClick={() => setSelectedVideoIndex(index)}
+                            className={`flex min-h-12 w-full items-center gap-2 rounded-xl border px-3 py-2 text-left text-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 ${
+                              isSelected
+                                ? "border-cyan-300/60 bg-cyan-300/10 text-white"
+                                : "border-slate-700 bg-slate-950/55 text-slate-300 hover:border-cyan-400/45 hover:bg-cyan-400/[0.07] hover:text-cyan-50"
+                            }`}
+                          >
+                            <PlaySquare
+                              className={`size-4 shrink-0 ${isSelected ? "text-cyan-200" : "text-slate-500"}`}
+                            />
+                            <span>{video.title}</span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
                 </section>
               ) : null}
 
