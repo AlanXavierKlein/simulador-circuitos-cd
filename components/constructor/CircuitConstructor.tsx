@@ -31,6 +31,7 @@ import {
   CheckCircle2,
   CircleDashed,
   MousePointer2,
+  SlidersHorizontal,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -39,6 +40,10 @@ import { CircuitMiniMap } from "@/components/circuit/CircuitMiniMap";
 import { JunctionNode } from "@/components/circuit/JunctionNode";
 import { ResistorNode } from "@/components/circuit/ResistorNode";
 import { SourceNode } from "@/components/circuit/SourceNode";
+import {
+  ComponentValueControlGrid,
+  type ComponentValueControlItem,
+} from "@/components/controls/ComponentControls";
 import { ResultsPanel } from "@/components/results/ResultsPanel";
 import { SolutionSteps } from "@/components/steps/SolutionSteps";
 import {
@@ -47,6 +52,7 @@ import {
   type EditableCircuitNode,
 } from "@/lib/engine/graph";
 import { solveCircuit } from "@/lib/engine/kirchhoff";
+import { buildReferenceCurrentLayout } from "@/lib/engine/reference-currents";
 import { buildSolutionSteps } from "@/lib/engine/steps";
 
 import { ConstructorSidebar } from "./ConstructorSidebar";
@@ -353,6 +359,23 @@ function ConstructorWorkspace() {
     [edges, nodes],
   );
 
+  const componentControls = useMemo<ComponentValueControlItem[]>(
+    () =>
+      nodes.flatMap((node): ComponentValueControlItem[] => {
+        if (node.data.builderKind === "junction") return [];
+
+        return [
+          {
+            id: node.id,
+            label: node.data.label,
+            type: node.data.builderKind,
+            value: node.data.numericValue,
+          },
+        ];
+      }),
+    [nodes],
+  );
+
   const calculation = useMemo(() => {
     if (!validation.circuit) {
       return { result: null, steps: [], error: null };
@@ -382,6 +405,13 @@ function ConstructorWorkspace() {
       Math.abs(current),
     ),
   );
+  const referenceCurrentLayout = useMemo(() => {
+    if (!validation.circuit || !calculation.result) return null;
+    return buildReferenceCurrentLayout(
+      validation.circuit,
+      calculation.result.branchCurrents,
+    );
+  }, [calculation.result, validation.circuit]);
   const displayedEdges = useMemo(
     () =>
       edges.map((edge) => {
@@ -392,6 +422,11 @@ function ConstructorWorkspace() {
         );
         const branchLabel = componentNode?.data.label ?? "Rama";
         const current = calculation.result?.branchCurrents[branchLabel] ?? 0;
+        const reference = referenceCurrentLayout?.byComponent[branchLabel];
+        const isFromTerminal =
+          edge.sourceHandle === "from" || edge.targetHandle === "from";
+        const showReferenceValue =
+          Boolean(reference?.isLabelHost) && isFromTerminal;
         return {
           ...edge,
           type: "animatedWire" as const,
@@ -401,10 +436,21 @@ function ConstructorWorkspace() {
             current,
             normalizedMagnitude:
               maximumCurrent > 0 ? Math.abs(current) / maximumCurrent : 0,
+            referenceLabel: showReferenceValue ? reference?.label : undefined,
+            referenceDirection: reference?.direction,
+            referenceCurrent: reference?.current,
+            referenceIsOpposite: reference?.isOppositeToReference,
+            showReferenceValue,
           },
         };
       }),
-    [calculation.result?.branchCurrents, edges, maximumCurrent, nodes],
+    [
+      calculation.result?.branchCurrents,
+      edges,
+      maximumCurrent,
+      nodes,
+      referenceCurrentLayout,
+    ],
   );
 
   const feedback = useMemo(
@@ -473,10 +519,7 @@ function ConstructorWorkspace() {
             edges,
           ),
         );
-      } else if (
-        !originIsJunction &&
-        node.data.builderKind === "junction"
-      ) {
+      } else if (!originIsJunction && node.data.builderKind === "junction") {
         validTargetHandles = junctionHandles.filter((handleId) =>
           isConstructorConnectionAllowed(
             {
@@ -620,8 +663,7 @@ function ConstructorWorkspace() {
   );
 
   const isValidConnection = useCallback<IsValidConnection<ConstructorFlowEdge>>(
-    (connection) =>
-      isConstructorConnectionAllowed(connection, nodes, edges),
+    (connection) => isConstructorConnectionAllowed(connection, nodes, edges),
     [edges, nodes],
   );
 
@@ -692,15 +734,12 @@ function ConstructorWorkspace() {
     [selectedNodeId],
   );
 
-  const updateSelectedValue = useCallback(
-    (value: number) => {
-      if (!selectedNodeId) return;
+  const updateComponentValue = useCallback(
+    (componentId: string, value: number) => {
+      if (!Number.isFinite(value)) return;
       setNodes((current) =>
         current.map((node) => {
-          if (
-            node.id !== selectedNodeId ||
-            node.data.builderKind === "junction"
-          ) {
+          if (node.id !== componentId || node.data.builderKind === "junction") {
             return node;
           }
           const boundedValue =
@@ -734,7 +773,15 @@ function ConstructorWorkspace() {
         }),
       );
     },
-    [selectedNodeId],
+    [],
+  );
+
+  const updateSelectedValue = useCallback(
+    (value: number) => {
+      if (!selectedNodeId) return;
+      updateComponentValue(selectedNodeId, value);
+    },
+    [selectedNodeId, updateComponentValue],
   );
 
   const setSelectedAsGround = useCallback(() => {
@@ -1105,6 +1152,28 @@ function ConstructorWorkspace() {
             ) : null}
           </ReactFlow>
         </div>
+        {componentControls.length > 0 ? (
+          <section className="app-surface mt-4 min-w-0 p-4 sm:p-5">
+            <div className="mb-4 flex items-start gap-3">
+              <span className="app-icon size-10 shrink-0">
+                <SlidersHorizontal className="size-5" />
+              </span>
+              <div>
+                <h2 className="font-semibold text-slate-100">
+                  Valores de los componentes
+                </h2>
+                <p className="mt-1 text-xs leading-5 text-slate-400">
+                  Cambiá cada valor; si el circuito está completo, los
+                  resultados se actualizan al instante.
+                </p>
+              </div>
+            </div>
+            <ComponentValueControlGrid
+              components={componentControls}
+              onValueChange={updateComponentValue}
+            />
+          </section>
+        ) : null}
       </div>
 
       <div className="order-3 min-w-0">
@@ -1184,7 +1253,7 @@ function ConstructorWorkspace() {
                 >
                   {exampleLoadConfirmation.hasCanvasCircuit
                     ? "El ejemplo reemplazará el circuito que está en pantalla."
-                    : "El ejemplo se cargará en el canvas."} {" "}
+                    : "El ejemplo se cargará en el canvas."}{" "}
                   {exampleLoadConfirmation.hasSavedCircuit
                     ? "Tu circuito guardado seguirá disponible y no se modificará."
                     : "Esta acción no crea ni modifica un circuito guardado."}

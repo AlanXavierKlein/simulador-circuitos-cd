@@ -13,7 +13,8 @@ import { ComponentControls } from "@/components/controls/ComponentControls";
 import { GuideExplanation } from "@/components/guide/GuideExplanation";
 import { ResultsPanel } from "@/components/results/ResultsPanel";
 import { SolutionSteps } from "@/components/steps/SolutionSteps";
-import { solveCircuit } from "@/lib/engine/kirchhoff";
+import { solveCircuit, voltageBetween } from "@/lib/engine/kirchhoff";
+import type { SolveResult } from "@/lib/engine/kirchhoff";
 import type { Circuit } from "@/lib/engine/model";
 import {
   cloneCircuit,
@@ -21,13 +22,38 @@ import {
   updateCircuitComponentValue,
 } from "@/lib/engine/circuit-state";
 import { buildSolutionSteps } from "@/lib/engine/steps";
+import type { GuideValidationDefinition } from "@/lib/problems/guia04";
 import type { GuideResolution } from "@/lib/problems/guide-explanations";
+import type { PrimaryResultReading } from "@/components/results/ResultsPanel";
+
+function getValidationValue(
+  validation: GuideValidationDefinition,
+  circuit: Circuit,
+  result: SolveResult,
+): number | null {
+  const { source } = validation;
+  if (source.kind === "branchCurrent") {
+    return result.branchCurrents[source.branchLabel] ?? 0;
+  }
+  if (source.kind === "potentialDifference") {
+    return voltageBetween(result, source.nodeA, source.nodeB);
+  }
+
+  const current = result.branchCurrents[source.branchLabel] ?? 0;
+  if (Math.abs(current) < 1e-12) return null;
+
+  const supplyVoltage =
+    circuit.components.find((component) => component.type === "voltageSource")
+      ?.volts ?? source.volts;
+  return Math.abs(supplyVoltage / current);
+}
 
 type GuideWorkspaceOptions = {
   stepExplanations: Record<string, string>;
   stepContentOverrides?: Record<string, string>;
   resolution: GuideResolution;
   allowZeroResistance?: boolean;
+  validations?: GuideValidationDefinition[];
 };
 
 type SimulatorWorkspaceProps = {
@@ -47,13 +73,12 @@ export function SimulatorWorkspace({
   title = "Red de tres ramas",
   guide,
 }: SimulatorWorkspaceProps) {
-  const [originalCircuit] = useState<Circuit>(() => cloneCircuit(initialCircuit));
+  const [originalCircuit] = useState<Circuit>(() =>
+    cloneCircuit(initialCircuit),
+  );
   const [circuit, setCircuit] = useState(() => cloneCircuit(initialCircuit));
   const allowZeroResistance = guide?.allowZeroResistance ?? false;
-  const hasOriginalValues = hasOriginalCircuitValues(
-    circuit,
-    originalCircuit,
-  );
+  const hasOriginalValues = hasOriginalCircuitValues(circuit, originalCircuit);
   const calculation = useMemo(() => {
     try {
       const result = solveCircuit(circuit, {
@@ -76,14 +101,22 @@ export function SimulatorWorkspace({
     }
   }, [allowZeroResistance, circuit]);
 
+  const primaryReadings: PrimaryResultReading[] | undefined =
+    calculation.result && guide?.validations
+      ? guide.validations.map((validation) => ({
+          id: validation.id,
+          label: validation.label,
+          unit: validation.unit,
+          value: getValidationValue(validation, circuit, calculation.result),
+        }))
+      : undefined;
+
   const controls = (
     <ComponentControls
       circuit={circuit}
       allowZeroResistance={allowZeroResistance}
       onReset={
-        guide
-          ? () => setCircuit(cloneCircuit(originalCircuit))
-          : undefined
+        guide ? () => setCircuit(cloneCircuit(originalCircuit)) : undefined
       }
       onValueChange={(label, value) =>
         setCircuit((currentCircuit) =>
@@ -141,7 +174,11 @@ export function SimulatorWorkspace({
                   defaultOpen
                 />
               )}
-              <ResultsPanel circuit={circuit} result={calculation.result} />
+              <ResultsPanel
+                circuit={circuit}
+                result={calculation.result}
+                primaryReadings={primaryReadings}
+              />
             </>
           ) : (
             <>

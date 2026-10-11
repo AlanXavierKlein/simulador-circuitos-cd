@@ -14,9 +14,8 @@ export default function HomePage() {
           </div>
 
           <h1 className="text-balance text-5xl font-semibold tracking-[-0.05em] text-white sm:text-7xl lg:text-8xl">
-            Circuitos claros.
-            <span className="block bg-gradient-to-r from-cyan-300 to-lime-300 bg-clip-text text-transparent">
-              Física en movimiento.
+            <span className="bg-gradient-to-r from-cyan-300 to-lime-300 bg-clip-text text-transparent">
+              Guía 04 · Electrodinámica
             </span>
           </h1>
 

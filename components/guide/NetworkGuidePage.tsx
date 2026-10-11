@@ -92,6 +92,7 @@ export function NetworkGuidePage({
                   stepContentOverrides: problemCase.stepContentOverrides,
                   resolution: problemCase.resolution,
                   allowZeroResistance: problemCase.allowZeroResistance,
+                  validations: problemCase.validations,
                 }}
               />
             </article>
