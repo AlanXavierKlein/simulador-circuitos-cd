@@ -24,11 +24,11 @@ export function JunctionNode({ data, selected }: NodeProps<JunctionFlowNode>) {
       className={`relative grid place-items-center rounded-full border-[4px] ${
         data.isGround
           ? isConstructorNode
-            ? "size-11 bg-sky-300 shadow-[0_0_16px_rgba(125,211,252,0.38)]"
-            : "size-[22px] bg-sky-300 shadow-[0_0_12px_rgba(125,211,252,0.42)]"
+            ? "size-11 bg-sky-300"
+            : "size-[22px] bg-sky-300"
           : isConstructorNode
-            ? "size-11 bg-violet-300 shadow-[0_0_16px_rgba(196,181,253,0.38)]"
-            : "size-[22px] bg-violet-300 shadow-[0_0_12px_rgba(196,181,253,0.42)]"
+            ? "size-11 bg-violet-300"
+            : "size-[22px] bg-violet-300"
       } ${
         selected
           ? "border-white ring-2 ring-violet-300/70 ring-offset-2 ring-offset-slate-950"
@@ -78,7 +78,7 @@ export function JunctionNode({ data, selected }: NodeProps<JunctionFlowNode>) {
         />
       ))}
       <span
-        className={`pointer-events-none absolute whitespace-nowrap rounded-md border border-slate-700 bg-slate-950/95 px-2 py-0.5 font-mono text-[11px] font-medium text-slate-200 shadow-md ${
+        className={`pointer-events-none absolute whitespace-nowrap rounded bg-[#080d18] px-1.5 py-0.5 font-mono text-[13px] font-medium text-slate-200 ${
           isConstructorNode ? "top-12" : "top-6"
         }`}
       >

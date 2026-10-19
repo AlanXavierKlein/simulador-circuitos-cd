@@ -5,17 +5,16 @@ import {
   BackgroundVariant,
   ConnectionMode,
   Controls,
-  Panel,
   ReactFlow,
 } from "@xyflow/react";
 import type { EdgeTypes, NodeTypes, ReactFlowInstance } from "@xyflow/react";
-import { Maximize2, Move3d } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import type { Circuit } from "@/lib/engine/model";
 
 import { AnimatedWire } from "./AnimatedWire";
 import { CircuitMiniMap } from "./CircuitMiniMap";
+import { CircuitCanvasFrame } from "./CircuitCanvasFrame";
 import { circuitToFlow } from "./circuit-adapter";
 import type {
   ComponentPositionMap,
@@ -92,7 +91,10 @@ export function CircuitCanvas({
   );
 
   return (
-    <div className="circuit-flow relative h-[58svh] min-h-[360px] w-full touch-none overflow-hidden rounded-3xl border border-slate-800 bg-[#080d18] shadow-2xl shadow-black/30 sm:h-[min(720px,calc(100vh-13.5rem))] sm:min-h-[500px]">
+    <CircuitCanvasFrame
+      title={title}
+      subtitle={`${circuit.nodes.length} nodos · ${circuit.components.length} ramas`}
+    >
       <ReactFlow
         nodes={flow.nodes}
         edges={flow.edges}
@@ -119,35 +121,12 @@ export function CircuitCanvas({
         <Background
           variant={BackgroundVariant.Dots}
           gap={28}
-          size={1.35}
-          color="#263449"
+          size={1}
+          color="#1e293b"
         />
         <CircuitMiniMap />
         <Controls position="bottom-left" showInteractive={false} />
-
-        <Panel position="top-left" className="m-2! sm:m-4!">
-          <div className="max-w-[70vw] rounded-xl border border-slate-700/80 bg-slate-950/85 px-2.5 py-2 shadow-xl backdrop-blur-md sm:max-w-none sm:px-4 sm:py-3">
-            <p className="max-w-full truncate text-[9px] font-semibold uppercase leading-tight tracking-[0.08em] text-cyan-300 sm:text-xs sm:tracking-[0.18em]">
-              {title}
-            </p>
-            <p className="mt-0.5 font-mono text-[10px] text-slate-400 sm:mt-1 sm:text-xs">
-              {circuit.nodes.length} nodos · {circuit.components.length} ramas
-            </p>
-          </div>
-        </Panel>
-
-        <Panel position="top-right" className="m-4! hidden sm:block">
-          <div className="flex items-center gap-3 rounded-xl border border-slate-700/80 bg-slate-950/85 px-3 py-2 text-xs text-slate-300 shadow-xl backdrop-blur-md">
-            <span className="flex items-center gap-1.5">
-              <Move3d className="size-3.5 text-cyan-300" /> desplazar
-            </span>
-            <span className="h-3 w-px bg-slate-700" />
-            <span className="flex items-center gap-1.5">
-              <Maximize2 className="size-3.5 text-cyan-300" /> zoom
-            </span>
-          </div>
-        </Panel>
       </ReactFlow>
-    </div>
+    </CircuitCanvasFrame>
   );
 }

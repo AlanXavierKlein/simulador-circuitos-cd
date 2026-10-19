@@ -100,8 +100,123 @@ body {
   box-shadow: 0 12px 32px rgb(0 0 0 / 0.28);
 }
 
-.circuit-flow .react-flow__edge-path {
-  filter: drop-shadow(0 0 2px rgb(100 116 139 / 0.14));
+.circuit-component {
+  position: relative;
+  width: 180px;
+  height: 104px;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease;
+}
+
+.circuit-component[data-orientation="vertical"] {
+  width: 116px;
+  height: 180px;
+}
+
+.circuit-component:where([data-builder="true"]:hover) {
+  border-color: #475569;
+  background: rgb(15 23 42 / 0.4);
+}
+
+.circuit-component.is-selected {
+  border-color: #67e8f9;
+  background: rgb(34 211 238 / 0.06);
+}
+
+.circuit-component.is-incomplete {
+  border-color: #fcd34d;
+  box-shadow: 0 0 0 2px rgb(252 211 77 / 0.35);
+}
+
+.circuit-component.is-unsolvable {
+  border-color: #fda4af;
+  box-shadow: 0 0 0 2px rgb(253 164 175 / 0.4);
+}
+
+.circuit-component.is-target {
+  border-color: #a3e635;
+  background: rgb(163 230 53 / 0.08);
+  box-shadow: 0 0 0 2px rgb(163 230 53 / 0.35);
+}
+
+.circuit-component__label,
+.circuit-component__value {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: #080d18;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.circuit-component__label {
+  top: 4px;
+  color: #f1f5f9;
+}
+
+.circuit-component__value {
+  bottom: 4px;
+  color: #a5f3fc;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.circuit-component[data-source="voltage"] .circuit-component__value {
+  color: #fcd34d;
+}
+
+.circuit-component[data-orientation="vertical"] .circuit-component__label,
+.circuit-component[data-orientation="vertical"] .circuit-component__value {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+.circuit-component[data-orientation="vertical"] .circuit-component__label {
+  top: 20px;
+}
+
+.circuit-component[data-orientation="vertical"] .circuit-component__value {
+  bottom: 20px;
+}
+
+/* Leave the circular symbol and voltage polarity marks unobstructed. */
+.circuit-component[data-source="voltage"][data-orientation="horizontal"]
+  .circuit-component__label,
+.circuit-component[data-source="current"] .circuit-component__label {
+  top: -22px;
+}
+
+.circuit-component[data-source="voltage"][data-orientation="horizontal"]
+  .circuit-component__value,
+.circuit-component[data-source="current"] .circuit-component__value {
+  bottom: -22px;
+}
+
+.circuit-component[data-source="current"][data-orientation="vertical"]
+  .circuit-component__label,
+.circuit-component[data-source="current"][data-orientation="vertical"]
+  .circuit-component__value {
+  left: 110px;
+  right: auto;
+}
+
+.circuit-component[data-source="current"][data-orientation="vertical"]
+  .circuit-component__label {
+  top: 64px;
+}
+
+.circuit-component[data-source="current"][data-orientation="vertical"]
+  .circuit-component__value {
+  bottom: 64px;
 }
 
 @keyframes circuit-current-flow {
