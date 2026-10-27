@@ -109,8 +109,8 @@ export function GuideAccordionList({ items }: { items: GuideListItem[] }) {
                         <div className="hidden rounded-2xl border border-dashed border-slate-700 bg-slate-950/60 p-6 text-slate-500 lg:block">
                           <CircuitBoard className="size-12 text-cyan-400/40" />
                           <p className="mt-4 text-sm leading-6">
-                            El constructor se habilitará por completo en la
-                            próxima fase.
+                            El constructor está disponible para armar, editar y
+                            resolver circuitos propios.
                           </p>
                         </div>
                       )}
