@@ -593,7 +593,7 @@ export const guideItems: GuideListItem[] = [
     title: "Crear circuito propio",
     type: "Constructor libre",
     description:
-      "Armá una red desde cero con resistencias y fuentes. El acceso ya está preparado para la pantalla de construcción de la próxima fase.",
+      "Armá, conectá y resolvé una red propia con resistencias y fuentes. Podés editar sus propiedades y guardar el circuito localmente en este navegador.",
     href: "/constructor",
   },
 ];

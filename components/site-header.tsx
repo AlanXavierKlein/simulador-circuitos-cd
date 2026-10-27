@@ -11,6 +11,7 @@ const navigation = [
   { href: "/", label: "Home" },
   { href: "/guia", label: "Modo guía" },
   { href: "/constructor", label: "Constructor" },
+  { href: "/ayuda", label: "Ayuda" },
   { href: "/teoria", label: "Teoría" },
 ];
 
