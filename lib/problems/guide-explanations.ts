@@ -1,3 +1,5 @@
+import type { LiveNetworkCase } from "./live-network-resolution";
+
 export type GuideExplanationStep = {
   title: string;
   content?: string;
@@ -21,6 +23,7 @@ export type GuideExplanation = {
 export type GuideResolution = {
   mode: "replace-kirchhoff" | "prepend-analysis";
   explanation: GuideExplanation;
+  liveCase?: LiveNetworkCase;
 };
 
 const p8Analysis =
@@ -32,99 +35,18 @@ export const guideNetworkResolutions: Record<
 > = {
   p8a: {
     mode: "replace-kirchhoff",
+    liveCase: "p8a",
     explanation: {
       heading: "Resolución por reducción serie/paralelo",
       analysis: p8Analysis,
-      sections: [
-        {
-          title: "Caso (a) — con la batería de 9 V",
-          steps: [
-            {
-              title: "1. R1, R4 y R5 en serie.",
-              content:
-                "Están una a continuación de la otra en la misma rama, así que circula la misma corriente por las tres y sus resistencias se suman:",
-              equations: ["R145 = R1 + R4 + R5 = 10 + 10 + 10 = 30 Ω."],
-            },
-            {
-              title: "2. R3 en paralelo con R145.",
-              content:
-                "Ese conjunto queda conectado entre los mismos dos nodos que R3, por lo que comparten la misma tensión:",
-              equations: [
-                "R3145 = (1/R3 + 1/R145)⁻¹ = (1/10 + 1/30)⁻¹ = 7,5 Ω.",
-              ],
-            },
-            {
-              title: "3. R2, R3145 y R6 en serie.",
-              content: "Ahora todo el circuito es una sola rama:",
-              equations: ["Req = R2 + R3145 + R6 = 10 + 7,5 + 10 = 27,5 Ω."],
-            },
-            {
-              title: "4. Corriente total.",
-              content:
-                "Es la que entrega la batería y circula por R2 y R6 (que están en serie con el resto). Por Ohm:",
-              equations: ["I₁ = V / Req = 9 / 27,5 = 0,327 A."],
-            },
-            {
-              title: "5. Tensión sobre el grupo en paralelo.",
-              content:
-                "Para saber cómo se reparte la corriente dentro del paralelo necesitamos la tensión común a ese grupo:",
-              equations: ["V3145 = I₁ · R3145 = 0,327 · 7,5 = 2,45 V."],
-            },
-            {
-              title: "6. Corriente por R3.",
-              content: "R3 tiene esa tensión en sus extremos, así que por Ohm:",
-              equations: ["I₂ = V3145 / R3 = 2,45 / 10 = 0,245 A."],
-            },
-            {
-              title: "7. Corriente por R1, R4, R5.",
-              content:
-                "Esa rama tiene la misma tensión (2,45 V) sobre sus 30 Ω:",
-              equations: ["I₃ = V3145 / R145 = 2,45 / 30 = 0,081 A."],
-            },
-            {
-              title: "8. Verificación.",
-              content:
-                "En un paralelo, la corriente que entra se reparte entre las ramas y debe sumar la total:",
-              equations: ["I₁ = I₂ + I₃ = 0,245 + 0,081 = 0,327 A ✓"],
-            },
-          ],
-        },
-      ],
     },
   },
   p8b: {
     mode: "replace-kirchhoff",
+    liveCase: "p8b",
     explanation: {
       heading: "Resolución por reducción serie/paralelo",
-      sections: [
-        {
-          title: "Caso (b)",
-          steps: [
-            {
-              title: "1. R2 y R3 en paralelo",
-              content: "(entre los mismos dos nodos):",
-              equations: ["R23 = (1/10 + 1/10)⁻¹ = 5 Ω."],
-            },
-            {
-              title: "2. R1, R23, R4 y R5 en serie:",
-              equations: ["Req = 10 + 5 + 10 + 10 = 35 Ω."],
-            },
-            {
-              title: "3. Corriente total:",
-              equations: ["I₁ = V / Req = 9 / 35 = 0,257 A."],
-            },
-            {
-              title: "4. Tensión sobre el paralelo:",
-              equations: ["V23 = I₁ · R23 = 0,257 · 5 = 1,28 V."],
-            },
-            {
-              title: "5. Corrientes por R2 y R3 (misma tensión):",
-              content:
-                "I₂ = V23 / R2 = 0,128 A ; I₃ = V23 / R3 = 0,128 A. Verificación: I₁ = I₂ + I₃ = 0,257 A ✓",
-            },
-          ],
-        },
-      ],
+      analysis: p8Analysis,
     },
   },
   p9: {
@@ -132,15 +54,16 @@ export const guideNetworkResolutions: Record<
     explanation: {
       heading: "Análisis",
       analysis:
-        "Se resuelve con las leyes de Kirchhoff. Hay 3 corrientes incógnita (I0, I1, I2), así que se plantean 3 ecuaciones: una de nodo (KCL en el nodo A) y dos de malla (KVL). Se asigna un sentido arbitrario a cada corriente. Al recorrer las mallas en sentido horario, la caída R·I es negativa si el recorrido va a favor de la corriente y positiva si va en contra; una fuente aporta +E si se pasa del borne − al + y −E en el caso contrario. Si una corriente da negativa (acá le pasa a I0), su sentido real es el opuesto al asumido. Para Vb − Va se elige un camino entre a y b y se suman las diferencias de potencial de los elementos del recorrido.",
+        "Las incógnitas I0, I1 e I2 son corrientes de rama. I0 entra en A por la izquierda, I1 entra en A por la rama central e I2 sale de A hacia la derecha y baja al nodo inferior: I0 + I1 − I2 = 0. Se recorren las dos mallas internas en sentido horario: izquierda (subir por la izquierda y bajar por el centro) y derecha (subir por el centro y bajar por la derecha). Una resistencia aporta −R·I al recorrerla a favor de la referencia de corriente y +R·I en contra; una fuente aporta +E de − a + y −E de + a −. El signo de cada corriente calculada indica su sentido real. Para Vb − Va se recorre a → A → r → b, pasando por R1, R2 y E3, con corrientes algebraicas: −I0·R1 − I2·R2 + E3. El cálculo conserva toda la precisión. Con los valores originales resulta aproximadamente 2,1552 V; los 2,154 V del PDF provienen del redondeo intermedio de las corrientes: 0,0172·25 − 0,4138·20 + 10 = 2,154 V.",
     },
   },
   p11: {
     mode: "prepend-analysis",
+    liveCase: "p11",
     explanation: {
       heading: "Análisis",
       analysis:
-        "La corriente entrante Ie se bifurca dentro del circuito en I0 e I1. Hay 3 incógnitas (I0, I1, I2), así que se plantean 3 ecuaciones: nodo a, nodo c y una malla. Las fuentes de corriente (Ie, Is) son datos conocidos y no son incógnitas. Se asigna un sentido arbitrario a las corrientes; I2 da negativa, así que su sentido real es el opuesto al asumido.",
+        "Las referencias de Ie e Is representan entrada en a y salida de c, respectivamente. Las tres corrientes de rama desconocidas son I0, I1 e I2. Se plantean dos ecuaciones de nodo y una de la malla resistiva en sentido horario. Las fuentes de corriente son datos conocidos. Cada signo calculado indica si la corriente coincide con su referencia o circula en sentido opuesto.",
     },
   },
 };

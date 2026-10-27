@@ -182,7 +182,6 @@ export type GuideCircuitCase = {
   description: string;
   circuit: Circuit;
   stepExplanations: Record<string, string>;
-  stepContentOverrides?: Record<string, string>;
   resolution: GuideResolution;
   validations: GuideValidationDefinition[];
   /** Habilita 0 Ω exclusivamente en los casos de la guía que lo permiten. */
@@ -240,6 +239,30 @@ export const problem8b: Circuit = {
 
 /** Figura 6. Las referencias de R1/R4, R3 y R2/R5 son I0, I1 e I2. */
 export const problem9: Circuit = {
+  analysis: {
+    incomingPositiveNodes: ["A"],
+    meshes: [
+      {
+        id: "M1",
+        startNode: "0",
+        componentLabels: ["R4", "E1", "R1", "R3", "E2"],
+        description:
+          "Malla interna izquierda ↻: subir por la rama izquierda y bajar por la central.",
+      },
+      {
+        id: "M2",
+        startNode: "0",
+        componentLabels: ["E2", "R3", "R2", "E3", "R5"],
+        description:
+          "Malla interna derecha ↻: subir por la rama central y bajar por la derecha.",
+      },
+    ],
+    potentialDifference: {
+      nodeA: "a",
+      nodeB: "b",
+      componentLabels: ["R1", "R2", "E3"],
+    },
+  },
   nodes: ["0", "A", "a", "l", "m", "r", "b"].map((id) => ({ id })),
   components: [
     { type: "resistor", label: "R4", nFrom: "0", nTo: "l", ohms: 15 },
@@ -273,7 +296,11 @@ export const problem9: Circuit = {
 
 /** Ie entra a la red e Is sale de ella, como en la resolución oficial. */
 export const problem11: Circuit = {
-  nodes: ["0", "t", "b"].map((id) => ({ id })),
+  nodes: [
+    { id: "0", label: "a" },
+    { id: "t", label: "b" },
+    { id: "b", label: "c" },
+  ],
   components: [
     { type: "resistor", label: "R3", nFrom: "0", nTo: "b", ohms: 9 },
     { type: "resistor", label: "R1", nFrom: "0", nTo: "t", ohms: 6 },
@@ -325,12 +352,12 @@ export const guideNetworkProblems: Record<
         id: "p8a",
         title: "Figura 5(a)",
         description:
-          "R1, R4 y R5 forman una serie de 30 Ω, en paralelo con R3. Ese bloque queda en serie con R2 y R6.",
+          "R1, R4 y R5 están en serie, en paralelo con R3. Ese bloque queda en serie con R2 y R6.",
         circuit: problem8a,
         stepExplanations: {
           ...commonKirchhoffExplanation,
           "assigned-currents":
-            "La resolución de cátedra reconoce primero R1 + R4 + R5 = 30 Ω y luego R3 || R145 = 7,5 Ω. Con R2 y R6 en serie resulta Req = 27,5 Ω. El motor conserva esas mismas corrientes de rama en el esquema completo.",
+            "Se reduce primero R1 + R4 + R5, luego su paralelo con R3 y finalmente se agregan R2 y R6 en serie.",
           solution:
             "La corriente total atraviesa R2 y R6. En el paralelo se divide entre R3 y la rama formada por R1, R4 y R5.",
         },
@@ -376,14 +403,14 @@ export const guideNetworkProblems: Record<
         id: "p8b",
         title: "Figura 5(b)",
         description:
-          "R2 y R3 están en paralelo y su equivalente de 5 Ω queda en serie con R1, R4 y R5.",
+          "R2 y R3 están en paralelo; ese bloque queda en serie con R1, R4 y R5.",
         circuit: problem8b,
         stepExplanations: {
           ...commonKirchhoffExplanation,
           "assigned-currents":
-            "La cátedra reduce R2 || R3 a 5 Ω. Al sumarlo con R1, R4 y R5 se obtiene Req = 35 Ω; el motor representa explícitamente la bifurcación de corriente.",
+            "Se reduce el paralelo de R2 y R3 y se agregan R1, R4 y R5 en serie.",
           solution:
-            "La corriente total atraviesa R1, R4 y R5. Como R2 y R3 son iguales, la corriente se divide por partes iguales en el paralelo.",
+            "La corriente total atraviesa R1, R4 y R5. En el paralelo se reparte según los valores actuales de R2 y R3.",
         },
         resolution: guideNetworkResolutions.p8b,
         allowZeroResistance: true,
@@ -437,9 +464,15 @@ export const guideNetworkProblems: Record<
         id: "p9",
         title: "Circuito completo",
         description:
-          "Se plantean tres ecuaciones: KCL en el nodo A y una KVL para cada una de las dos mallas independientes.",
+          "Se plantean tres ecuaciones: KCL en el nodo A y una KVL para cada malla interna, ambas recorridas en sentido horario.",
         circuit: problem9,
-        stepExplanations: commonKirchhoffExplanation,
+        stepExplanations: {
+          ...commonKirchhoffExplanation,
+          "assigned-currents":
+            "I0: por la rama izquierda hacia A. I1: por la rama central hacia arriba, entrando en A. I2: desde A hacia la derecha y luego hacia el nodo inferior.",
+          signs:
+            "Si I0 es negativa, su sentido real sale de A hacia la izquierda. Si es positiva, entra en A desde la izquierda. El mismo criterio se aplica a I1 e I2. Las magnitudes |I| son positivas y se acompañan del sentido real; las ecuaciones siempre usan los valores algebraicos con las referencias originales.",
+        },
         resolution: guideNetworkResolutions.p9,
         validations: [
           {
@@ -495,19 +528,9 @@ export const guideNetworkProblems: Record<
         circuit: problem11,
         stepExplanations: {
           ...commonKirchhoffExplanation,
-          kcl: "La corriente entrante Ie se bifurca en I0 e I1. En el nodo inferior, I0 e I2 se relacionan con la corriente saliente Is.",
+          kcl: "Con los sentidos de referencia asignados, Ie − I0 − I1 = 0 en a e I0 + I2 − Is = 0 en c. Se usan los valores algebraicos de las fuentes y las corrientes.",
           kvl: "Al recorrer la malla en sentido horario, la suma de las caídas sobre R1, R2 y R3 debe ser cero.",
-        },
-        stepContentOverrides: {
-          "assigned-currents":
-            "I0: a → c por R3.\nI1: a → b por R1.\nI2: b → c por R2.\nIe = 1 A entrante; Is = 0,25 A saliente.",
-          kcl: "Nodo a: Ie − I0 − I1 = 0\nNodo c: I0 + I2 − Is = 0",
-          kvl: "M1: −I1·R1 − I2·R2 + I0·R3 = 0",
-          "numeric-system":
-            "−I0 − I1 = −1 A\nI0 + I2 = 0,25 A\n9·I0 − 6·I1 − 10·I2 = 0",
-          solution: "I0 = 0,34 A\nI1 = 0,66 A\nI2 = −0,09 A",
-          signs:
-            "I2 = 0,09 A en el sentido c → b; opuesto al sentido asignado.",
+          "numeric-system": "Reemplazamos las resistencias y las fuentes por sus valores actuales. El sistema conserva los sentidos de referencia al cambiar los signos.",
         },
         resolution: guideNetworkResolutions.p11,
         validations: [

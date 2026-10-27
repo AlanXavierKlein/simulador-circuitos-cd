@@ -89,7 +89,6 @@ export function NetworkGuidePage({
                 title={`${problem.eyebrow} · ${problemCase.title}`}
                 guide={{
                   stepExplanations: problemCase.stepExplanations,
-                  stepContentOverrides: problemCase.stepContentOverrides,
                   resolution: problemCase.resolution,
                   allowZeroResistance: problemCase.allowZeroResistance,
                   validations: problemCase.validations,

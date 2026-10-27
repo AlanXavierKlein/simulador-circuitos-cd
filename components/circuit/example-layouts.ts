@@ -53,6 +53,14 @@ export const guideCircuitLayouts: Record<string, GuideCircuitLayout> = {
     componentPositions: {
       R2: { x: 520, y: 135 },
     },
+    currentLabelPlacements: {
+      I0: {
+        componentLabel: "R1",
+        edge: "to",
+        tangentOffset: -70,
+        normalOffset: 90,
+      },
+    },
   },
   p9: {
     nodePositions: problem9Positions,

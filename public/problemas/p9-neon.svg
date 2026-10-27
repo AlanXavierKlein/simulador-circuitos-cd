@@ -22,7 +22,7 @@
 <circle class="node" cx="610" cy="290" r="11"/><text class="nodeLabel" x="610" y="222">A</text>
 <path class="wire" d="M610 290H790"/><path class="res" d="M790 290l14-20 14 40 14-40 14 40 14-40 14 40 14-20"/><path class="wire" d="M888 290H1080V520"/>
 <text class="label" x="839" y="230">R2</text>
-<!-- Current direction arrows shown in the source on the lead into A and down the R3 branch. -->
+<!-- Assigned branch-current references: I0 and I1 into A, I2 out of A. -->
 <path d="M465 290H530" fill="none" stroke="#f4f7ff" stroke-width="5" marker-end="url(#arrow)"/>
 <text class="point" x="500" y="342">I₀</text>
 <!-- Central branch: R3 and E2. -->
@@ -45,4 +45,11 @@
 <path class="battery" d="M1060 530H1100M1035 570H1125"/>
 <circle class="node" cx="1080" cy="690" r="9"/><text class="point" x="1130" y="702">b</text>
 <text class="source" x="1170" y="560">E3</text>
+<!-- The two internal meshes, each traversed clockwise. -->
+<g fill="none" stroke="#f4f7ff" stroke-width="4" marker-end="url(#arrow)">
+  <path d="M360 405A65 65 0 1 1 300 490"/>
+  <path d="M850 405A65 65 0 1 1 790 490"/>
+</g>
+<text class="label" x="360" y="485">M1</text>
+<text class="label" x="850" y="485">M2</text>
 </svg>

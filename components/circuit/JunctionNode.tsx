@@ -51,7 +51,7 @@ export function JunctionNode({ data, selected }: NodeProps<JunctionFlowNode>) {
               }
             : undefined
       }
-      aria-label={data.isGround ? "Nodo 0, tierra" : `Nodo ${data.label}`}
+      aria-label={`Nodo ${data.label}${data.isGround ? ", tierra" : ""}`}
     >
       {positions.map(([id, position]) => (
         <Handle
@@ -82,7 +82,7 @@ export function JunctionNode({ data, selected }: NodeProps<JunctionFlowNode>) {
           isConstructorNode ? "top-12" : "top-6"
         }`}
       >
-        {data.isGround ? "⏚ 0" : data.label}
+        {data.isGround ? `⏚ ${data.label}` : data.label}
       </span>
       {data.connectionHintMessage ? (
         <span className="pointer-events-none absolute left-1/2 top-16 z-20 w-max max-w-56 -translate-x-1/2 rounded-lg border border-amber-400/30 bg-slate-950/95 px-3 py-2 text-center text-xs leading-5 text-amber-100 shadow-xl">

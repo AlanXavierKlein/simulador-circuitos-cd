@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { solveCircuit } from "../../lib/engine/kirchhoff";
+import { findCircuitLoops } from "../../lib/engine/graph";
+import { updateCircuitComponentValue } from "../../lib/engine/circuit-state";
 import type { Circuit } from "../../lib/engine/model";
 import { problem9 } from "../../lib/problems/phase1-validation";
 
@@ -11,6 +13,41 @@ import {
 } from "./example-layouts";
 
 describe("adaptador Circuit -> React Flow", () => {
+  it("recorre ambas mallas internas del P9 en sentido horario sobre el dibujo", () => {
+    for (const loop of findCircuitLoops(problem9)) {
+      const twiceArea = loop.branches.reduce((area, branch) => {
+        const from = problem9Positions[branch.from];
+        const to = problem9Positions[branch.to];
+        return area + from.x * to.y - to.x * from.y;
+      }, 0);
+      // En coordenadas de pantalla, y crece hacia abajo: área positiva = horario.
+      expect(twiceArea).toBeGreaterThan(0);
+    }
+  });
+
+  it("mantiene la flecha de referencia de I0 cuando cambia su sentido real", () => {
+    for (const volts of [10, 30]) {
+      const circuit = updateCircuitComponentValue(problem9, "E1", volts);
+      const result = solveCircuit(circuit);
+      const flow = circuitToFlow(circuit, {
+        nodePositions: problem9Positions,
+        branchCurrents: result.branchCurrents,
+        currentLabelPlacements: problem9CurrentLabelPlacements,
+      });
+      expect(
+        flow.edges.find((edge) => edge.id === "wire:R4:to")?.data,
+      ).toMatchObject({
+        referenceLabel: "I0",
+        referenceDirection: 1,
+        referenceIsOpposite: volts === 10,
+      });
+      expect(
+        flow.edges.find((edge) => edge.id === "wire:R4:to")?.data
+          ?.referenceCurrent,
+      ).toBeCloseTo(result.branchCurrents.R4, 12);
+    }
+  });
+
   it("crea un nodo visual por nodo físico y por componente", () => {
     const flow = circuitToFlow(problem9, { nodePositions: problem9Positions });
 
@@ -24,7 +61,8 @@ describe("adaptador Circuit -> React Flow", () => {
     expect(flow.nodes.filter((node) => node.type === "source")).toHaveLength(3);
     expect(
       flow.nodes.every(
-        (node) => node.initialWidth !== undefined && node.initialHeight !== undefined,
+        (node) =>
+          node.initialWidth !== undefined && node.initialHeight !== undefined,
       ),
     ).toBe(true);
   });
@@ -115,12 +153,15 @@ describe("adaptador Circuit -> React Flow", () => {
       },
     });
 
-    expect(flow.nodes.find((node) => node.id === "component:E+")?.data)
-      .toMatchObject({ voltagePolarity: "positive" });
-    expect(flow.nodes.find((node) => node.id === "component:E-")?.data)
-      .toMatchObject({ voltagePolarity: "negative" });
-    expect(flow.nodes.find((node) => node.id === "component:E0")?.data)
-      .toMatchObject({ voltagePolarity: "neutral" });
+    expect(
+      flow.nodes.find((node) => node.id === "component:E+")?.data,
+    ).toMatchObject({ voltagePolarity: "positive" });
+    expect(
+      flow.nodes.find((node) => node.id === "component:E-")?.data,
+    ).toMatchObject({ voltagePolarity: "negative" });
+    expect(
+      flow.nodes.find((node) => node.id === "component:E0")?.data,
+    ).toMatchObject({ voltagePolarity: "neutral" });
   });
 
   it("adapta fuentes de corriente y conserva el sentido de su flecha", () => {

@@ -7,10 +7,7 @@ export type CircuitValueUpdateOptions = {
 
 /** Crea una copia independiente de la netlist para conservar un estado base. */
 export function cloneCircuit(circuit: Circuit): Circuit {
-  return {
-    nodes: circuit.nodes.map((node) => ({ ...node })),
-    components: circuit.components.map((component) => ({ ...component })),
-  };
+  return structuredClone(circuit);
 }
 
 /** Compara únicamente los valores eléctricos de dos netlists equivalentes. */
@@ -28,7 +25,10 @@ export function hasOriginalCircuitValues(
     );
     if (!component || component.type !== originalComponent.type) return false;
 
-    if (component.type === "resistor" && originalComponent.type === "resistor") {
+    if (
+      component.type === "resistor" &&
+      originalComponent.type === "resistor"
+    ) {
       return component.ohms === originalComponent.ohms;
     }
     if (
