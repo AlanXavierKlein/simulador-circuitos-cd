@@ -35,6 +35,21 @@ export type Component = Resistor | VoltageSource | CurrentSource;
 export type Circuit = {
   nodes: CircuitNode[];
   components: Component[];
+  /** Recorridos didácticos explícitos; el constructor usa mallas automáticas. */
+  analysis?: {
+    meshes: Array<{
+      id: string;
+      startNode: NodeId;
+      componentLabels: string[];
+      description: string;
+    }>;
+    incomingPositiveNodes: NodeId[];
+    potentialDifference?: {
+      nodeA: NodeId;
+      nodeB: NodeId;
+      componentLabels: string[];
+    };
+  };
 };
 
 export function isResistor(component: Component): component is Resistor {

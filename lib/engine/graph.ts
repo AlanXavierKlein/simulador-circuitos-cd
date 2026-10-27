@@ -36,10 +36,14 @@ export type OrientedBranch = {
   to: NodeId;
 };
 
-export type FundamentalLoop = {
+export type CircuitLoop = {
   id: string;
-  linkBranchIndex: number;
   branches: OrientedBranch[];
+  description?: string;
+};
+
+export type FundamentalLoop = CircuitLoop & {
+  linkBranchIndex: number;
 };
 
 /** Construye el multigrafo no dirigido de nodos y ramas del circuito. */
@@ -199,6 +203,43 @@ export function findFundamentalLoops(circuit: Circuit): FundamentalLoop[] {
   });
 }
 
+/** Usa los mismos recorridos para calcular y explicar las mallas de la guía. */
+export function findCircuitLoops(circuit: Circuit): CircuitLoop[] {
+  if (!circuit.analysis) return findFundamentalLoops(circuit);
+  const { meshes } = circuit.analysis;
+  if (meshes.length !== circuit.components.length - circuit.nodes.length + 1) {
+    throw new Error(
+      "La cantidad de mallas explícitas no coincide con la del circuito.",
+    );
+  }
+  return meshes.map((mesh) => {
+    let currentNode = mesh.startNode;
+    const visited = new Set<string>();
+    const branches = mesh.componentLabels.map((label): OrientedBranch => {
+      const branchIndex = circuit.components.findIndex(
+        (item) => item.label === label,
+      );
+      const component = circuit.components[branchIndex];
+      if (
+        !component ||
+        visited.has(label) ||
+        (component.nFrom !== currentNode && component.nTo !== currentNode)
+      ) {
+        throw new Error(`Recorrido inválido en ${mesh.id}: ${label}.`);
+      }
+      visited.add(label);
+      const orientation = component.nFrom === currentNode ? 1 : -1;
+      const from = currentNode;
+      currentNode = orientation === 1 ? component.nTo : component.nFrom;
+      return { branchIndex, label, orientation, from, to: currentNode };
+    });
+    if (branches.length < 2 || currentNode !== mesh.startNode) {
+      throw new Error(`La malla ${mesh.id} debe ser un recorrido cerrado.`);
+    }
+    return { id: mesh.id, description: mesh.description, branches };
+  });
+}
+
 /** Devuelve un camino simple y orientado entre dos nodos. */
 export function findPathBetweenNodes(
   circuit: Circuit,
@@ -206,9 +247,21 @@ export function findPathBetweenNodes(
   target: NodeId,
 ): OrientedBranch[] {
   const graph = buildCircuitGraph(circuit);
+  const measurement = circuit.analysis?.potentialDifference;
+  const useGuidePath =
+    measurement &&
+    ((measurement.nodeA === start && measurement.nodeB === target) ||
+      (measurement.nodeB === start && measurement.nodeA === target));
   return findPath(
     graph,
-    new Set(graph.branches.map((branch) => branch.index)),
+    new Set(
+      graph.branches
+        .filter(
+          (branch) =>
+            !useGuidePath || measurement.componentLabels.includes(branch.label),
+        )
+        .map((branch) => branch.index),
+    ),
     start,
     target,
   );

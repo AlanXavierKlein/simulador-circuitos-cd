@@ -112,7 +112,7 @@ export function buildReferenceCurrentLayout(
       path,
       segments,
       current,
-      isOppositeToReference: current < -1e-9,
+      isOppositeToReference: current < 0,
     });
   }
 

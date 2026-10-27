@@ -240,6 +240,30 @@ export const problem8b: Circuit = {
 
 /** Figura 6. Las referencias de R1/R4, R3 y R2/R5 son I0, I1 e I2. */
 export const problem9: Circuit = {
+  analysis: {
+    incomingPositiveNodes: ["A"],
+    meshes: [
+      {
+        id: "M1",
+        startNode: "0",
+        componentLabels: ["R4", "E1", "R1", "R3", "E2"],
+        description:
+          "Malla interna izquierda ↻: subir por la rama izquierda y bajar por la central.",
+      },
+      {
+        id: "M2",
+        startNode: "0",
+        componentLabels: ["E2", "R3", "R2", "E3", "R5"],
+        description:
+          "Malla interna derecha ↻: subir por la rama central y bajar por la derecha.",
+      },
+    ],
+    potentialDifference: {
+      nodeA: "a",
+      nodeB: "b",
+      componentLabels: ["R1", "R2", "E3"],
+    },
+  },
   nodes: ["0", "A", "a", "l", "m", "r", "b"].map((id) => ({ id })),
   components: [
     { type: "resistor", label: "R4", nFrom: "0", nTo: "l", ohms: 15 },
@@ -437,9 +461,15 @@ export const guideNetworkProblems: Record<
         id: "p9",
         title: "Circuito completo",
         description:
-          "Se plantean tres ecuaciones: KCL en el nodo A y una KVL para cada una de las dos mallas independientes.",
+          "Se plantean tres ecuaciones: KCL en el nodo A y una KVL para cada malla interna, ambas recorridas en sentido horario.",
         circuit: problem9,
-        stepExplanations: commonKirchhoffExplanation,
+        stepExplanations: {
+          ...commonKirchhoffExplanation,
+          "assigned-currents":
+            "I0: por la rama izquierda hacia A. I1: por la rama central hacia arriba, entrando en A. I2: desde A hacia la derecha y luego hacia el nodo inferior.",
+          signs:
+            "Si I0 es negativa, su sentido real sale de A hacia la izquierda. Si es positiva, entra en A desde la izquierda. El mismo criterio se aplica a I1 e I2. Las magnitudes |I| son positivas y se acompañan del sentido real; las ecuaciones siempre usan los valores algebraicos con las referencias originales.",
+        },
         resolution: guideNetworkResolutions.p9,
         validations: [
           {

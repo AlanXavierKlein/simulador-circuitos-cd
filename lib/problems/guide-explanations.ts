@@ -132,7 +132,7 @@ export const guideNetworkResolutions: Record<
     explanation: {
       heading: "Análisis",
       analysis:
-        "Se resuelve con las leyes de Kirchhoff. Hay 3 corrientes incógnita (I0, I1, I2), así que se plantean 3 ecuaciones: una de nodo (KCL en el nodo A) y dos de malla (KVL). Se asigna un sentido arbitrario a cada corriente. Al recorrer las mallas en sentido horario, la caída R·I es negativa si el recorrido va a favor de la corriente y positiva si va en contra; una fuente aporta +E si se pasa del borne − al + y −E en el caso contrario. Si una corriente da negativa (acá le pasa a I0), su sentido real es el opuesto al asumido. Para Vb − Va se elige un camino entre a y b y se suman las diferencias de potencial de los elementos del recorrido.",
+        "Las incógnitas I0, I1 e I2 son corrientes de rama. I0 entra en A por la izquierda, I1 entra en A por la rama central e I2 sale de A hacia la derecha y baja al nodo inferior: I0 + I1 − I2 = 0. Se recorren las dos mallas internas en sentido horario: izquierda (subir por la izquierda y bajar por el centro) y derecha (subir por el centro y bajar por la derecha). Una resistencia aporta −R·I al recorrerla a favor de la referencia de corriente y +R·I en contra; una fuente aporta +E de − a + y −E de + a −. El signo de cada corriente calculada indica su sentido real. Para Vb − Va se recorre a → A → r → b, pasando por R1, R2 y E3, con corrientes algebraicas: −I0·R1 − I2·R2 + E3. El cálculo conserva toda la precisión. Con los valores originales resulta aproximadamente 2,1552 V; los 2,154 V del PDF provienen del redondeo intermedio de las corrientes: 0,0172·25 − 0,4138·20 + 10 = 2,154 V.",
     },
   },
   p11: {

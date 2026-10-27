@@ -2,10 +2,10 @@ import { lusolve } from "mathjs";
 
 import {
   buildCircuitGraph,
-  findFundamentalLoops,
+  findCircuitLoops,
   findPathBetweenNodes,
 } from "./graph";
-import type { FundamentalLoop } from "./graph";
+import type { CircuitLoop } from "./graph";
 import { isCurrentSource, isResistor, isVoltageSource } from "./model";
 import type { Circuit, Component, NodeId } from "./model";
 import { calculatePowers } from "./power";
@@ -68,10 +68,7 @@ function addCoefficient(
   coefficients[variable] = (coefficients[variable] ?? 0) + value;
 }
 
-function validateCircuit(
-  circuit: Circuit,
-  options: SolveCircuitOptions,
-): void {
+function validateCircuit(circuit: Circuit, options: SolveCircuitOptions): void {
   if (circuit.nodes.length === 0) {
     throw new Error("El circuito debe contener al menos un nodo.");
   }
@@ -198,10 +195,18 @@ function buildKclEquations(circuit: Circuit): CircuitEquation[] {
     .map((node) => {
       const coefficients: Record<string, number> = {};
       let knownCurrent = 0;
+      const incomingPositive = circuit.analysis?.incomingPositiveNodes.includes(
+        node.id,
+      );
 
       for (const component of circuit.components) {
         const sign =
-          component.nFrom === node.id ? 1 : component.nTo === node.id ? -1 : 0;
+          (incomingPositive ? -1 : 1) *
+          (component.nFrom === node.id
+            ? 1
+            : component.nTo === node.id
+              ? -1
+              : 0);
         if (sign === 0) continue;
 
         if (isCurrentSource(component)) {
@@ -214,7 +219,7 @@ function buildKclEquations(circuit: Circuit): CircuitEquation[] {
       return {
         id: `KCL(${node.id})`,
         kind: "kcl" as const,
-        description: `Suma de corrientes salientes del nodo ${node.id}.`,
+        description: `Suma de corrientes ${incomingPositive ? "entrantes" : "salientes"} del nodo ${node.id}.`,
         coefficients,
         rhs: -knownCurrent,
       };
@@ -223,7 +228,7 @@ function buildKclEquations(circuit: Circuit): CircuitEquation[] {
 
 function buildKvlEquation(
   circuit: Circuit,
-  loop: FundamentalLoop,
+  loop: CircuitLoop,
 ): CircuitEquation {
   const coefficients: Record<string, number> = {};
   let knownVoltageChange = 0;
@@ -286,7 +291,7 @@ function solveLinearSystem(matrix: number[][], rhs: number[]): number[] {
       if (!Number.isFinite(numericValue)) {
         throw new Error("El sistema no produjo una solución finita.");
       }
-      return Math.abs(numericValue) < NUMERICAL_TOLERANCE ? 0 : numericValue;
+      return numericValue;
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -362,7 +367,7 @@ export function solveCircuit(
 
   const variables = buildVariables(circuit);
   const kcl = buildKclEquations(circuit);
-  const kvl = findFundamentalLoops(circuit).map((loop) =>
+  const kvl = findCircuitLoops(circuit).map((loop) =>
     buildKvlEquation(circuit, loop),
   );
   const equations = [...kcl, ...kvl];
@@ -413,8 +418,7 @@ export function solveCircuit(
       {
         nFrom: component.nFrom,
         nTo: component.nTo,
-        isOppositeToReference:
-          branchCurrents[component.label] < -NUMERICAL_TOLERANCE,
+        isOppositeToReference: branchCurrents[component.label] < 0,
       },
     ]),
   );
