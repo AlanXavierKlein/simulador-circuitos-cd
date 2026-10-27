@@ -7,6 +7,7 @@ export function GuideExplanation({
   className,
   hasOriginalValues = true,
   showOriginalValuesNotice = false,
+  isLive = false,
 }: {
   explanation: GuideExplanationContent;
   className?: string;
@@ -14,6 +15,7 @@ export function GuideExplanation({
   hasOriginalValues?: boolean;
   /** Se usa cuando el bloque contiene resultados fijos del ejemplo original. */
   showOriginalValuesNotice?: boolean;
+  isLive?: boolean;
 }) {
   return (
     <section className={`app-surface overflow-hidden ${className ?? ""}`}>
@@ -23,9 +25,11 @@ export function GuideExplanation({
         </span>
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.18em] text-lime-300">
-            {hasOriginalValues
-              ? "Ejemplo resuelto de la guía"
-              : "Método de resolución de cátedra"}
+            {isLive
+              ? "Desarrollo del resultado actual"
+              : hasOriginalValues
+                ? "Ejemplo resuelto de la guía"
+                : "Método de resolución de cátedra"}
           </p>
           <h2 className="mt-1 text-xl font-semibold text-white sm:text-2xl">
             {explanation.heading}

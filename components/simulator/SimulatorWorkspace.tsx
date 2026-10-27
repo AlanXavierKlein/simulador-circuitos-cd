@@ -22,6 +22,7 @@ import {
   updateCircuitComponentValue,
 } from "@/lib/engine/circuit-state";
 import { buildSolutionSteps } from "@/lib/engine/steps";
+import { buildLiveNetworkResolution } from "@/lib/problems/live-network-resolution";
 import type { GuideValidationDefinition } from "@/lib/problems/guia04";
 import type { GuideResolution } from "@/lib/problems/guide-explanations";
 import type { PrimaryResultReading } from "@/components/results/ResultsPanel";
@@ -30,6 +31,7 @@ function getValidationValue(
   validation: GuideValidationDefinition,
   circuit: Circuit,
   result: SolveResult,
+  equivalentResistance?: number,
 ): number | null {
   const { source } = validation;
   if (source.kind === "branchCurrent") {
@@ -38,6 +40,7 @@ function getValidationValue(
   if (source.kind === "potentialDifference") {
     return voltageBetween(result, source.nodeA, source.nodeB);
   }
+  if (equivalentResistance !== undefined) return equivalentResistance;
 
   const current = result.branchCurrents[source.branchLabel] ?? 0;
   if (Math.abs(current) < 1e-12) return null;
@@ -50,7 +53,6 @@ function getValidationValue(
 
 type GuideWorkspaceOptions = {
   stepExplanations: Record<string, string>;
-  stepContentOverrides?: Record<string, string>;
   resolution: GuideResolution;
   allowZeroResistance?: boolean;
   validations?: GuideValidationDefinition[];
@@ -79,27 +81,33 @@ export function SimulatorWorkspace({
   const [circuit, setCircuit] = useState(() => cloneCircuit(initialCircuit));
   const allowZeroResistance = guide?.allowZeroResistance ?? false;
   const hasOriginalValues = hasOriginalCircuitValues(circuit, originalCircuit);
+  const liveCase = guide?.resolution.liveCase;
   const calculation = useMemo(() => {
     try {
       const result = solveCircuit(circuit, {
         allowZeroResistance,
       });
+      const live = liveCase
+        ? buildLiveNetworkResolution(liveCase, circuit, result)
+        : undefined;
       return {
         result,
-        steps: buildSolutionSteps(circuit, result),
+        steps: live?.steps ?? buildSolutionSteps(circuit, result),
+        live,
         error: null,
       };
     } catch (error) {
       return {
         result: null,
         steps: [],
+        live: undefined,
         error:
           error instanceof Error
             ? error.message
             : "No se pudo resolver el circuito.",
       };
     }
-  }, [allowZeroResistance, circuit]);
+  }, [allowZeroResistance, circuit, liveCase]);
 
   const primaryReadings: PrimaryResultReading[] | undefined =
     calculation.result && guide?.validations
@@ -107,7 +115,12 @@ export function SimulatorWorkspace({
           id: validation.id,
           label: validation.label,
           unit: validation.unit,
-          value: getValidationValue(validation, circuit, calculation.result),
+          value: getValidationValue(
+            validation,
+            circuit,
+            calculation.result,
+            calculation.live?.equivalentResistance,
+          ),
         }))
       : undefined;
 
@@ -159,17 +172,17 @@ export function SimulatorWorkspace({
               ) : null}
               {guide.resolution.mode === "replace-kirchhoff" ? (
                 <GuideExplanation
-                  explanation={guide.resolution.explanation}
+                  explanation={{
+                    ...guide.resolution.explanation,
+                    ...calculation.live?.explanation,
+                  }}
                   hasOriginalValues={hasOriginalValues}
+                  isLive={Boolean(calculation.live?.explanation)}
                   className="mt-6"
                 />
               ) : (
                 <SolutionSteps
-                  steps={calculation.steps.map((step) => ({
-                    ...step,
-                    content:
-                      guide.stepContentOverrides?.[step.id] ?? step.content,
-                  }))}
+                  steps={calculation.steps}
                   explanations={guide.stepExplanations}
                   defaultOpen
                 />

@@ -93,6 +93,8 @@ export function ResultsPanel({
   primaryReadings,
 }: ResultsPanelProps) {
   const nodeIds = circuit.nodes.map((node) => node.id);
+  const nodeName = (id: NodeId) =>
+    circuit.nodes.find((node) => node.id === id)?.label ?? id;
   const referenceCurrents = buildReferenceCurrentLayout(
     circuit,
     result.branchCurrents,
@@ -157,7 +159,7 @@ export function ResultsPanel({
                 detail={
                   group.current < -1e-9
                     ? "Sentido opuesto al asumido"
-                    : group.path.join(" → ")
+                    : group.path.map(nodeName).join(" → ")
                 }
               />
             ))}
@@ -201,7 +203,7 @@ export function ResultsPanel({
                       detail={
                         group.current < -1e-9
                           ? "Sentido opuesto al asumido"
-                          : group.path.join(" → ")
+                          : group.path.map(nodeName).join(" → ")
                       }
                     />
                   ))}
@@ -225,7 +227,7 @@ export function ResultsPanel({
                 >
                   {nodeIds.map((nodeId) => (
                     <option key={nodeId} value={nodeId}>
-                      {nodeId}
+                      {nodeName(nodeId)}
                     </option>
                   ))}
                 </select>
@@ -239,7 +241,7 @@ export function ResultsPanel({
                 >
                   {nodeIds.map((nodeId) => (
                     <option key={nodeId} value={nodeId}>
-                      {nodeId}
+                      {nodeName(nodeId)}
                     </option>
                   ))}
                 </select>
@@ -249,7 +251,7 @@ export function ResultsPanel({
                 </span>
               </div>
               <p className="mt-2 text-xs text-slate-400">
-                V({nodeB}) − V({nodeA})
+                V({nodeName(nodeB)}) − V({nodeName(nodeA)})
               </p>
             </div>
 
@@ -257,13 +259,13 @@ export function ResultsPanel({
               <SectionTitle
                 icon={<Gauge className="size-4" />}
                 title="Tensiones de nodo"
-                description="Referidas al nodo de tierra: V(0) = 0 V."
+                description={`Referidas al nodo de tierra: V(${nodeName("0")}) = 0 V.`}
               />
               <div className="grid gap-3 sm:grid-cols-2">
                 {nodeIds.map((nodeId) => (
                   <ResultCard
                     key={nodeId}
-                    label={`V(${nodeId})`}
+                    label={`V(${nodeName(nodeId)})`}
                     value={result.nodePotentials[nodeId] ?? 0}
                     unit="V"
                     tone="amber"
@@ -285,7 +287,7 @@ export function ResultsPanel({
                     label={`V(${component.label})`}
                     value={result.branchVoltages[component.label] ?? 0}
                     unit="V"
-                    detail={`${component.nFrom} → ${component.nTo}`}
+                    detail={`${nodeName(component.nFrom)} → ${nodeName(component.nTo)}`}
                     tone="amber"
                   />
                 ))}
