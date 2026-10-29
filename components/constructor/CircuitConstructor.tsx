@@ -1051,8 +1051,8 @@ function ConstructorWorkspace() {
             <Background
               variant={BackgroundVariant.Dots}
               gap={28}
-              size={1.35}
-              color="#263449"
+              size={1}
+              color="#1e293b"
             />
             <CircuitMiniMap />
             <Controls position="bottom-left" showInteractive={false} />

@@ -63,24 +63,23 @@ function AnimatedWireComponent({
         id={id}
         path={path}
         style={{
-          stroke: "#334155",
-          strokeWidth: 5,
+          stroke: "#64748b",
+          strokeWidth: 2.5,
         }}
       />
       <path
         d={path}
         fill="none"
         stroke={currentColor(intensity)}
-        strokeWidth={2.5 + intensity * 2}
-        strokeDasharray="10 14"
+        strokeWidth={2.5}
+        strokeDasharray="4 20"
         strokeLinecap="round"
         className="animated-wire__flow"
         style={{
           animationDuration: `${1.9 - intensity * 1.48}s`,
           animationDirection: current < 0 ? "reverse" : "normal",
           animationPlayState: isStopped ? "paused" : "running",
-          opacity: isStopped ? 0.2 : 0.38 + intensity * 0.47,
-          filter: `drop-shadow(0 0 ${1 + intensity * 3}px ${currentColor(intensity)})`,
+          opacity: isStopped ? 0 : 0.55 + intensity * 0.3,
         }}
         data-branch={data?.branchLabel}
         data-current={current}
@@ -97,10 +96,10 @@ function AnimatedWireComponent({
             data-reference-opposite={
               data.referenceIsOpposite ? "true" : "false"
             }
-            className={`nodrag nopan pointer-events-none absolute flex flex-col items-center gap-0.5 rounded-xl border px-2 py-1 shadow-lg backdrop-blur-sm ${
+            className={`nodrag nopan pointer-events-none absolute flex flex-col items-center gap-0.5 rounded-md border px-2 py-1 ${
               data.referenceIsOpposite
                 ? "border-rose-400/55 bg-rose-950/90 text-rose-200"
-                : "border-cyan-400/45 bg-slate-950/90 text-cyan-100"
+                : "border-slate-700/70 bg-[#080d18] text-cyan-100"
             }`}
             style={{
               transform: `translate(-50%, -50%) translate(${currentLabelX}px, ${currentLabelY}px)`,

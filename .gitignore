@@ -10,6 +10,7 @@
 
 # local scratch files
 /tmp/
+/artifacts/
 
 # local environment files
 .env*
