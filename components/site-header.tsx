@@ -7,12 +7,17 @@ import { useState } from "react";
 
 import { ViewCounter } from "@/components/home/ViewCounter";
 
-const navigation = [
+const navigation: { href: string; label: string; external?: boolean }[] = [
   { href: "/", label: "Home" },
   { href: "/guia", label: "Modo guía" },
   { href: "/constructor", label: "Constructor" },
   { href: "/ayuda", label: "Ayuda" },
   { href: "/teoria", label: "Teoría" },
+  {
+    href: "https://forms.gle/DLqQ1refp1Aununq5",
+    label: "Sugerencias",
+    external: true,
+  },
 ];
 
 export function SiteHeader() {
@@ -37,7 +42,7 @@ export function SiteHeader() {
 
         <ViewCounter
           countVisit={pathname === "/"}
-          className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-cyan-400/15 bg-slate-950/75 px-3 py-1 font-mono text-xs tracking-wide text-cyan-100 backdrop-blur-sm"
+          className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-cyan-400/15 bg-slate-950/75 px-3 py-1 font-mono text-xs tracking-wide text-cyan-100 backdrop-blur-sm lg:static lg:translate-x-0"
         />
 
         <div className="relative lg:hidden">
@@ -69,6 +74,8 @@ export function SiteHeader() {
                     <li key={item.href}>
                       <Link
                         href={item.href}
+                        target={item.external ? "_blank" : undefined}
+                        rel={item.external ? "noopener noreferrer" : undefined}
                         aria-current={active ? "page" : undefined}
                         onClick={() => setIsMobileMenuOpen(false)}
                         className={`flex min-h-11 items-center rounded-xl px-3 py-2.5 font-medium transition-colors ${
@@ -96,6 +103,8 @@ export function SiteHeader() {
                 <li key={item.href}>
                   <Link
                     href={item.href}
+                    target={item.external ? "_blank" : undefined}
+                    rel={item.external ? "noopener noreferrer" : undefined}
                     aria-current={active ? "page" : undefined}
                     className={`block whitespace-nowrap rounded-lg px-3 py-2 font-medium transition-colors ${
                       active
